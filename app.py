@@ -53,10 +53,12 @@ login_manager.init_app(app)
 login_manager.login_view = "get_login"  # type: ignore
 login_manager.session_protection = "strong"
 
+
 # function that takes a user id and returns that user from the database
 @login_manager.user_loader
 def load_user(uid: int) -> User | None:
     return User.query.get(int(uid))
+
 
 # =================================================================================
 # Database Setup
@@ -65,9 +67,11 @@ def load_user(uid: int) -> User | None:
 # Getting the database object handle from the app
 db = SQLAlchemy(app)
 
+
 # Create database models
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.Unicode, nullable=False)
     email = db.Column(db.Unicode, nullable=False)
     password_hash = db.Column(db.LargeBinary)  # hash is a binary attribute
 
@@ -95,10 +99,12 @@ with app.app_context():
 # Route Handlers
 # =================================================================================
 
+
 @app.get("/register/")
 def get_register():
     form = RegisterForm()
     return render_template("register.html", form=form)
+
 
 @app.post("/register/")
 def post_register():
@@ -109,7 +115,7 @@ def post_register():
         # if the email address is free, create a new user and send to login
         if user is None:
             user = User(
-                email=form.email.data, password=form.password.data
+                name=form.name.data, email=form.email.data, password=form.password.data
             )  # type:ignore
             db.session.add(user)
             db.session.commit()
@@ -126,10 +132,12 @@ def post_register():
             flash(f"{field}: {error}")
         return redirect(url_for("get_register"))
 
+
 @app.get("/login/")
 def get_login():
     form = LoginForm()
     return render_template("login.html", form=form)
+
 
 @app.post("/login/")
 def post_login():
@@ -158,9 +166,11 @@ def post_login():
             flash(f"{field}: {error}")
         return redirect(url_for("get_login"))
 
+
 @app.get("/")
 def index():
     return render_template("index.html", current_user=current_user)
+
 
 @app.get("/logout/")
 @login_required
