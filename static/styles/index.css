@@ -24,6 +24,7 @@ body {
   /* display: none; */
   display: flex;
   flex-direction: column;
+  gap: 20px;
   width: 30vw;
   max-width: 350px;
   min-width: 300px;
@@ -32,18 +33,49 @@ body {
   box-shadow: 0 0 6px rgba(0, 0, 0, 0.08);
 }
 
+.all-tasks-btn {
+  background-color: transparent;
+  border: 1px solid #dddddd;
+  border-radius: 6px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+
+  &:hover {
+    border: 1px solid #aaaaaa;
+  }
+}
+
+.lists-title {
+  padding-left: 10px;
+}
+
 .lists {
+  margin-top: -10px;
   list-style-type: none;
-  margin-top: 20px;
   flex: 1;
   overflow-y: scroll;
+  border-top: 1px solid #dddddd;
+}
+
+.lists li {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 12px 10px;
+  border-bottom: 1px solid #dddddd;
 }
 
 .lists li a {
-  display: block;
-  padding: 10px;
   text-decoration: none;
-  color: #333;
+  color: var(--primary-color);
+}
+
+.lists li svg {
+  width: 17px;
+  min-width: 17px;
 }
 
 .lists::-webkit-scrollbar {
@@ -56,7 +88,6 @@ body {
 }
 
 .profile-container {
-  margin-top: 20px;
   border: 1px solid #dddddd;
   border-radius: 6px;
   padding: 12px;
@@ -112,6 +143,12 @@ body {
   height: 100%;
   border-radius: 6px;
   padding: 20px;
+}
+
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .card {
