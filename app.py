@@ -1,12 +1,3 @@
-# from flask import Flask, render_template
-
-# app = Flask(__name__)
-
-# @app.get('/')
-# def index():
-#     return render_template('index.html')
-
-
 """
 INSTALLING REQUIRED PACKAGES
 Run the following commands to install all required packages.
@@ -169,10 +160,7 @@ def post_login():
 
 @app.get("/")
 def index():
-    if current_user.is_authenticated:
-        return render_template("index.html", current_user=current_user)
-    else:
-        return redirect(url_for("get_register"))
+    return render_template("index.html", current_user=current_user)
 
 
 @app.get("/logout/")
