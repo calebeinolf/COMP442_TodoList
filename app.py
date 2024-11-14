@@ -29,12 +29,13 @@ pepperfile = os.path.join(scriptdir, "pepper.bin")
 # =================================================================================
 
 # open and read the contents of the pepper file into your pepper key
-# NOTE: you should really generate your own and not use the one from the starter
-with open(pepperfile, "rb") as fin:
-    pepper_key = fin.read()
+if os.path.exists(pepperfile):
+    with open(pepperfile, "rb") as fin:
+        pepper_key = fin.read()
 
-# generate our own pepper and write it to the file if the file was empty
-if not pepper_key:
+# generate our own pepper and write it to the file if the file didn't exist
+# or if the file was empty
+if not os.path.exists(pepperfile) or not pepper_key:
     pepper_key = UpdatedHasher.random_pepper()
     with open(pepperfile, "wb") as fout:
         fout.write(pepper_key)
@@ -128,16 +129,16 @@ TasksToTaskLists = db.Table(
 
 # =================================================================================
 
-
+# Actually, I don't think this function is necessary as we can restrict users from
+# entering duetime without a duedate in other ways
 # define a default function for duetime so that duedate must be non-null
 # in order for duetime to be non-null
-def duetimedefault(context):
+#def duetimedefault(context):
     # force duetime to only be non-null when duedate is non-null
-    if not context.get_current_parameters()["duedate"]:
-        return None
-    else:
-        return context.get_current_parameters()["duetime"]
-
+    #if not context.get_current_parameters()["duedate"]:
+        #return None
+    #else:
+        #return context.get_current_parameters()["duetime"]
 
 class Task(db.Model):
     __tablename__ = "Tasks"
@@ -152,9 +153,7 @@ class Task(db.Model):
     duedate = db.Column(db.Date, nullable=True)
     # duedate MUST have a value in order for there to be a duetime
     # enforce this using duetimedefault
-    duetime = db.Column(
-        db.Time, nullable=True, default=duetimedefault, onupdate=duetimedefault
-    )
+    duetime = db.Column(db.Time, nullable=True) #default=duetimedefault, onupdate=duetimedefault
 
     # should be a value in range [1,10] if not null
     priority = db.Column(db.Integer, nullable=True)
@@ -231,7 +230,7 @@ with app.app_context():
     db.session.add_all((nk, ce, dlr))
 
     nktask1 = Task(
-        name="W project checkpoint",
+        name="Project Checkpoint",
         # User.query.filter_by(username="natekuhns").first().id,
         duedate=date(2024, 11, 15),
         duetime=time(23, 59),
@@ -239,7 +238,7 @@ with app.app_context():
         user=nk,
     )
     nktask2 = Task(
-        name="task that should have no duetime", duetime=time(23, 59), user=nk
+        name="", duetime=time(23, 59), user=nk
     )
 
     nktask3 = Task(name="task3", user=nk)
@@ -250,11 +249,11 @@ with app.app_context():
 
     db.session.add(nktst1)
 
-    natetl1 = TaskList(name="natetl", user=nk)
+    natewebtl = TaskList(name="Web", user=nk)
 
-    db.session.add(natetl1)
+    db.session.add(natewebtl)
 
-    natetl1.appendtask(nktask3)
+    natewebtl.appendtask(nktask1)
 
     db.session.commit()
 
