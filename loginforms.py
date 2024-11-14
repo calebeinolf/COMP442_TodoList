@@ -5,7 +5,7 @@ from wtforms.validators import InputRequired, Email, EqualTo, Length
 
 # define our own FlaskForm subclass for our form
 class RegisterForm(FlaskForm):
-    name = StringField("Name: ", validators=[InputRequired()])
+    username = StringField("Username: ", validators=[InputRequired()])
     email = EmailField("Email: ", validators=[InputRequired(), Email()])
     password = PasswordField(
         "Password: ", validators=[InputRequired(), Length(min=8, max=256)]
