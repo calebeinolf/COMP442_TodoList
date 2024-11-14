@@ -13,6 +13,19 @@
       integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU"
       crossorigin="anonymous"
     />
+
+    <!-- Custom CSS -->
+    <style>
+      .flash-message {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 1050;
+        max-width: 90%;
+        width: 400px;
+      }
+    </style>
   </head>
   <body
     class="bg-light d-flex align-items-center justify-content-center"
@@ -20,22 +33,20 @@
   >
     <!-- Header for Messages -->
     <header>
-      <div class="container">
-        {% for message in get_flashed_messages() %}
-        <div
-          class="alert alert-warning alert-dismissible fade show d-flex align-items-center"
-          role="alert"
-        >
-          <span class="me-2">{{ message }}</span>
-          <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="alert"
-            aria-label="Close"
-          ></button>
-        </div>
-        {% endfor %}
+      {% for message in get_flashed_messages() %}
+      <div
+        class="alert alert-warning alert-dismissible fade show flash-message d-flex align-items-center"
+        role="alert"
+      >
+        <span class="me-2">{{ message }}</span>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"
+          aria-label="Close"
+        ></button>
       </div>
+      {% endfor %}
     </header>
 
     <!-- Main Content -->

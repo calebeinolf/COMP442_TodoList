@@ -248,10 +248,14 @@ body {
   color: #616161;
 }
 
+.strikethrough {
+  text-decoration: line-through;
+}
+
 .task-info {
   margin: 4px 0 0 0;
   display: flex;
-  gap: 5px;
+  gap: 8px;
   font-size: 14px;
   color: #616161;
 }

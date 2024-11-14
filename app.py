@@ -133,12 +133,13 @@ TasksToTaskLists = db.Table(
 # entering duetime without a duedate in other ways
 # define a default function for duetime so that duedate must be non-null
 # in order for duetime to be non-null
-#def duetimedefault(context):
-    # force duetime to only be non-null when duedate is non-null
-    #if not context.get_current_parameters()["duedate"]:
-        #return None
-    #else:
-        #return context.get_current_parameters()["duetime"]
+# def duetimedefault(context):
+# force duetime to only be non-null when duedate is non-null
+# if not context.get_current_parameters()["duedate"]:
+# return None
+# else:
+# return context.get_current_parameters()["duetime"]
+
 
 class Task(db.Model):
     __tablename__ = "Tasks"
@@ -153,7 +154,9 @@ class Task(db.Model):
     duedate = db.Column(db.Date, nullable=True)
     # duedate MUST have a value in order for there to be a duetime
     # enforce this using duetimedefault
-    duetime = db.Column(db.Time, nullable=True) #default=duetimedefault, onupdate=duetimedefault
+    duetime = db.Column(
+        db.Time, nullable=True
+    )  # default=duetimedefault, onupdate=duetimedefault
 
     # should be a value in range [1,10] if not null
     priority = db.Column(db.Integer, nullable=True)
@@ -230,16 +233,15 @@ with app.app_context():
     db.session.add_all((nk, ce, dlr))
 
     nktask1 = Task(
-        name="Project Checkpoint",
+        name="W project checkpoint",
+        complete=1,
         # User.query.filter_by(username="natekuhns").first().id,
         duedate=date(2024, 11, 15),
         duetime=time(23, 59),
         priority=1,
         user=nk,
     )
-    nktask2 = Task(
-        name="", duetime=time(23, 59), user=nk
-    )
+    nktask2 = Task(name="", duetime=time(23, 59), user=nk)
 
     nktask3 = Task(name="task3", user=nk)
 
@@ -337,12 +339,18 @@ def index():
     username: str = str(session.get("username"))
     # check if the user is logged in using the session
     user_usernames = User.query.with_entities(User.username).all()
-    print("USERNAMES:")
-    for username in user_usernames:
-        print(username)
-    if username in user_usernames:
-        return render_template("index.html", current_user=current_user)
+    user_usernames_list = [username[0] for username in user_usernames]
+    print(user_usernames_list)
+
+    if username in user_usernames_list:
+        print("USERNAME: " + username)
+        tasks = Task.query.join(User).filter(User.username == username).all()
+
+        for task in tasks:
+            print(task.name)
+        return render_template("index.html", current_user=current_user, tasks=tasks)
     else:
+        flash("Please login")
         return redirect(url_for("get_login"))
 
 
