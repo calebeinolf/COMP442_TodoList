@@ -66,7 +66,6 @@ login_manager.session_protection = "strong"
 def load_user(uid: int) -> User | None:
     return User.query.get(int(uid))
 
-
 # =================================================================================
 # Database Setup
 # =================================================================================
@@ -75,7 +74,6 @@ def load_user(uid: int) -> User | None:
 db = SQLAlchemy(app)
 
 # =================================================================================
-
 
 # Create database models
 class User(UserMixin, db.Model):
@@ -110,7 +108,6 @@ class User(UserMixin, db.Model):
         self.password = password
         # don't have to specify values for vars that are assigned db.relationship
 
-
 # =================================================================================
 
 # define a join table to associate tasks with multiple lists and lists with multiple tasks
@@ -139,7 +136,6 @@ TasksToTaskLists = db.Table(
 # return None
 # else:
 # return context.get_current_parameters()["duetime"]
-
 
 class Task(db.Model):
     __tablename__ = "Tasks"
@@ -184,9 +180,7 @@ class Task(db.Model):
     # if not user: raise ValueError("A task MUST be associated with a user")
     # self.user = user
 
-
 # =================================================================================
-
 
 class Subtask(db.Model):
     __tablename__ = "Subtasks"
@@ -199,9 +193,7 @@ class Subtask(db.Model):
     # self.taskid=taskid
     # self.complete=complete
 
-
 # =================================================================================
-
 
 class TaskList(db.Model):
     __tablename__ = "TaskLists"
@@ -218,7 +210,6 @@ class TaskList(db.Model):
     # self.name=name
     # self.userid=userid
     # if not user: raise ValueError("A TaskList must be associated with a User")
-
 
 # =================================================================================
 
@@ -377,4 +368,11 @@ def populatetltaskchoices():
 
 # when the user clicks the button to add task list, a post request will be sent to
 # the server
-@app.post("/")
+
+# =================================================================================
+# Create Task
+def populatetaskchoices():
+    # get all of the current user's task lists
+    tasklists = TaskList.query.filter_by(user=current_user).all()
+    # tl is both identified by and labeled by name attribute
+    return [(tl.name,tl.name) for tl in tasklists]
