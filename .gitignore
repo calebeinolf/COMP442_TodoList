@@ -1,3 +1,4 @@
 config.py
 todo.sqlite3
 pepper.bin
+__pycache__/*
