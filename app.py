@@ -143,16 +143,20 @@ TasksToTaskLists = db.Table(
 class Task(db.Model):
     __tablename__ = "Tasks"
 
-    # necessary attributes
+    # -----------------------------------------------------
+    # non-nullable attributes
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.Unicode, nullable=False, unique=True)
     complete = db.Column(db.Boolean, nullable=False, default=False)
+    starred = db.Column(db.Boolean, nullable=False, default=False)
 
+    # -----------------------------------------------------
     # optional attributes
     progressnotes = db.Column(db.Unicode, nullable=True)
     duedate = db.Column(db.Date, nullable=True)
     # duedate MUST have a value in order for there to be a duetime
-    # enforce this using duetimedefault
+    # enforce this through forms and the way we present options to the user ->
+    # the duetime field should only become visible when a duedate has been selected
     duetime = db.Column(db.Time, nullable=True) #default=duetimedefault, onupdate=duetimedefault
 
     # should be a value in range [1,10] if not null
@@ -261,7 +265,8 @@ with app.app_context():
 # Route Handlers
 # =================================================================================
 
-
+# =================================================================================
+# Register
 @app.get("/register/")
 def get_register():
     form = RegisterForm()
@@ -296,6 +301,8 @@ def post_register():
         return redirect(url_for("get_register"))
 
 
+# =================================================================================
+# Log in and out
 @app.get("/login/")
 def get_login():
     form = LoginForm()
@@ -331,7 +338,16 @@ def post_login():
             flash(f"{field}: {error}")
         return redirect(url_for("get_login"))
 
+@app.get("/logout/")
+@login_required
+def get_logout():
+    logout_user()
+    flash("You have been logged out")
+    return redirect(url_for("index"))
 
+
+# =================================================================================
+# Home Page
 @app.get("/")
 def index():
     username: str = str(session.get("username"))
@@ -345,10 +361,14 @@ def index():
     else:
         return redirect(url_for("get_login"))
 
+# =================================================================================
+# Creating Task Lists
+def populatetltaskchoices():
+    # current_user is of type User -> sweet
+    # get the tasks for the current user
+    tasks = Task.query.filter_by(user=current_user).all()
+    return [(task.id,task.name) for task in tasks]
 
-@app.get("/logout/")
-@login_required
-def get_logout():
-    logout_user()
-    flash("You have been logged out")
-    return redirect(url_for("index"))
+# when the user clicks the button to add task list, a post request will be sent to
+# the server
+@app.post("/")
