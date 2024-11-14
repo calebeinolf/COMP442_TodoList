@@ -114,13 +114,13 @@ class User(UserMixin, db.Model):
 #class TaskToList(db.Model):
     #__tablename__ = "TasksToLists"
     #id = db.Column(db.Integer,primary_key=True)
-    #tlname = db.Column(db.Unicode, db.Foreign_Key("TaskLists.name"))
-    #taskid = db.Column(db.Integer, db.Foreign_Key("Tasks.id"))
+    #tlname = db.Column(db.Unicode, db.ForeignKey("TaskLists.name"))
+    #taskid = db.Column(db.Integer, db.ForeignKey("Tasks.id"))
 
-taskstotasklists = db.Table(
-    "TasksToLists",
-    db.Column(db.Unicode, db.Foreign_Key("TaskLists.name"), nullable=False),
-    db.Column(db.Integer, db.Foreign_Key("Tasks.id"), nullable=False)
+TasksToTaskLists = db.Table(
+    "TasksToTaskLists",
+    db.Column("tlname", db.Unicode, db.ForeignKey("TaskLists.name"), nullable=False),
+    db.Column("taskid", db.Integer, db.ForeignKey("Tasks.id"), nullable=False)
 )
 
 # =================================================================================
@@ -128,7 +128,9 @@ taskstotasklists = db.Table(
 # define a default function for duetime so that duedate must be non-null
 # in order for duetime to be non-null
 def duetimedefault(context):
+    # force duetime to only be non-null when duedate is non-null
     if not context.get_current_parameters()["duedate"]: return None
+    else: return context.get_current_parameters()["duetime"]
 
 class Task(db.Model):
     __tablename__ = "Tasks"
@@ -148,25 +150,24 @@ class Task(db.Model):
     # should be a value in range [1,10] if not null
     priority = db.Column(db.Integer,nullable=True)
     generalnotes = db.Column(db.Unicode,nullable=True)
-    userid = db.Column(db.Integer,db.Foreign_Key("Users.id"),nullable=False)
+    userid = db.Column(db.Integer,db.ForeignKey("Users.id"),nullable=False)
 
     # now we have a list of subtasks which can refer to their task through the task var
     subtasks = db.relationship("Subtask",backref="task")
-    tasklists = db.relationship("TaskList",secondary=taskstotasklists,back_populates="Tasks")
+    tasklists = db.relationship("TaskList",secondary=TasksToTaskLists,back_populates="tasks")
 
-    def __init__(self,name,userid=None,complete=False,progressnotes="",duedate=None,duetime=None,priority=None,generalnotes="",user=None):
-        self.name=name
-        self.userid=userid
-        self.complete=complete
-        self.progressnotes=progressnotes
-        self.duedate=duedate
-        self.duetime=duetime
-        self.priority=priority
-        self.generalnotes=generalnotes
+    #def __init__(self,name,userid=None,complete=False,progressnotes="",duedate=None,duetime=None,priority=None,generalnotes="",user=None):
+        #self.name=name
+        #self.userid=userid
+        #self.complete=complete
+        #self.progressnotes=progressnotes
+        #self.duedate=duedate
+        #self.duetime=duetime
+        #self.priority=priority
+        #self.generalnotes=generalnotes
         #NOTE:user should never be None
-        if not user: raise ValueError("A Task MUST be associated with a user")
-        self.user = user
-
+        #if not user: raise ValueError("A task MUST be associated with a user")
+        #self.user = user
 
 # =================================================================================
 
@@ -174,25 +175,28 @@ class Subtask(db.Model):
     __tablename__ = "Subtasks"
     name = db.Column(db.Unicode,primary_key=True)
     complete = db.Column(db.Boolean,nullable=False,default=False)
-    taskid = db.Column(db.Integer,db.Foreign_Key('Tasks.id'),nullable=False)
+    taskid = db.Column(db.Integer,db.ForeignKey('Tasks.id'),nullable=False)
 
-    def __init__(self,name,taskid,complete=False):
-        self.name=name
-        self.taskid=taskid
-        self.complete=complete
+    #def __init__(self,name,taskid,complete=False):
+        #self.name=name
+        #self.taskid=taskid
+        #self.complete=complete
 
 # =================================================================================
 
 class TaskList(db.Model):
     __tablename__ = "TaskLists"
     name = db.Column(db.Unicode, primary_key=True)
-    tasks = db.relationship("Task",secondary=taskstotasklists,back_populates="TaskLists")
-    userid = db.Column(db.Integer,db.Foreign_Key("Users.id"),nullable=False)
+    tasks = db.relationship("Task",secondary=TasksToTaskLists,back_populates="tasklists")
+    userid = db.Column(db.Integer,db.ForeignKey("Users.id"),nullable=False)
 
-    def __init__(self,name,userid=None,user=None):
-        self.name=name
-        self.userid=userid
-        if not user: raise ValueError("A TaskList must be associated with a User")
+    def appendtask(self,task):
+        self.tasks.append(task)
+
+    #def __init__(self,name,userid=None,user=None):
+        #self.name=name
+        #self.userid=userid
+        #if not user: raise ValueError("A TaskList must be associated with a User")
 
 
 # =================================================================================
@@ -203,28 +207,35 @@ with app.app_context():
     db.drop_all()
     db.create_all()  # this is only needed if the database doesn't already exist
 
-    nk = User("natekuhns,nk@gmail.com,swink")
-    ce = User("calebeinolf,ce@hotmail.com,boink")
-    dlr = User("davidleroux,dlr@sherbet.net,dook")
+    nk = User("natekuhns","nk@gmail.com","swink")
+    ce = User("calebeinolf","ce@hotmail.com","boink")
+    dlr = User("davidleroux","dlr@sherbet.net","dook")
 
-    db.session.add_all(nk,ce,dlr)
+    db.session.add_all((nk,ce,dlr))
 
-    nktask1 = Task("W project checkpoint",
+    nktask1 = Task(name="W project checkpoint",
                     #User.query.filter_by(username="natekuhns").first().id,
                     duedate=date(2024,11,15),
                     duetime=time(23,59),
                     priority=1,
                     user=nk)
-    nktask2 = Task("task that should have no duetime",
+    nktask2 = Task(name="task that should have no duetime",
                    duetime=time(23,59),
                    user=nk)
     
-    nktask3 = Task("task3",user=nk)
+    nktask3 = Task(name="task3",user=nk)
+
+    db.session.add_all((nktask1,nktask2,nktask3))
+
     nktst1 = Subtask(name="sub1",task=nktask3)
 
+    db.session.add(nktst1)
+
     natetl1 = TaskList(name="natetl",user=nk)
+
+    db.session.add(natetl1)
     
-    natetl1.append(nktask3)
+    natetl1.appendtask(nktask3)
 
     db.session.commit()
 
