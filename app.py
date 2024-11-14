@@ -6,7 +6,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin, LoginManager, login_required
 from flask_login import login_user, logout_user, current_user
 
-from datetime import date,time
+from datetime import date, time
+
 # general use cases:
 # date(year,month,day)
 # time(hour,minute)
@@ -74,18 +75,19 @@ db = SQLAlchemy(app)
 
 # =================================================================================
 
+
 # Create database models
 class User(UserMixin, db.Model):
     __tablename__ = "Users"
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.Unicode, nullable=False,unique=True)
+    username = db.Column(db.Unicode, nullable=False, unique=True)
     # if we don't need users' emails we shouldn't store them
-    email = db.Column(db.Unicode, nullable=False,unique=True)
+    # email = db.Column(db.Unicode, nullable=False, unique=True)
     password_hash = db.Column(db.LargeBinary)  # hash is a binary attribute
 
-    tasklists = db.relationship("TaskList",backref="user")
+    tasklists = db.relationship("TaskList", backref="user")
 
-    tasks = db.relationship("Task",backref="user")
+    tasks = db.relationship("Task", backref="user")
 
     # make a write-only password property that just updates the stored hash
     @property
@@ -99,38 +101,43 @@ class User(UserMixin, db.Model):
     # add a verify_password convenience method
     def verify_password(self, pwd: str) -> bool:
         return pwd_hasher.check(pwd, self.password_hash)
-    
-    def __init__(self,username,email,password):
+
+    def __init__(self, username, password):
         self.username = username
-        self.email = email
+        # self.email = email
         # should call the password setter resulting in a hash for us
         self.password = password
         # don't have to specify values for vars that are assigned db.relationship
+
 
 # =================================================================================
 
 # define a join table to associate tasks with multiple lists and lists with multiple tasks
 # each row will have a tasklistid and a taskid
-#class TaskToList(db.Model):
-    #__tablename__ = "TasksToLists"
-    #id = db.Column(db.Integer,primary_key=True)
-    #tlname = db.Column(db.Unicode, db.ForeignKey("TaskLists.name"))
-    #taskid = db.Column(db.Integer, db.ForeignKey("Tasks.id"))
+# class TaskToList(db.Model):
+# __tablename__ = "TasksToLists"
+# id = db.Column(db.Integer,primary_key=True)
+# tlname = db.Column(db.Unicode, db.ForeignKey("TaskLists.name"))
+# taskid = db.Column(db.Integer, db.ForeignKey("Tasks.id"))
 
 TasksToTaskLists = db.Table(
     "TasksToTaskLists",
     db.Column("tlname", db.Unicode, db.ForeignKey("TaskLists.name"), nullable=False),
-    db.Column("taskid", db.Integer, db.ForeignKey("Tasks.id"), nullable=False)
+    db.Column("taskid", db.Integer, db.ForeignKey("Tasks.id"), nullable=False),
 )
 
 # =================================================================================
+
 
 # define a default function for duetime so that duedate must be non-null
 # in order for duetime to be non-null
 def duetimedefault(context):
     # force duetime to only be non-null when duedate is non-null
-    if not context.get_current_parameters()["duedate"]: return None
-    else: return context.get_current_parameters()["duetime"]
+    if not context.get_current_parameters()["duedate"]:
+        return None
+    else:
+        return context.get_current_parameters()["duetime"]
+
 
 class Task(db.Model):
     __tablename__ = "Tasks"
@@ -142,61 +149,71 @@ class Task(db.Model):
 
     # optional attributes
     progressnotes = db.Column(db.Unicode, nullable=True)
-    duedate = db.Column(db.Date,nullable=True)
+    duedate = db.Column(db.Date, nullable=True)
     # duedate MUST have a value in order for there to be a duetime
     # enforce this using duetimedefault
-    duetime = db.Column(db.Time,nullable=True,default=duetimedefault,onupdate=duetimedefault)
-    
+    duetime = db.Column(
+        db.Time, nullable=True, default=duetimedefault, onupdate=duetimedefault
+    )
+
     # should be a value in range [1,10] if not null
-    priority = db.Column(db.Integer,nullable=True)
-    generalnotes = db.Column(db.Unicode,nullable=True)
-    userid = db.Column(db.Integer,db.ForeignKey("Users.id"),nullable=False)
+    priority = db.Column(db.Integer, nullable=True)
+    generalnotes = db.Column(db.Unicode, nullable=True)
+    userid = db.Column(db.Integer, db.ForeignKey("Users.id"), nullable=False)
 
     # now we have a list of subtasks which can refer to their task through the task var
-    subtasks = db.relationship("Subtask",backref="task")
-    tasklists = db.relationship("TaskList",secondary=TasksToTaskLists,back_populates="tasks")
+    subtasks = db.relationship("Subtask", backref="task")
+    tasklists = db.relationship(
+        "TaskList", secondary=TasksToTaskLists, back_populates="tasks"
+    )
 
-    #def __init__(self,name,userid=None,complete=False,progressnotes="",duedate=None,duetime=None,priority=None,generalnotes="",user=None):
-        #self.name=name
-        #self.userid=userid
-        #self.complete=complete
-        #self.progressnotes=progressnotes
-        #self.duedate=duedate
-        #self.duetime=duetime
-        #self.priority=priority
-        #self.generalnotes=generalnotes
-        #NOTE:user should never be None
-        #if not user: raise ValueError("A task MUST be associated with a user")
-        #self.user = user
+    # def __init__(self,name,userid=None,complete=False,progressnotes="",duedate=None,duetime=None,priority=None,generalnotes="",user=None):
+    # self.name=name
+    # self.userid=userid
+    # self.complete=complete
+    # self.progressnotes=progressnotes
+    # self.duedate=duedate
+    # self.duetime=duetime
+    # self.priority=priority
+    # self.generalnotes=generalnotes
+    # NOTE:user should never be None
+    # if not user: raise ValueError("A task MUST be associated with a user")
+    # self.user = user
+
 
 # =================================================================================
+
 
 class Subtask(db.Model):
     __tablename__ = "Subtasks"
-    name = db.Column(db.Unicode,primary_key=True)
-    complete = db.Column(db.Boolean,nullable=False,default=False)
-    taskid = db.Column(db.Integer,db.ForeignKey('Tasks.id'),nullable=False)
+    name = db.Column(db.Unicode, primary_key=True)
+    complete = db.Column(db.Boolean, nullable=False, default=False)
+    taskid = db.Column(db.Integer, db.ForeignKey("Tasks.id"), nullable=False)
 
-    #def __init__(self,name,taskid,complete=False):
-        #self.name=name
-        #self.taskid=taskid
-        #self.complete=complete
+    # def __init__(self,name,taskid,complete=False):
+    # self.name=name
+    # self.taskid=taskid
+    # self.complete=complete
+
 
 # =================================================================================
+
 
 class TaskList(db.Model):
     __tablename__ = "TaskLists"
     name = db.Column(db.Unicode, primary_key=True)
-    tasks = db.relationship("Task",secondary=TasksToTaskLists,back_populates="tasklists")
-    userid = db.Column(db.Integer,db.ForeignKey("Users.id"),nullable=False)
+    tasks = db.relationship(
+        "Task", secondary=TasksToTaskLists, back_populates="tasklists"
+    )
+    userid = db.Column(db.Integer, db.ForeignKey("Users.id"), nullable=False)
 
-    def appendtask(self,task):
+    def appendtask(self, task):
         self.tasks.append(task)
 
-    #def __init__(self,name,userid=None,user=None):
-        #self.name=name
-        #self.userid=userid
-        #if not user: raise ValueError("A TaskList must be associated with a User")
+    # def __init__(self,name,userid=None,user=None):
+    # self.name=name
+    # self.userid=userid
+    # if not user: raise ValueError("A TaskList must be associated with a User")
 
 
 # =================================================================================
@@ -207,34 +224,36 @@ with app.app_context():
     db.drop_all()
     db.create_all()  # this is only needed if the database doesn't already exist
 
-    nk = User("natekuhns","nk@gmail.com","swink")
-    ce = User("calebeinolf","ce@hotmail.com","boink")
-    dlr = User("davidleroux","dlr@sherbet.net","dook")
+    nk = User("natekuhns", "swink123")
+    ce = User("calebeinolf", "boink123")
+    dlr = User("davidleroux", "dook1234")
 
-    db.session.add_all((nk,ce,dlr))
+    db.session.add_all((nk, ce, dlr))
 
-    nktask1 = Task(name="W project checkpoint",
-                    #User.query.filter_by(username="natekuhns").first().id,
-                    duedate=date(2024,11,15),
-                    duetime=time(23,59),
-                    priority=1,
-                    user=nk)
-    nktask2 = Task(name="task that should have no duetime",
-                   duetime=time(23,59),
-                   user=nk)
-    
-    nktask3 = Task(name="task3",user=nk)
+    nktask1 = Task(
+        name="W project checkpoint",
+        # User.query.filter_by(username="natekuhns").first().id,
+        duedate=date(2024, 11, 15),
+        duetime=time(23, 59),
+        priority=1,
+        user=nk,
+    )
+    nktask2 = Task(
+        name="task that should have no duetime", duetime=time(23, 59), user=nk
+    )
 
-    db.session.add_all((nktask1,nktask2,nktask3))
+    nktask3 = Task(name="task3", user=nk)
 
-    nktst1 = Subtask(name="sub1",task=nktask3)
+    db.session.add_all((nktask1, nktask2, nktask3))
+
+    nktst1 = Subtask(name="sub1", task=nktask3)
 
     db.session.add(nktst1)
 
-    natetl1 = TaskList(name="natetl",user=nk)
+    natetl1 = TaskList(name="natetl", user=nk)
 
     db.session.add(natetl1)
-    
+
     natetl1.appendtask(nktask3)
 
     db.session.commit()
@@ -254,21 +273,21 @@ def get_register():
 def post_register():
     form = RegisterForm()
     if form.validate():
-        # check if there is already a user with this email address
-        user = User.query.filter_by(email=form.email.data).first()
-        # if the email address is free, create a new user and send to login
+        # check if there is already a user with this username
+        user = User.query.filter_by(username=form.username.data).first()
+        # if the username is free, create a new user and send to login
         if user is None:
-            #user = User(
-                #username=form.username.data, email=form.email.data, password=form.password.data
-            #)  # type:ignore
-            user = User(form.username.data,form.email.data,form.password.data)
+            # user = User(
+            # username=form.username.data, email=form.email.data, password=form.password.data
+            # )  # type:ignore
+            user = User(form.username.data, form.password.data)
             db.session.add(user)
             db.session.commit()
             return redirect(url_for("get_login"))
         else:
             # if the user already exists
             # flash a warning message and redirect to get registration form
-            flash("There is already an account with that email address")
+            flash("There is already an account with that username")
             return redirect(url_for("get_register"))
     else:
         # if the form was invalid
@@ -288,8 +307,8 @@ def get_login():
 def post_login():
     form = LoginForm()
     if form.validate():
-        # try to get the user associated with this email address
-        user = User.query.filter_by(email=form.email.data).first()
+        # try to get the user associated with this username
+        user = User.query.filter_by(username=form.username.data).first()
         # if this user exists and the password matches
         if user is not None and user.verify_password(form.password.data):
             # log this user in through the login_manager
@@ -298,11 +317,13 @@ def post_login():
             next = request.args.get("next")
             if next is None or not next.startswith("/"):
                 next = url_for("index")
+            print("store to cookies:" + form.username.data)
+            session["username"] = form.username.data
             return redirect(next)
         else:
             # if the user does not exist or the password is incorrect
             # flash an error message and redirect to login form
-            flash("Invalid email address or password")
+            flash("Invalid username or password")
             return redirect(url_for("get_login"))
     else:
         # if the form was invalid
@@ -314,7 +335,16 @@ def post_login():
 
 @app.get("/")
 def index():
-    return render_template("index.html", current_user=current_user)
+    username: str = str(session.get("username"))
+    # check if the user is logged in using the session
+    user_usernames = User.query.with_entities(User.username).all()
+    print("USERNAMES:")
+    for username in user_usernames:
+        print(username)
+    if username in user_usernames:
+        return render_template("index.html", current_user=current_user)
+    else:
+        return redirect(url_for("get_login"))
 
 
 @app.get("/logout/")
