@@ -1,7 +1,10 @@
-import openai
-import json
-
+"""_summary_
+"""
 from datetime import datetime
+import sys
+import json
+import openai
+
 from config import chatGPTSecretKey
 
 class Chat_GPT_Response:
@@ -17,6 +20,16 @@ class Chat_GPT_Response:
         return(f"starred: {self.starred}\nname: {self.name}\ndescription: {self.description}\n"
                f"due_date: {self.due_date}\ndue_time: {self.due_time}\ndue_time_included: {self.due_time_included}\n"
                f"type: {self.type}")
+    def toDict(self) -> dict:
+        return{
+            "starred": self.starred,
+            "name": self.name,
+            "description": self.description,
+            "due_date": self.due_date,
+            "due_time": self.due_time,
+            "due_time_included": self.due_time_included,
+            "type": self.type
+        }
 def response_from_json(json_data):
     data = json.loads(json_data)
     return Chat_GPT_Response(**data)
@@ -50,3 +63,4 @@ class Chat_GPT:
                 self.messages = oldMessages
                 reply = ((reply.strip("```")).split("json")[1]).strip()
                 return response_from_json(reply)
+

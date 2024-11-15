@@ -1,5 +1,6 @@
 from __future__ import annotations
 import os
+import json
 from flask import Flask, render_template, url_for, redirect
 from flask import request, session, flash
 from flask_sqlalchemy import SQLAlchemy
@@ -473,3 +474,16 @@ def posttasklistform():
     for field,em in form.errors.items():
         flash(f"Error in {field}: {em}")
     return redirect(url_for("gettasklistform"))
+
+import chat_gpt
+@app.get("/askChatGPT/")
+def askGPT():
+    question: str = request.args.get('question')
+    types = request.args.get('types')
+    print(types)
+    actualTypes = [item.strip() for item in types.split(',')]
+    
+    chatGpt = chat_gpt.Chat_GPT()
+    response: chat_gpt.Chat_GPT_Response = chatGpt.ask(question, actualTypes)
+    
+    return json.dumps(response.toDict())
