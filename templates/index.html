@@ -62,9 +62,14 @@
           </li>
         </ul>
 
-        {# button to add a task list #}
+        <!-- button to add a task list -->
         <form action="http://127.0.0.1:5000/tasklist/" method="get">
           <button class="add-task-list">Add Task List</button>
+        </form>
+
+        <!-- button to delete task lists -->
+        <form action="http://127.0.0.1:5000/tasklistdelete/" method="get">
+          <button class="add-task-list">Delete Task List(s)</button>
         </form>
 
         <div class="profile-container">
@@ -115,9 +120,15 @@
             </div>
           </div>
           <button class="add-task-btn">+</button>
-          {# adding a wrapper around the this button to open the task form #}
+          <!-- adding a wrapper around these button to open the their forms -->
           <form action="http://127.0.0.1:5000/task/" method="get">
             <button class="add-task">Add Task</button>
+          </form>
+          <form action="http://127.0.0.1:5000/taskdelete/" method="get">
+            <button class="delete-task">Delete Task(s)</button>
+          </form>
+          <form action="http://127.0.0.1:5000/tasksforsubtaskdelete/" method="get">
+            <button class="delete-subtask">Delete Subtask(s)</button>
           </form>
         </div>
         <div class="task-list">

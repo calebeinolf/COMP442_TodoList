@@ -29,8 +29,10 @@
         {{ form.hidden_tag() }}
         
         {% for field in form %}
-            {% if field.type != "CSRFTokenField" %}
+            {% if field.type != "CSRFTokenField" and field.type != "SubmitField" %}
                 {{ field.label }}
+                {{ field() }}
+            {% elif field.type == "SubmitField" %}
                 {{ field() }}
             {% endif %}
             <br>
@@ -38,11 +40,17 @@
     </form>
 
     {# if the user is done adding subtasks, they can be #}
-    {% if form.title == "Subtask Form" %}
+    {% if form.title == "Subtask Creation Form" %}
         <form action="{{ url_for('index') }}" method="get">
             <button class="go-to-home">Done</button>
         </form>
         {# old method -> <a href="{{ url_for('index') }}">Done</a> #}
+    {% endif %}
+
+    {% if "Deletion" in form.title or form.title == "Task Creation Form" or form.title == "Task List Creation Form" %}
+        <form action="{{ url_for('index') }}" method="get">
+            <button class="go-to-home">Home</button>
+        </form>
     {% endif %}
 </body>
 </html>

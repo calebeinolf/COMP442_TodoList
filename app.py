@@ -18,7 +18,7 @@ from datetime import datetime
 # local imports
 from hashing_examples import UpdatedHasher
 from loginforms import RegisterForm, LoginForm
-from taskandtasklistforms import TaskForm, TaskListForm, SubtaskForm
+from taskandtasklistforms import TaskCreationForm, TaskListCreationForm, SubtaskCreationForm, TaskDeletionForm, TaskListDeletionForm, SubtaskDeletionForm
 
 # =================================================================================
 # Identify necessary files
@@ -125,7 +125,7 @@ class User(UserMixin, db.Model):
 
 TasksToTaskLists = db.Table(
     "TasksToTaskLists",
-    db.Column("tlname", db.Unicode, db.ForeignKey("TaskLists.id"), nullable=False),
+    db.Column("tlid", db.Unicode, db.ForeignKey("TaskLists.id"), nullable=False),
     db.Column("taskid", db.Integer, db.ForeignKey("Tasks.id"), nullable=False),
 )
 
@@ -174,6 +174,9 @@ class Task(db.Model):
         "TaskList", secondary=TasksToTaskLists, back_populates="tasks"
     )
 
+    def __eq__(self,othertask):
+        return isinstance(othertask,Task) and self.id == othertask.id
+
     # def __init__(self,name,userid=None,complete=False,progressnotes="",duedate=None,duetime=None,priority=None,generalnotes="",user=None):
     # self.name=name
     # self.userid=userid
@@ -196,6 +199,12 @@ class Subtask(db.Model):
     complete = db.Column(db.Boolean, nullable=False, default=False)
     taskid = db.Column(db.Integer, db.ForeignKey("Tasks.id"), nullable=False)
 
+    # should be a value in range [1,10] if not null
+    priority = db.Column(db.Integer, nullable=True)
+
+    def __eq__(self,otherst):
+        return isinstance(otherst,Subtask) and self.id == otherst.id
+
     # def __init__(self,name,taskid,complete=False):
     # self.name=name
     # self.taskid=taskid
@@ -216,6 +225,12 @@ class TaskList(db.Model):
 
     def appendtask(self, task):
         self.tasks.append(task)
+
+    # define eq function in case we want to compare task lists to see if they're equal
+    # (we do want eq because it is called under the hood in the list __contains__
+    # method which is being used with Task.tasklists)
+    def __eq__(self,othertl):
+        return isinstance(othertl,TaskList) and self.id == othertl.id
 
     # def __init__(self,name,userid=None,user=None):
     # self.name=name
@@ -348,13 +363,14 @@ def get_logout():
     flash("You have been logged out")
     return redirect(url_for("index"))
 
-
 # =================================================================================
 # Home Page
 @app.get("/")
 @app.get("/index/")
 def index():
-    # reset current task id
+    # reset current task id and tasks for which subtask deletions are happening
+    # in case they have values
+    session["deletesubtasksfor"] = []
     session["currenttaskid"] = None
     username: str = str(session.get("username"))
     # check if the user is logged in using the session
@@ -381,7 +397,7 @@ def index():
 
 # =================================================================================
 # Create Task
-def tasktlschoices():
+def alltlchoices():
     # get all of the current user's task lists
     tasklists = TaskList.query.filter_by(user=current_user).all()
     # tl is both identified by and labeled by name attribute
@@ -389,13 +405,13 @@ def tasktlschoices():
 
 @app.get("/task/")
 def gettaskform():
-    taskform=TaskForm()
-    taskform.tasklistids.choices = tasktlschoices()
+    taskform=TaskCreationForm()
+    taskform.tasklistids.choices = alltlchoices()
     return render_template("genericform.html",form=taskform)
 
 @app.post("/task/")
 def posttaskform():
-    if (form:=TaskForm()).validate():
+    if (form:=TaskCreationForm()).validate():
         # we populate subtasks after form submission
         newtask = Task(name=form.name.data,
                        complete=form.complete.data,
@@ -428,14 +444,14 @@ def posttaskform():
 
 @app.get("/subtask/")
 def getsubtaskform():
-    form=SubtaskForm()
+    form=SubtaskCreationForm()
     return render_template("genericform.html",form=form)
 
 @app.post("/subtask/")
 def postsubtaskform():
-    if (form:=SubtaskForm()).validate():
+    if (form:=SubtaskCreationForm()).validate():
         if not session.get("currenttaskid"): raise ValueError("currenttaskid must be set in the session in order to add a subtask correctly")
-        newst = Subtask(name=form.name.data,complete=form.complete.data,taskid=session.get("currenttaskid"))
+        newst = Subtask(name=form.name.data,complete=form.complete.data,taskid=session.get("currenttaskid"),priority=form.priority.data)
         db.session.add(newst)
         db.session.commit()
         return redirect(url_for("getsubtaskform"))
@@ -445,7 +461,7 @@ def postsubtaskform():
 
 # =================================================================================
 # Creating Task Lists
-def tltaskschoices():
+def alltaskchoices():
     # current_user is of type User -> sweet
     # get the tasks for the current user
     tasks = Task.query.filter_by(user=current_user).all()
@@ -456,13 +472,13 @@ def tltaskschoices():
 
 @app.get("/tasklist/")
 def gettasklistform():
-    tlform=TaskListForm()
-    tlform.taskids.choices = tltaskschoices()
+    tlform=TaskListCreationForm()
+    tlform.taskids.choices = alltaskchoices()
     return render_template("genericform.html",form=tlform)
 
 @app.post("/tasklist/")
 def posttasklistform():
-    if (form:=TaskListForm()).validate():
+    if (form:=TaskListCreationForm()).validate():
         #input(f"taskids.data: {form.taskids.data}. Hit Ctrl-C")
         newtl = TaskList(name=form.name.data,user=current_user)
 
@@ -499,3 +515,123 @@ def askGPT():
                        )
       
     return json.dumps(response.toDict())
+
+# =================================================================================
+# Deleting Tasks, Subtasks, and Task Lists
+# =================================================================================
+
+# =================================================================================
+# Task Deletion Form
+
+@app.get("/taskdelete/")
+def gettaskdeletion():
+    form = TaskDeletionForm()
+    form.taskids.choices = alltaskchoices()
+    return render_template("genericform.html",form=form)
+
+@app.post("/taskdelete/")
+def posttaskdeletion():
+    if (form:=TaskDeletionForm()).validate():
+        
+        for taskid in form.taskids.data: deletetask(taskid)
+
+        return redirect(url_for("index"))
+    for field,em in form.errors.items():
+        flash(f"Error in {field}: {em}")
+    return redirect(url_for("gettaskdeletion"))
+
+# =================================================================================
+# Subtask Deletion Form
+@app.get("/tasksforsubtaskdelete/")
+def gettasksforsubtaskdeletion():
+    # can reuse the TaskDeletion form with a different title here
+    form = TaskDeletionForm()
+    form.title = "Tasks for Subtask Deletion"
+    form.submit.label.text = "Delete Subtasks For These"
+    form.taskids.choices = alltaskchoices()
+    return render_template("genericform.html",form=form)
+
+@app.post("/tasksforsubtaskdelete/")
+def posttasksforsubtaskdeletion():
+    if (form:=TaskDeletionForm()).validate():
+        
+        # make a list of tasks for which we will delete subtasks
+        session["deletesubtasksfor"] = []
+        for taskid in form.taskids.data: session["deletesubtasksfor"].append(taskid)
+
+        return redirect(url_for("getsubtaskdeletion"))
+    for field,em in form.errors.items():
+        flash(f"Error in {field}: {em}")
+    return redirect(url_for("gettasksforsubtaskdeletion"))
+
+def subtaskdeletionchoices():
+    if not session.get("deletesubtasksfor"): raise ValueError("deletesubtasksfor must be set in the session in order to delete subtasks correctly")
+    choices = []
+    for taskid in session.get("deletesubtasksfor"):
+        # append all subtasks for each of the tasks we're deleting subtasks for
+        task = Task.query.filter_by(id=taskid).first()
+        choices += [(subtask.id,f"{task.name} subtask: {subtask.name}") for subtask in task.subtasks]
+    return choices
+
+@app.get("/subtaskdelete/")
+def getsubtaskdeletion():
+    form = SubtaskDeletionForm()
+    form.subtaskids.choices = subtaskdeletionchoices()
+    return render_template("genericform.html",form=form)
+
+@app.post("/subtaskdelete/")
+def postsubtaskdeletion():
+    if (form:=SubtaskDeletionForm()).validate():
+        for subtaskid in form.subtaskids.data: deletesubtask(subtaskid)
+        return redirect(url_for("index"))
+    for field,em in form.errors.items():
+        flash(f"Error in {field}: {em}")
+    return redirect(url_for("getsubtaskdeletion"))
+
+# =================================================================================
+# Task List Deletion Form
+@app.get("/tasklistdelete/")
+def gettasklistdeletion():
+    form = TaskListDeletionForm()
+    form.tasklistids.choices = alltlchoices()
+    return render_template("genericform.html",form=form)
+
+@app.post("/tasklistdelete/")
+def posttasklistdeletion():
+    if (form:=TaskListDeletionForm()).validate():
+        
+        for tasklistid in form.tasklistids.data: deletetasklist(tasklistid)
+
+        return redirect(url_for("index"))
+    for field,em in form.errors.items():
+        flash(f"Error in {field}: {em}")
+    return redirect(url_for("gettasklistdeletion"))
+
+# =================================================================================
+# Deletion Helper Functions
+def deletetask(taskid):
+    # checking for current_user should be unnecessary here (we'll be getting ids from a form
+    # and that form will be populated with the users tasks, not anyone elses... so yeah)
+    # delete all subtasks of the task
+    for subtask in Subtask.query.filter_by(taskid=taskid).all():
+        deletesubtask(subtask.id)
+
+    # delete the task itself
+    db.session.delete(Task.query.filter_by(id=taskid).first())
+    db.session.commit()
+
+def deletesubtask(stid):
+    db.session.delete(Subtask.query.filter_by(id=stid).first())
+    db.session.commit()
+
+def deletetasklist(tlid):
+    tl = TaskList.query.filter_by(user=current_user,id=tlid).first()
+    # if a task belongs to the current user, is in the specified task list, and
+    # the task list being deleted is the only task list that it belongs to ->
+    # delete the task
+    tasks = Task.query.filter_by(user=current_user).all()
+    for task in tasks:
+        if tl in task.tasklists and len(task.tasklists) < 2: deletetask(task.id)
+    
+    db.session.delete(tl)
+    db.session.commit()

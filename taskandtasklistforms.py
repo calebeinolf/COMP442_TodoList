@@ -2,9 +2,12 @@ from flask_wtf import FlaskForm
 from wtforms.fields import SubmitField,StringField,SelectMultipleField,BooleanField,TextAreaField,DateField,TimeField,IntegerField
 from wtforms.validators import InputRequired,Length,Optional,NumberRange,ValidationError
 
-class TaskListForm(FlaskForm):
+# =================================================================================
+# Creation Forms
+# =================================================================================
+class TaskListCreationForm(FlaskForm):
     # add title for use in genericform.html -> may want to remove down the road
-    title = "Task List Form"
+    title = "Task List Creation Form"
 
     # user will not be an option in forms (user will be current_user from flask_login)
     name = StringField(label="Task List Name", validators=[InputRequired(),Length(max=80)])
@@ -17,9 +20,11 @@ class TaskListForm(FlaskForm):
     # currently these forms have submit fields. we may be able to remove the submit fields
     createtasklist = SubmitField(label="Create Task List")
 
-class TaskForm(FlaskForm):
+# =================================================================================
 
-    title = "Task Form"
+class TaskCreationForm(FlaskForm):
+
+    title = "Task Creation Form"
 
     # no option for id (id is autoincrementing)
 
@@ -53,13 +58,47 @@ class TaskForm(FlaskForm):
     def validate_duetime(form,field):
         if not form.duedate.data: raise ValidationError("A due time cannot be set for a task with no due date.")
 
-class SubtaskForm(FlaskForm):
+# =================================================================================
 
-    title = "Subtask Form"
+class SubtaskCreationForm(FlaskForm):
+
+    title = "Subtask Creation Form"
 
     # have to have some way to designate the taskid -> I think we can get it through the routes
 
     name = StringField(label="Subtask Name", validators=[InputRequired(),Length(max=80)])
     complete = BooleanField(label="Complete",validators=[Optional()])
+    priority = IntegerField("Priority",validators=[Optional(),NumberRange(min=1,max=10)])
 
     createsubtask = SubmitField(label="Create Subtask")
+
+# =================================================================================
+# Deletion Forms
+# =================================================================================
+class TaskDeletionForm(FlaskForm):
+
+    title = "Task Deletion Form"
+
+    taskids = SelectMultipleField("Tasks",choices=[],validate_choice=False,validators=[InputRequired()])
+
+    submit = SubmitField("Delete Task(s)")
+
+# =================================================================================
+
+class SubtaskDeletionForm(FlaskForm):
+
+    title = "Subtask Deletion Form"
+
+    subtaskids = SelectMultipleField("Subtasks",choices=[],validate_choice=False,validators=[InputRequired()])
+
+    submit = SubmitField("Delete Subtask(s)")
+
+# =================================================================================
+
+class TaskListDeletionForm(FlaskForm):
+
+    title = "Task List Deletion Form"
+
+    tasklistids = SelectMultipleField("Task Lists",choices=[],validate_choice=False,validators=[InputRequired()])
+
+    submit = SubmitField("Delete Task List(s)")
