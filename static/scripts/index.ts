@@ -60,15 +60,19 @@ async function getChatGTPResponse(question: string, types: string[]){
       },
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data = <ChatGPTResponse> await response.json();
+    const data = <ChatGPTResponse> await ValidateJSON(response);
     return data;
 
   } catch (error) {
     console.error('Error fetching data:', error);
   }
 
+}
+
+function ValidateJSON(response: Response) {
+  if (response.ok) {
+    return response.json();
+  } else {
+      return Promise.reject(response);
+  }
 }
