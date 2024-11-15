@@ -353,8 +353,14 @@ def index():
         tasks = Task.query.join(User).filter(User.username == username).all()
 
         for task in tasks:
-            print(task.name)
-        return render_template("index.html", current_user=current_user, tasks=tasks)
+            print(task.duedate)
+        print(date.today())
+        return render_template(
+            "index.html",
+            current_user=current_user,
+            tasks=tasks,
+            current_date=date.today(),
+        )
     else:
         flash("Please login")
         return redirect(url_for("get_login"))
