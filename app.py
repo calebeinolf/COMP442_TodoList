@@ -8,6 +8,7 @@ from flask_login import UserMixin, LoginManager, login_required
 from flask_login import login_user, logout_user, current_user
 
 from datetime import date, time
+from datetime import datetime
 
 # general use cases:
 # date(year,month,day)
@@ -486,4 +487,12 @@ def askGPT():
     chatGpt = chat_gpt.Chat_GPT()
     response: chat_gpt.Chat_GPT_Response = chatGpt.ask(question, actualTypes)
     
+    t = Task(name=response.name,
+                       starred=response.starred,
+                       duedate=datetime.strptime(response.due_date, "%Y-%m-%d").date(),
+                       duetime=datetime.strptime(response.due_time, "%H:%M").time() if response.due_time_included else None,
+                       generalnotes=response.description,
+                       user=current_user
+                       )
+      
     return json.dumps(response.toDict())
