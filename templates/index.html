@@ -90,8 +90,21 @@
       </div>
 
       <div class="task-list-container">
+
+
+        <div id="aiModal" class="modal">
+          <div class="modal-content">
+              <span id="closeAIModal" class="close-btn">&times;</span>
+              <h2>This is a Modal to ask chatGPT to add something to your schedule</h2>
+              <input type="text" id="aiPromtTextField" placeholder="Ask the AI to add something to your schedule...">
+              <button id="submitAIModal">Submit</button>
+          </div>
+        </div>
+
+
         <div class="task-list-header">
           <h2>All Tasks</h2>
+<<<<<<< Updated upstream
         </div>
         <div class="card add-task-card">
           <div class="add-task-inputs">
@@ -109,6 +122,10 @@
             </div>
           </div>
           <button class="add-task-btn">+</button>
+=======
+          <button class="add-task" id="ask_ai_button">Ask AI</button>
+          <button class="add-task">Add Task</button>
+>>>>>>> Stashed changes
         </div>
         <div class="task-list">
           <!-- Task items will be dynamically generated here -->

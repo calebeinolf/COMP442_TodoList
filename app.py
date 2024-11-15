@@ -373,6 +373,7 @@ def populatetltaskchoices():
     tasks = Task.query.filter_by(user=current_user).all()
     return [(task.id,task.name) for task in tasks]
 
+<<<<<<< Updated upstream
 # when the user clicks the button to add task list, a post request will be sent to
 # the server
 
@@ -383,3 +384,13 @@ def populatetaskchoices():
     tasklists = TaskList.query.filter_by(user=current_user).all()
     # tl is both identified by and labeled by name attribute
     return [(tl.name,tl.name) for tl in tasklists]
+=======
+@app.get("/logout/")
+@login_required
+def get_logout():
+    logout_user()
+    flash("You have been logged out")
+    return redirect(url_for("index"))
+
+
+>>>>>>> Stashed changes
