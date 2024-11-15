@@ -42,13 +42,18 @@ async function getChatGTPResponse(question, types) {
                 'Content-Type': 'application/json',
             },
         });
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
+        const data = await ValidateJSON(response);
         return data;
     }
     catch (error) {
         console.error('Error fetching data:', error);
+    }
+}
+function ValidateJSON(response) {
+    if (response.ok) {
+        return response.json();
+    }
+    else {
+        return Promise.reject(response);
     }
 }

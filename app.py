@@ -6,6 +6,7 @@ from flask import request, session, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin, LoginManager, login_required
 from flask_login import login_user, logout_user, current_user
+from flask_cors import CORS, cross_origin
 
 from datetime import date, time
 from datetime import datetime
@@ -51,6 +52,7 @@ pwd_hasher = UpdatedHasher(pepper_key)
 # =================================================================================
 
 app = Flask(__name__)
+CORS(app, support_credentials=True)
 app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 0
 app.config["SECRET_KEY"] = "droporangemineorate"
 app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{dbfile}"
@@ -477,6 +479,7 @@ def posttasklistform():
     return redirect(url_for("gettasklistform"))
 
 import chat_gpt
+@cross_origin(supports_credentials=True)
 @app.get("/askChatGPT/")
 def askGPT():
     question: str = request.args.get('question')
