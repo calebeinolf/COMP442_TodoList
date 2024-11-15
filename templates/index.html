@@ -112,6 +112,18 @@
         </div>
         <div class="task-list">
           <!-- Task items will be dynamically generated here -->
+
+          <button class="add-task" id="ask_ai_button">Ask AI</button>
+
+          <div id="aiModal" class="modal">
+            <div class="modal-content">
+                <span id="closeAIModal" class="close-btn">&times;</span>
+                <h2>This is a Modal to ask chatGPT to add something to your schedule</h2>
+                <input type="text" id="aiPromtTextField" placeholder="Ask the AI to add something to your schedule...">
+                <button id="submitAIModal">Submit</button>
+            </div>
+          </div>
+
           <div class="task-list-section">
             <h3>Overdue</h3>
             {% for task in tasks %} {% if task.duedate and task.duedate <
