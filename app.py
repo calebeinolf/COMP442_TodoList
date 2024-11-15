@@ -15,6 +15,7 @@ from datetime import date, time
 # local imports
 from hashing_examples import UpdatedHasher
 from loginforms import RegisterForm, LoginForm
+from taskandtasklistforms import TaskForm, TaskListForm, SubtaskForm
 
 # =================================================================================
 # Identify necessary files
@@ -115,12 +116,12 @@ class User(UserMixin, db.Model):
 # class TaskToList(db.Model):
 # __tablename__ = "TasksToLists"
 # id = db.Column(db.Integer,primary_key=True)
-# tlname = db.Column(db.Unicode, db.ForeignKey("TaskLists.name"))
+# tlname = db.Column(db.Unicode, db.ForeignKey("TaskLists.id"))
 # taskid = db.Column(db.Integer, db.ForeignKey("Tasks.id"))
 
 TasksToTaskLists = db.Table(
     "TasksToTaskLists",
-    db.Column("tlname", db.Unicode, db.ForeignKey("TaskLists.name"), nullable=False),
+    db.Column("tlname", db.Unicode, db.ForeignKey("TaskLists.id"), nullable=False),
     db.Column("taskid", db.Integer, db.ForeignKey("Tasks.id"), nullable=False),
 )
 
@@ -143,7 +144,8 @@ class Task(db.Model):
     # -----------------------------------------------------
     # non-nullable attributes
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.Unicode, nullable=False, unique=True)
+    # don't want unique because different users could have same names for their tasks
+    name = db.Column(db.Unicode, nullable=False)
     complete = db.Column(db.Boolean, nullable=False, default=False)
     starred = db.Column(db.Boolean, nullable=False, default=False)
 
@@ -185,7 +187,8 @@ class Task(db.Model):
 
 class Subtask(db.Model):
     __tablename__ = "Subtasks"
-    name = db.Column(db.Unicode, primary_key=True)
+    id = db.Column(db.Integer,primary_key=True)
+    name = db.Column(db.Unicode,nullable=False)
     complete = db.Column(db.Boolean, nullable=False, default=False)
     taskid = db.Column(db.Integer, db.ForeignKey("Tasks.id"), nullable=False)
 
@@ -198,7 +201,10 @@ class Subtask(db.Model):
 
 class TaskList(db.Model):
     __tablename__ = "TaskLists"
-    name = db.Column(db.Unicode, primary_key=True)
+    # need an integer id because we want different users to be able to have
+    # task lists with the same name
+    id = db.Column(db.Integer,primary_key=True)
+    name = db.Column(db.Unicode,nullable=False)
     tasks = db.relationship(
         "Task", secondary=TasksToTaskLists, back_populates="tasklists"
     )
@@ -235,7 +241,7 @@ with app.app_context():
         priority=1,
         user=nk,
     )
-    nktask2 = Task(name="", duetime=time(23, 59), user=nk)
+    nktask2 = Task(name="othertask", duetime=time(23, 59), user=nk)
 
     nktask3 = Task(name="task3", user=nk)
 
@@ -246,8 +252,9 @@ with app.app_context():
     db.session.add(nktst1)
 
     natewebtl = TaskList(name="Web", user=nk)
+    nateothertl = TaskList(name="Other", user=nk)
 
-    db.session.add(natewebtl)
+    db.session.add_all((natewebtl,nateothertl))
 
     natewebtl.appendtask(nktask1)
 
@@ -341,7 +348,10 @@ def get_logout():
 # =================================================================================
 # Home Page
 @app.get("/")
+@app.get("/index/")
 def index():
+    # reset current task id
+    session["currenttaskid"] = None
     username: str = str(session.get("username"))
     # check if the user is logged in using the session
     user_usernames = User.query.with_entities(User.username).all()
@@ -366,8 +376,72 @@ def index():
         return redirect(url_for("get_login"))
 
 # =================================================================================
+# Create Task
+def tasktlschoices():
+    # get all of the current user's task lists
+    tasklists = TaskList.query.filter_by(user=current_user).all()
+    # tl is both identified by and labeled by name attribute
+    return [(tl.id,tl.name) for tl in tasklists]
+
+@app.get("/task/")
+def gettaskform():
+    taskform=TaskForm()
+    taskform.tasklistids.choices = tasktlschoices()
+    return render_template("genericform.html",form=taskform)
+
+@app.post("/task/")
+def posttaskform():
+    if (form:=TaskForm()).validate():
+        # we populate subtasks after form submission
+        newtask = Task(name=form.name.data,
+                       complete=form.complete.data,
+                       starred=form.starred.data,
+                       progressnotes=form.progressnotes.data,
+                       duedate=form.duedate.data,
+                       duetime=form.duetime.data,
+                       priority=form.priority.data,
+                       generalnotes=form.generalnotes.data,
+                       user=current_user
+                       )
+
+        # add a db tasklist to the task for each of the names in tasklistids
+        # each task added must belong to the current user
+        for tasklistid in form.tasklistids.data:
+            print(f"attempting to add {TaskList.query.filter_by(user=current_user,id=tasklistid).first()} (filter by current user and task list name)")
+            newtask.tasklists.append(TaskList.query.filter_by(user=current_user,id=tasklistid).first())
+        # add and commit to the database, then we ask if the user would like to add subtasks
+        db.session.add(newtask)
+        db.session.commit()
+        session["currenttaskid"]=newtask.id
+        return redirect(url_for("getsubtaskform"))
+    #input(f"tasklistids.data: {form.tasklistids.data}. Hit Ctrl-C")
+    for field,em in form.errors.items():
+        flash(f"Error in {field}: {em}")
+    return redirect(url_for("gettaskform"))
+
+# =================================================================================
+# Create Subtask
+
+@app.get("/subtask/")
+def getsubtaskform():
+    form=SubtaskForm()
+    return render_template("genericform.html",form=form)
+
+@app.post("/subtask/")
+def postsubtaskform():
+    if (form:=SubtaskForm()).validate():
+        if not session.get("currenttaskid"): raise ValueError("currenttaskid must be set in the session in order to add a subtask correctly")
+        newst = Subtask(name=form.name.data,complete=form.complete.data,taskid=session.get("currenttaskid"))
+        db.session.add(newst)
+        db.session.commit()
+        return redirect(url_for("getsubtaskform"))
+    for field,em in form.errors.items():
+        flash(f"Error in {field}: {em}")
+    return redirect(url_for("getsubtaskform"))
+
+# =================================================================================
 # Creating Task Lists
-def populatetltaskchoices():
+def tltaskschoices():
     # current_user is of type User -> sweet
     # get the tasks for the current user
     tasks = Task.query.filter_by(user=current_user).all()
@@ -376,10 +450,26 @@ def populatetltaskchoices():
 # when the user clicks the button to add task list, a post request will be sent to
 # the server
 
-# =================================================================================
-# Create Task
-def populatetaskchoices():
-    # get all of the current user's task lists
-    tasklists = TaskList.query.filter_by(user=current_user).all()
-    # tl is both identified by and labeled by name attribute
-    return [(tl.name,tl.name) for tl in tasklists]
+@app.get("/tasklist/")
+def gettasklistform():
+    tlform=TaskListForm()
+    tlform.taskids.choices = tltaskschoices()
+    return render_template("genericform.html",form=tlform)
+
+@app.post("/tasklist/")
+def posttasklistform():
+    if (form:=TaskListForm()).validate():
+        #input(f"taskids.data: {form.taskids.data}. Hit Ctrl-C")
+        newtl = TaskList(name=form.name.data,user=current_user)
+
+        # add a db task to the task list for each of the ids in taskids
+        # each task added must belong to the current user
+        for taskid in form.taskids.data:
+            print(f"attempting to add {Task.query.filter_by(user=current_user,id=taskid).first()} (filter by current user and task list id)")
+            newtl.appendtask(Task.query.filter_by(user=current_user,id=taskid).first())
+        db.session.add(newtl)
+        db.session.commit()
+        return redirect(url_for("index"))
+    for field,em in form.errors.items():
+        flash(f"Error in {field}: {em}")
+    return redirect(url_for("gettasklistform"))

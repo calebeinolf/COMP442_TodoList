@@ -61,6 +61,12 @@
             <a href="#">House Chores</a>
           </li>
         </ul>
+
+        {# button to add a task list #}
+        <form action="http://127.0.0.1:5000/tasklist/" method="get">
+          <button class="add-task-list">Add Task List</button>
+        </form>
+
         <div class="profile-container">
           {% if current_user.is_authenticated %}
           <svg class="profile-icon" viewBox="0 0 512 512">
@@ -109,6 +115,10 @@
             </div>
           </div>
           <button class="add-task-btn">+</button>
+          {# adding a wrapper around the this button to open the task form #}
+          <form action="http://127.0.0.1:5000/task/" method="get">
+            <button class="add-task">Add Task</button>
+          </form>
         </div>
         <div class="task-list">
           <!-- Task items will be dynamically generated here -->
