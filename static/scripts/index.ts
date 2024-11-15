@@ -41,7 +41,7 @@ async function askChatGPT(){
   console.log(`input before chatGPT: ${input}`)
   const types: string[] = ["Family", "Work", "Personal"];
   const response = await getChatGTPResponse(input, types);
-  // console.log(`starred: ${response.starred}\nname: ${response.name}\ndescription: ${response.description}\ndue_date: ${response.due_date}\ndue_time: ${response.due_time}\ndue_time_included: ${response.due_time_included}`)
+  console.log(`starred: ${response.starred}\nname: ${response.name}\ndescription: ${response.description}\ndue_date: ${response.due_date}\ndue_time: ${response.due_time}\ndue_time_included: ${response.due_time_included}`)
 }
 
 async function getChatGTPResponse(question: string, types: string[]){
@@ -64,8 +64,8 @@ async function getChatGTPResponse(question: string, types: string[]){
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const data = await response.json();
-    console.log('Received data:', data);
+    const data = <ChatGPTResponse> await response.json();
+    return data;
 
   } catch (error) {
     console.error('Error fetching data:', error);
