@@ -213,12 +213,16 @@ body {
 
 /* Task details styles */
 .task-details-container {
-  /* display: none; */
+  display: none;
   width: 40vw;
   max-width: 450px;
   min-width: 350px;
   padding: 20px;
   padding-left: 0;
+}
+
+.task-details-container.open {
+  display: block;
 }
 
 .task-details {
@@ -279,22 +283,22 @@ body {
 }
 
 .modal {
-  display: none; 
-  position: fixed; 
-  z-index: 1; 
+  display: none;
+  position: fixed;
+  z-index: 1;
   left: 0;
   top: 0;
-  width: 100%; 
-  height: 100%; 
-  background-color: rgba(0, 0, 0, 0.5); 
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
 }
 
 .modal-content {
   background-color: white;
-  margin: 15% auto; 
+  margin: 15% auto;
   padding: 20px;
   border: 1px solid #888;
-  width: 80%; 
+  width: 80%;
   max-width: 500px;
 }
 

@@ -9,6 +9,7 @@ interface ChatGPTResponse {
 }
 
 interface Task {
+  id: number;
   name: string;
   complete: boolean;
   // lists: [string];
@@ -23,8 +24,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   const addTaskButton = <HTMLButtonElement>(
     document.getElementById("add-task-btn")
   );
-
   addTaskButton.addEventListener("click", postTask);
+
+  const detailsPanel = <HTMLDivElement>(
+    document.getElementById("task-details-container")
+  );
+  const closeDetailsBtn = <HTMLButtonElement>(
+    document.getElementById("close-details-btn")
+  );
+  closeDetailsBtn.addEventListener("click", () =>
+    detailsPanel.classList.remove("open")
+  );
 
   const askAIButton = <HTMLButtonElement>(
     document.getElementById("ask_ai_button")
@@ -65,8 +75,14 @@ async function loadTasks() {
 }
 
 function postTask() {
+  // just for testing, make random id:
+  const randomInt = (min: number, max: number) =>
+    Math.floor(Math.random() * (max - min + 1)) + min;
+  const id = randomInt(0, 100);
+
   const task: Task = {
-    name: "Task title",
+    id: id,
+    name: "Example task " + id,
     complete: false,
     duedate: new Date(),
   };
@@ -94,7 +110,7 @@ function appendTask(task: Task) {
   const newTask = document.createElement("div");
   taskList.appendChild(newTask);
   newTask.innerHTML = `
-    <div class="card">
+    <div class="card" id="${task.id}">
               <svg class="circle left-icon" viewBox="0 0 15 15" fill="none">
                 <circle cx="7.5" cy="7.5" r="7" stroke="var(--primary-color)" />
               </svg>
@@ -128,6 +144,19 @@ function appendTask(task: Task) {
               </svg>
             </div>
   `;
+  newTask.addEventListener("click", () => openDetails(task));
+}
+
+function openDetails(task: Task) {
+  const detailsPanel = <HTMLDivElement>(
+    document.getElementById("task-details-container")
+  );
+  detailsPanel.classList.add("open");
+
+  document.getElementById("details-task-name").innerText = task.name;
+  document.getElementById("details-task-duedate").innerText = formatDate(
+    task.duedate
+  );
 }
 
 function formatDate(date: Date): string {

@@ -3,6 +3,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     loadTasks();
     const addTaskButton = (document.getElementById("add-task-btn"));
     addTaskButton.addEventListener("click", postTask);
+    const detailsPanel = (document.getElementById("task-details-container"));
+    const closeDetailsBtn = (document.getElementById("close-details-btn"));
+    closeDetailsBtn.addEventListener("click", () => detailsPanel.classList.remove("open"));
     const askAIButton = (document.getElementById("ask_ai_button"));
     askAIButton.addEventListener("click", aiButtonClicked);
     const closeModalBtn = (document.getElementById("closeAIModal"));
@@ -31,8 +34,11 @@ async function loadTasks() {
     }
 }
 function postTask() {
+    const randomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+    const id = randomInt(0, 100);
     const task = {
-        name: "Task title",
+        id: id,
+        name: "Example task " + id,
         complete: false,
         duedate: new Date(),
     };
@@ -59,7 +65,7 @@ function appendTask(task) {
     const newTask = document.createElement("div");
     taskList.appendChild(newTask);
     newTask.innerHTML = `
-    <div class="card">
+    <div class="card" id="${task.id}">
               <svg class="circle left-icon" viewBox="0 0 15 15" fill="none">
                 <circle cx="7.5" cy="7.5" r="7" stroke="var(--primary-color)" />
               </svg>
@@ -93,6 +99,13 @@ function appendTask(task) {
               </svg>
             </div>
   `;
+    newTask.addEventListener("click", () => openDetails(task));
+}
+function openDetails(task) {
+    const detailsPanel = (document.getElementById("task-details-container"));
+    detailsPanel.classList.add("open");
+    document.getElementById("details-task-name").innerText = task.name;
+    document.getElementById("details-task-duedate").innerText = formatDate(task.duedate);
 }
 function formatDate(date) {
     const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];

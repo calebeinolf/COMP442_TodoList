@@ -315,8 +315,9 @@
         </div>
       </div>
 
-      <div class="task-details-container">
+      <div class="task-details-container" id="task-details-container">
         <div class="task-details">
+          <button id="close-details-btn">&times;</button>
           <h3>Task Details</h3>
           <!-- Task details will be displayed here -->
           <div class="details-list">
@@ -325,7 +326,7 @@
                 <circle cx="7.5" cy="7.5" r="7" stroke="var(--primary-color)" />
               </svg>
               <div class="task-content">
-                <h3>Run Laundry</h3>
+                <h3 id="details-task-name">Run Laundry</h3>
               </div>
               <svg
                 class="right-icon"
@@ -348,7 +349,7 @@
               </svg>
 
               <div class="task-content">
-                <p>Due Sun, November 10</p>
+                <p id="details-task-duedate">Due Sun, November 10</p>
               </div>
               <svg width="13px" viewBox="0 0 329.26933 329" class="right-icon">
                 <path
@@ -373,7 +374,7 @@
                 </g>
               </svg>
               <div class="task-content">
-                <p>COMP 442 Web</p>
+                <p>List</p>
               </div>
               <svg class="right-icon" width="13px" viewBox="0 0 329.26933 329">
                 <path
