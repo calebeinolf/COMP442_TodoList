@@ -20,7 +20,7 @@ async function loadTasks() {
             },
             credentials: "include",
         });
-        const tasks = await ValidateJSON(response);
+        const tasks = await validatejson(response);
         console.log(tasks);
         for (const task of tasks) {
             appendTask(task);
@@ -134,10 +134,10 @@ async function askChatGPT() {
     const input = textField.value;
     console.log(`input before chatGPT: ${input}`);
     const types = ["Family", "Work", "Personal"];
-    const response = await getChatGTPResponse(input, types);
+    const response = await getChatGPTResponse(input, types);
     console.log(`starred: ${response.starred}\nname: ${response.name}\ndescription: ${response.description}\ndue_date: ${response.due_date}\ndue_time: ${response.due_time}\ndue_time_included: ${response.due_time_included}`);
 }
-async function getChatGTPResponse(question, types) {
+async function getChatGPTResponse(question, types) {
     console.log("Trying ChatGPT");
     const params = new URLSearchParams({
         question: question,
@@ -150,14 +150,14 @@ async function getChatGTPResponse(question, types) {
                 "Content-Type": "application/json",
             },
         });
-        const data = await ValidateJSON(response);
+        const data = await validatejson(response);
         return data;
     }
     catch (error) {
         console.error("Error fetching data:", error);
     }
 }
-function ValidateJSON(response) {
+function validatejson(response) {
     if (response.ok) {
         return response.json();
     }

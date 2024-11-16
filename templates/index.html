@@ -104,6 +104,13 @@
         <div class="task-list-header">
           <h2>All Tasks</h2>
         </div>
+
+        <!-- button to view tasks -->
+        <form action="http://127.0.0.1:5000/viewalltasks/" method="get">
+          <button class="view-all-tasks" id="view_all_tasks_button"><h3>View All Tasks</h3></button>
+        </form>
+        <br>
+
         <div class="card add-task-card">
           <div class="add-task-inputs">
             <input placeholder="Add Task" />
@@ -140,16 +147,10 @@
 
           <div id="aiModal" class="modal">
             <div class="modal-content">
-              <span id="closeAIModal" class="close-btn">&times;</span>
-              <h2>
-                Ask our virtual assistant to add something to your task list
-              </h2>
-              <input
-                type="text"
-                id="aiPromtTextField"
-                placeholder="Ask the AI to add a task to your schedule..."
-              />
-              <button id="submitAIModal">Submit</button>
+                <span id="closeAIModal" class="close-btn">&times;</span>
+                <h2>Ask our virtual assistant to add a task for you</h2>
+                <input type="text" id="aiPromtTextField" placeholder="Ask the AI to add a task to your schedule...">
+                <button id="submitAIModal">Submit</button>
             </div>
           </div>
 

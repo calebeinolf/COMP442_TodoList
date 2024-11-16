@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Tasks View</title>
+</head>
+<body>
+    <h1>All Tasks</h1>
+    {% if not alltasklists and not alltasks %}
+    
+        <p>None</p>
+
+    {% else %}
+
+        <h2>Task Lists</h2>
+        
+        {% for tasklist in alltasklists %}
+
+            <pre>Task List '{{tasklist.name}}' {% if tasklist.tasks %} (tasks listed below){% endif %}</pre>
+            
+            {% if not tasklist.tasks %}
+                
+                <pre>    - No Tasks</pre>
+            
+            {% else %}
+                
+                {% for task in tasklist.tasks %}
+                    
+                    <pre>   - {{task.name}}{% if task.subtasks %} (subtasks listed below){% endif %}</pre>
+                    
+                    {% for subtask in task.subtasks %}
+                    
+                    <pre>       + {{subtask.name}}</pre>
+
+                    {% endfor %}
+                
+                {% endfor %}
+            
+            {% endif %}
+            
+        {% endfor %}
+
+        <h2>Independent Tasks (tasks not in a task list)</h2>
+
+        {% for task in alltasks %}
+            
+            {% if not task.tasklists %}
+                
+                <pre>    - {{task.name}}{% if task.subtasks %} (subtasks listed below){% endif %}</pre>
+                
+                {% for subtask in task.subtasks %}
+                
+                <pre>       + {{subtask.name}}</pre>
+                
+                {% endfor %}
+            
+            {% endif %}
+        {% endfor %}
+
+    {% endif %}
+
+    <form action="{{ url_for('index') }}" method="get">
+        <button class="go-to-home">Home</button>
+    </form>
+    <!--
+    s = "<h1>All Tasks View</h1>"
+    # get all of the TaskLists for the current user
+    alltasklists = TaskList.query.filter_by(user=current_user).all()
+
+    for tasklist in alltasklists:
+        s = "<br>".join([s,f"Task List '{tasklist.name}'"])
+        for task in tasklist.tasks:
+            # a tab is &#9;
+            s = "<br><pre>&#9;</pre>- ".join([s,f"{task.name}{' (subtasks listed below)' if task.subtasks else ''}"])
+            for st in task.subtasks:
+                s = "<br><pre>&#9;&#9;</pre>+ ".join([s,st.name])
+
+    # add the tasks that don't have a task list
+    alltasks = Task.query.filter_by(user=current_user).all()
+    s = "<br>".join([s,"<h2>Independent Tasks</h2>"])
+    for task in alltasks:
+        # check if independent
+        if not task.tasklists:
+            s = "<br><pre>&#9;</pre>- ".join([s,f"{task.name}{' (subtasks listed below)' if task.subtasks else ''}"])
+            for st in task.subtasks:
+                s = "<br><pre>&#9;&#9;</pre>+ ".join([s,st.name])
+    return s
+    -->
+</body>
+</html>

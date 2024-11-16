@@ -53,7 +53,7 @@ async function loadTasks() {
       },
       credentials: "include",
     });
-    const tasks = await ValidateJSON(response);
+    const tasks = await validatejson(response);
     console.log(tasks);
 
     for (const task of tasks) {
@@ -178,14 +178,12 @@ async function askChatGPT() {
   const input: string = textField.value;
   console.log(`input before chatGPT: ${input}`);
   const types: string[] = ["Family", "Work", "Personal"];
-  const response = await getChatGTPResponse(input, types);
-  console.log(
-    `starred: ${response.starred}\nname: ${response.name}\ndescription: ${response.description}\ndue_date: ${response.due_date}\ndue_time: ${response.due_time}\ndue_time_included: ${response.due_time_included}`
-  );
+  const response = await getChatGPTResponse(input, types);
+  console.log(`starred: ${response.starred}\nname: ${response.name}\ndescription: ${response.description}\ndue_date: ${response.due_date}\ndue_time: ${response.due_time}\ndue_time_included: ${response.due_time_included}`)
 }
 
-async function getChatGTPResponse(question: string, types: string[]) {
-  console.log("Trying ChatGPT");
+async function getChatGPTResponse(question: string, types: string[]){
+  console.log("Trying ChatGPT")
 
   const params = new URLSearchParams({
     question: question,
@@ -203,14 +201,14 @@ async function getChatGTPResponse(question: string, types: string[]) {
       }
     );
 
-    const data = <ChatGPTResponse>await ValidateJSON(response);
+    const data = <ChatGPTResponse> await validatejson(response);
     return data;
   } catch (error) {
     console.error("Error fetching data:", error);
   }
 }
 
-function ValidateJSON(response: Response) {
+function validatejson(response: Response) {
   if (response.ok) {
     return response.json();
   } else {

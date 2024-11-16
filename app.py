@@ -340,7 +340,7 @@ def post_register():
         else:
             # if the user already exists
             # flash a warning message and redirect to get registration form
-            flash("There is already an account with that username")
+            flash("There is already an account with that username.")
             return redirect(url_for("get_register"))
     else:
         # if the form was invalid
@@ -397,7 +397,7 @@ def get_logout():
 
 
 # =================================================================================
-# Home Page
+# Home Page and View
 @app.get("/")
 @app.get("/index/")
 def index():
@@ -428,6 +428,9 @@ def index():
         flash("Please login")
         return redirect(url_for("get_login"))
 
+@app.get("/viewalltasks/") 
+def view():
+    return render_template("view.html",alltasklists=TaskList.query.filter_by(user=current_user).all(),alltasks=Task.query.filter_by(user=current_user).all())
 
 # =================================================================================
 # Create Task
@@ -447,7 +450,15 @@ def gettaskform():
 
 @app.post("/task/")
 def posttaskform():
-    if (form := TaskCreationForm()).validate():
+    if (form:=TaskCreationForm()).validate():
+
+        # check to make sure there are no subtasks for this task that have the same name
+        tasks = Task.query.filter_by(user=current_user).all()
+        for t in tasks:
+            if t.name == form.name.data:
+                flash(f"Error, cannot have multiple tasks with the same name. There is already a task named {t.name}.")
+                return redirect(url_for("gettaskform"))
+
         # we populate subtasks after form submission
         newtask = Task(
             name=form.name.data,
@@ -464,12 +475,8 @@ def posttaskform():
         # add a db tasklist to the task for each of the names in tasklistids
         # each task added must belong to the current user
         for tasklistid in form.tasklistids.data:
-            print(
-                f"attempting to add {TaskList.query.filter_by(user=current_user,id=tasklistid).first()} (filter by current user and task list name)"
-            )
-            newtask.tasklists.append(
-                TaskList.query.filter_by(user=current_user, id=tasklistid).first()
-            )
+            #print(f"attempting to add {TaskList.query.filter_by(user=current_user,id=tasklistid).first()} (filter by current user and task list name)")
+            newtask.tasklists.append(TaskList.query.filter_by(user=current_user,id=tasklistid).first())
         # add and commit to the database, then we ask if the user would like to add subtasks
         db.session.add(newtask)
         db.session.commit()
@@ -493,17 +500,18 @@ def getsubtaskform():
 
 @app.post("/subtask/")
 def postsubtaskform():
-    if (form := SubtaskCreationForm()).validate():
-        if not session.get("currenttaskid"):
-            raise ValueError(
-                "currenttaskid must be set in the session in order to add a subtask correctly"
-            )
-        newst = Subtask(
-            name=form.name.data,
-            complete=form.complete.data,
-            taskid=session.get("currenttaskid"),
-            priority=form.priority.data,
-        )
+    if (form:=SubtaskCreationForm()).validate():
+        if not session.get("currenttaskid"): raise ValueError("currenttaskid must be set in the session in order to add a subtask correctly")
+
+        # check to make sure there are no subtasks for this task that have the same name
+        subtasks = Subtask.query.filter_by(taskid=session.get("currenttaskid")).all()
+        for st in subtasks:
+            if st.name == form.name.data:
+                flash(f"Error, cannot have multiple subtasks with the same name for a given task. There's already a {st.name} subtask for this task.")
+                return redirect(url_for("getsubtaskform"))
+
+        newst = Subtask(name=form.name.data,complete=form.complete.data,taskid=session.get("currenttaskid"),priority=form.priority.data)
+
         db.session.add(newst)
         db.session.commit()
         return redirect(url_for("getsubtaskform"))
@@ -534,17 +542,23 @@ def gettasklistform():
 
 @app.post("/tasklist/")
 def posttasklistform():
-    if (form := TaskListCreationForm()).validate():
-        # input(f"taskids.data: {form.taskids.data}. Hit Ctrl-C")
-        newtl = TaskList(name=form.name.data, user=current_user)
+    if (form:=TaskListCreationForm()).validate():
+        #input(f"taskids.data: {form.taskids.data}. Hit Ctrl-C")
+
+        # check to make sure there are no subtasks for this task that have the same name
+        tasklists = TaskList.query.filter_by(user=current_user).all()
+        for tl in tasklists:
+            if tl.name == form.name.data:
+                flash(f"Error, cannot have multiple task lists with the same name. There is already a task list named {tl.name}.")
+                return redirect(url_for("gettasklistform"))
+
+        newtl = TaskList(name=form.name.data,user=current_user)
 
         # add a db task to the task list for each of the ids in taskids
         # each task added must belong to the current user
         for taskid in form.taskids.data:
-            print(
-                f"attempting to add {Task.query.filter_by(user=current_user,id=taskid).first()} (filter by current user and task list id)"
-            )
-            newtl.appendtask(Task.query.filter_by(user=current_user, id=taskid).first())
+            #print(f"attempting to add {Task.query.filter_by(user=current_user,id=taskid).first()} (filter by current user and task list id)")
+            newtl.appendtask(Task.query.filter_by(user=current_user,id=taskid).first())
         db.session.add(newtl)
         db.session.commit()
         return redirect(url_for("index"))
@@ -567,18 +581,15 @@ def askGPT():
     chatGpt = chat_gpt.Chat_GPT()
     response: chat_gpt.Chat_GPT_Response = chatGpt.ask(question, actualTypes)
 
-    t = Task(
-        name=response.name,
-        starred=response.starred,
-        duedate=datetime.strptime(response.due_date, "%Y-%m-%d").date(),
-        duetime=(
-            datetime.strptime(response.due_time, "%H:%M").time()
-            if response.due_time_included
-            else None
-        ),
-        generalnotes=response.description,
-        user=current_user,
-    )
+    t = Task(name=response.name,
+             starred=response.starred,
+             duedate=datetime.strptime(response.due_date, "%Y-%m-%d").date(),
+             duetime=datetime.strptime(response.due_time, "%H:%M").time() if response.due_time_included else None,
+             generalnotes=response.description,
+             user=current_user)
+
+    db.session.add(t)
+    db.session.commit()
 
     return json.dumps(response.toDict())
 
