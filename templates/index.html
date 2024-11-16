@@ -139,16 +139,16 @@
           <div id="aiModal" class="modal">
             <div class="modal-content">
                 <span id="closeAIModal" class="close-btn">&times;</span>
-                <h2>Ask our virtual assistant to add something to you task list</h2>
-                <input type="text" id="aiPromtTextField" placeholder="Ask the AI to add something to your schedule...">
+                <h2>Ask our virtual assistant to add something to your task list</h2>
+                <input type="text" id="aiPromtTextField" placeholder="Ask the AI to add a task to your schedule...">
                 <button id="submitAIModal">Submit</button>
             </div>
           </div>
 
           <div class="task-list-section">
             <h3>Overdue</h3>
-            {% for task in tasks %} {% if task.duedate and task.duedate <
-            current_date%}
+            {% for task in tasks %}
+            {% if task.duedate and task.duedate < current_date %}
             <div class="card">
               {%if task.complete == 1 %}
               <svg
