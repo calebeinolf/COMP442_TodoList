@@ -56,7 +56,7 @@ async function loadTasks() {
   console.log("Trying to load tasks");
 
   try {
-    const response = await fetch(`http://localhost:5000/getUserTasks/`, {
+    const response = await fetch(`/getUserTasks/`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
