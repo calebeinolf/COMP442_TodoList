@@ -593,6 +593,7 @@ import chat_gpt
 
 
 @cross_origin(supports_credentials=True)
+@login_required
 @app.get("/askChatGPT/")
 def askGPT():
     question: str = request.args.get("question")
