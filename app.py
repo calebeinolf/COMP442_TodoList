@@ -619,7 +619,7 @@ def askGPT():
     db.session.add(t)
     db.session.commit()
 
-    return json.dumps(response.toDict())
+    return jsonify(response.toDict())
 
 
 # =================================================================================

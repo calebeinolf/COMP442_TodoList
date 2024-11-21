@@ -157,7 +157,7 @@ async function getChatGPTResponse(question, types) {
         types: types.join(","),
     });
     try {
-        const response = await fetch(`http://localhost:5000/askChatGPT?${params.toString()}`, {
+        const response = await fetch(`/askChatGPT?${params.toString()}`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
