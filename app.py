@@ -207,7 +207,7 @@ class Task(db.Model):
         return {
             "name": self.name,
             "duedate": self.duedate,
-            "compete": self.complete,
+            "complete": self.complete,
         }
 
 
@@ -272,7 +272,7 @@ with app.app_context():
 
     nk = User("natekuhns", "swink123")
     ce = User("calebeinolf", "boink123")
-    dlr = User("davidleroux", "dook1234")
+    dlr = User("david", "pass123456")
 
     db.session.add_all((nk, ce, dlr))
 
@@ -602,7 +602,7 @@ def askGPT():
     actualTypes = [item.strip() for item in types.split(",")]
 
     chatGpt = chat_gpt.Chat_GPT()
-    response: chat_gpt.Chat_GPT_Response = chatGpt.ask(question, actualTypes)
+    response: chat_gpt.Old_Chat_GPT_Response = chatGpt.ask(question, actualTypes)
 
     t = Task(
         name=response.name,
