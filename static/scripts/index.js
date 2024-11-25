@@ -80,7 +80,8 @@ async function loadTasks() {
         });
         const tasks = await validatejson(response);
         console.log(tasks);
-        for (const task of tasks) {
+        for (const task of tasks.tasks) {
+            task.duedate = new Date(task.duedate);
             appendTask(task);
         }
     }
@@ -100,9 +101,9 @@ function postTask() {
     appendTask(task);
 }
 function appendTask(task) {
-    console.log("clicked");
-    const today = new Date().toISOString().split("T")[0];
-    const duedate = task.duedate.toISOString().split("T")[0];
+    const today = new Date();
+    console.log(`This is the duedate: ${task.duedate}`);
+    const duedate = task.duedate;
     console.log(today);
     console.log(duedate);
     let listId = "";
@@ -119,6 +120,7 @@ function appendTask(task) {
     const taskList = document.getElementById(listId);
     const newTask = document.createElement("div");
     taskList.appendChild(newTask);
+    console.log(task.duedate instanceof Date);
     newTask.innerHTML = `
     <div class="card" id="${task.id}">
               <svg class="circle left-icon" viewBox="0 0 15 15" fill="none">
@@ -160,6 +162,7 @@ function openDetails(task) {
     const detailsPanel = (document.getElementById("task-details-container"));
     detailsPanel.classList.add("open");
     document.getElementById("details-task-name").innerText = task.name;
+    console.log(`1. ${task.duedate instanceof Date}`);
     document.getElementById("details-task-duedate").innerText = formatDate(task.duedate);
 }
 function formatDate(date) {
@@ -178,9 +181,13 @@ function formatDate(date) {
         "November",
         "December",
     ];
+    console.log(date);
     const dayOfWeek = days[date.getDay()];
+    console.log(dayOfWeek);
     const month = months[date.getMonth()];
+    console.log(month);
     const dayOfMonth = date.getDate();
+    console.log(dayOfMonth);
     return `${dayOfWeek}, ${month} ${dayOfMonth}`;
 }
 async function aiButtonClicked() {

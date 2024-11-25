@@ -207,7 +207,7 @@ class Task(db.Model):
     def toDict(self) -> dict:
         return {
             "name": self.name,
-            "duedate": self.duedate,
+            "duedate": self.duedate.isoformat(),
             "complete": self.complete,
         }
 
@@ -294,8 +294,14 @@ with app.app_context():
         duedate=date(2024, 11, 2),
         user=nk,
     )
+    
+    dtask1 = Task(
+        name="Run Laundry",
+        duedate=date(2024, 11, 2),
+        userid=3
+    )
 
-    db.session.add_all((nktask1, nktask2, nktask3, nktask4))
+    db.session.add_all((nktask1, nktask2, nktask3, nktask4, dtask1))
 
     nktst1 = Subtask(name="sub1", task=nktask3)
 

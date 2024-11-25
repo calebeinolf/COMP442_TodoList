@@ -28,8 +28,8 @@
         {% if current_user.is_authenticated %}
 
         <p class="lists-title">Lists</p>
-        <ul class="lists">
-          <li>
+        <ul class="lists" id="task_lists">
+          <!-- <li>
             <svg class="list-icon" viewBox="0 0 14 14" fill="none">
               <g
                 stroke="var(--primary-color)"
@@ -62,7 +62,7 @@
               </g>
             </svg>
             <a href="#">House Chores</a>
-          </li>
+          </li> -->
         </ul>
 
         <!-- button to add a task list -->
@@ -167,7 +167,7 @@
 
           <div class="task-list-section" id="overdue-list">
             <h3>Overdue</h3>
-            {% for task in tasks %} {% if task.duedate and task.duedate <
+            <!-- {% for task in tasks %} {% if task.duedate and task.duedate <
             current_date %}
             <div class="card">
               {%if task.complete == 1 %}
@@ -215,7 +215,7 @@
                 />
               </svg>
             </div>
-            {%endif%} {% endfor %}
+            {%endif%} {% endfor %} -->
           </div>
           <div class="task-list-section" id="due-today-list">
             <h3>Due Today</h3>
