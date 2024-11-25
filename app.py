@@ -619,8 +619,12 @@ def talkToGPT():
             
     print(question)
     chatGpt = chat_gpt.Chat_GPT()
-    response: chat_gpt.Old_Chat_GPT_Response = chatGpt.ask(question, [])
-    return jsonify(response.toDict())
+    response: chat_gpt.Chat_GPT_Response = chatGpt.newAsk(question, [], [])
+    addGPTResponse(response)
+    return jsonify({
+        "status": "success",
+        "GPTResponse": response.toDict()
+    })
 
 @login_required
 @app.get("/askChatGPT/")
@@ -631,26 +635,39 @@ def askGPT():
     actualTypes = [item.strip() for item in types.split(",")]
 
     chatGpt = chat_gpt.Chat_GPT()
-    response: chat_gpt.Old_Chat_GPT_Response = chatGpt.ask(question, actualTypes)
+    response: chat_gpt.Chat_GPT_Response = chatGpt.newAsk(question, [], [])
 
-    t = Task(
-        name=response.name,
-        starred=response.starred,
-        duedate=datetime.strptime(response.due_date, "%Y-%m-%d").date(),
-        duetime=(
-            datetime.strptime(response.due_time, "%H:%M").time()
-            if response.due_time_included
-            else None
-        ),
-        generalnotes=response.description,
-        user=current_user,
-    )
+    addGPTResponse(response)
 
-    db.session.add(t)
+    return jsonify({
+        "status": "success",
+        "GPTResponse": response.toDict()
+    })
+    
+def addGPTResponse(response: chat_gpt.Chat_GPT_Response):
+    for tasklist in response.tasklists:
+        t: TaskList = TaskList(name=tasklist.name, userid=current_user.id)
+        db.session.add(t)
     db.session.commit()
-
-    return jsonify(response.toDict())
-
+    
+    for task in response.tasks:
+        db.session.add(Task(
+            name = task.name,
+            starred = task.starred,
+            duedate = datetime.strptime(task.duedate, "%Y-%m-%d,%H:%M"),
+            priority = task.priority,
+            userid=current_user.id
+        ))
+    db.session.commit()
+     
+    for subtask in response.subtasks:
+        taskid = Task.query.filter(Task.name == subtask.parenttaskname).first().id
+        db.session.add(Subtask(
+            name=subtask.name,
+            priority=subtask.priority,
+            taskid = taskid
+        ))
+    db.session.commit()
 
 # =================================================================================
 # Deleting Tasks, Subtasks, and Task Lists

@@ -211,7 +211,7 @@ async function askChatGPT() {
     console.log(`input before chatGPT: ${input}`);
     const types = ["Family", "Work", "Personal"];
     const response = await getChatGPTResponse(input, types);
-    console.log(`starred: ${response.starred}\nname: ${response.name}\ndescription: ${response.description}\ndue_date: ${response.due_date}\ndue_time: ${response.due_time}\ndue_time_included: ${response.due_time_included}`);
+    console.log(`starred: ${response.GPTResponse.tasks[0].starred}\nname: ${response.GPTResponse.tasks[0].name}\ndue_date: ${response.GPTResponse.tasks[0].duedate}\n`);
 }
 async function getChatGPTResponse(question, types) {
     console.log("Trying ChatGPT");

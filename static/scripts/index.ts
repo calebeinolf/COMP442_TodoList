@@ -2,14 +2,38 @@ let mediaRecorder: MediaRecorder | null = null;
 let audioChunks: BlobPart[] = []
 let recording: boolean = false;
 
-interface ChatGPTResponse {
-  starred: boolean;
-  name: string;
-  description: string;
-  due_date: string;
-  due_time: string;
-  due_time_included: boolean;
-  type: string;
+namespace gpt{
+  export interface FullTaskList{
+    name: string
+  }
+
+  export interface FullTask{
+    name: string,
+    starred: boolean,
+    duedate: string,
+    priority: number, 
+    tasklistnames: string[]
+  }
+
+  export interface FullSubTask{
+    name: string,
+    priority: number, 
+    parenttaskname: string
+  }
+
+  export interface ChatGPTResponse {
+    tasklists: FullTaskList[],
+    numtasklists: number,
+    tasks: FullTask[],
+    numtasks: number, 
+    subtasks: FullSubTask[],
+    numsubtasks: number
+  }
+
+  export interface ServerResponse {
+    status: string,
+    GPTResponse: ChatGPTResponse
+  }
 }
 
 interface Task {
@@ -106,7 +130,7 @@ async function sendAudioToFlask(audioBlob: Blob) {
       body: formData
     });
 
-    const data = <ChatGPTResponse> await validatejson(response);
+    const data = <gpt.ServerResponse> await validatejson(response);
     console.log(data);
   } catch (e){
     console.log("Error sending audio")
@@ -278,8 +302,8 @@ async function askChatGPT() {
   textField.value = "";
   console.log(`input before chatGPT: ${input}`);
   const types: string[] = ["Family", "Work", "Personal"];
-  const response = await getChatGPTResponse(input, types);
-  console.log(`starred: ${response.starred}\nname: ${response.name}\ndescription: ${response.description}\ndue_date: ${response.due_date}\ndue_time: ${response.due_time}\ndue_time_included: ${response.due_time_included}`)
+  const response = <gpt.ServerResponse> await getChatGPTResponse(input, types);
+  console.log(`starred: ${response.GPTResponse.tasks[0].starred}\nname: ${response.GPTResponse.tasks[0].name}\ndue_date: ${response.GPTResponse.tasks[0].duedate}\n`)
 }
 
 async function getChatGPTResponse(question: string, types: string[]){
@@ -301,7 +325,7 @@ async function getChatGPTResponse(question: string, types: string[]){
       }
     );
 
-    const data = <ChatGPTResponse> await validatejson(response);
+    const data = <gpt.ServerResponse> await validatejson(response);
     return data;
   } catch (error) {
     console.error("Error fetching data:", error);
