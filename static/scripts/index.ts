@@ -1,3 +1,7 @@
+let mediaRecorder: MediaRecorder | null = null;
+let audioChunks: BlobPart[] = []
+let recording: boolean = false;
+
 interface ChatGPTResponse {
   starred: boolean;
   name: string;
@@ -48,7 +52,67 @@ document.addEventListener("DOMContentLoaded", async () => {
   );
   closeModalBtn.addEventListener("click", closeAIModal);
   submitModalBtn.addEventListener("click", submitAIModal);
+
+  const speechBtn = <HTMLButtonElement> document.getElementById("speechToText");
+  speechBtn.addEventListener("click", ()=> {
+    if (recording){
+      stopRecording();
+    } else {
+      startRecording();
+    }
+    recording = !recording
+  });
+
 });
+
+async function startRecording() {
+  try {
+    const permission = await navigator.mediaDevices.getUserMedia({ audio:true })
+    mediaRecorder = new MediaRecorder(permission);
+    audioChunks = [];
+
+    mediaRecorder.ondataavailable = (recordingSesh)=> {
+      audioChunks.push(recordingSesh.data);
+    };
+
+    mediaRecorder.onstop = async () => {
+      const audioBlob = new Blob(audioChunks, {"type": "audio/webm"});
+      sendAudioToFlask(audioBlob);
+    };
+
+    mediaRecorder.start();
+    const speechBtn = <HTMLButtonElement> document.getElementById("speechToText");
+    speechBtn.textContent = "Stop Recording";
+  } catch (e){
+    console.log("Error using mic")
+  }
+}
+
+async function stopRecording() {
+  if (mediaRecorder) {
+    mediaRecorder.stop();
+    const speechBtn = <HTMLButtonElement> document.getElementById("speechToText");
+    speechBtn.textContent = "Talk to our AI"
+  }
+}
+
+async function sendAudioToFlask(audioBlob: Blob) {
+  try{
+    const formData: FormData = new FormData;
+    formData.append("file", audioBlob, "audio.webm");
+
+    const response = await fetch("/speech_for_gpt", {
+      method: "POST",
+      body: formData
+    });
+
+    const data = <ChatGPTResponse> await validatejson(response);
+    console.log(data);
+  } catch (e){
+    console.log("Error sending audio")
+  }
+
+}
 
 async function loadTasks() {
   // fetch user tasks from database
@@ -205,6 +269,7 @@ async function askChatGPT() {
     document.getElementById("aiPromtTextField")
   );
   const input: string = textField.value;
+  textField.value = "";
   console.log(`input before chatGPT: ${input}`);
   const types: string[] = ["Family", "Work", "Personal"];
   const response = await getChatGPTResponse(input, types);

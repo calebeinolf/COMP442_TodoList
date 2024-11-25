@@ -1,3 +1,4 @@
+#pip install assemblyai
 from __future__ import annotations
 import os
 import json
@@ -590,9 +591,31 @@ def posttasklistform():
 
 
 import chat_gpt
+import vosk
+import ffmpeg
+import wave
+import assemblyai as aai
+from config import assemblyAIKey
 
+@login_required
+@app.post("/speech_for_gpt/")
+def talkToGPT():
+    file = request.files['file']
+    file.save("client_side_audio.webm")
+    
+    aai.settings.api_key = assemblyAIKey
+    transcriber = aai.Transcriber()
 
-@cross_origin(supports_credentials=True)
+    transcript = transcriber.transcribe("client_side_audio.webm")
+    # transcript = transcriber.transcribe("./my-local-audio-file.wav")
+
+    question = transcript.text
+            
+    print(question)
+    chatGpt = chat_gpt.Chat_GPT()
+    response: chat_gpt.Old_Chat_GPT_Response = chatGpt.ask(question, [])
+    return jsonify(response.toDict())
+
 @login_required
 @app.get("/askChatGPT/")
 def askGPT():

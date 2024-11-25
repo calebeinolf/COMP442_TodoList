@@ -218,7 +218,6 @@ class Chat_GPT:
             model="gpt-4o-mini", messages=self.messages
         )
         reply = chat.choices[0].message.content
-        print(f"*********&&&&&&&&&&&************\n{reply}\n*********&&&&&&&&&&&************")
         if "json" in reply:
             reply = ((reply.strip("```")).split("json")[1]).strip()
         else :
