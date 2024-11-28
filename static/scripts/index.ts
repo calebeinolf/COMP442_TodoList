@@ -84,7 +84,21 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     recording = !recording;
   });
+
+  const themeBtn = document.getElementById("theme-btn");
+  themeBtn.addEventListener("click", () =>
+    document.body.style.setProperty("--primary-color", randomColor())
+  );
 });
+
+function randomColor(): string {
+  const letters = "0123456789ABCDEF";
+  let color = "#";
+  for (let i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+  }
+  return color;
+}
 
 async function startRecording() {
   try {

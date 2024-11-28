@@ -3,13 +3,12 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-
-  --primary-color: #4a7fd9;
-  --lightgrey: #b3b3b3;
 }
 
 body {
   background-color: #fafafa;
+  --primary-color: #4a7fd9;
+  --lightgrey: #b3b3b3;
 }
 
 ::-webkit-scrollbar {
@@ -19,6 +18,18 @@ body {
   box-shadow: inset 0 0 10px 10px rgb(210, 210, 210);
   border: solid 4px transparent;
   border-radius: 100px;
+}
+
+button {
+  background-color: color-mix(in srgb, var(--primary-color) 20%, white 80%);
+  border: none;
+  margin: 4px;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  &:hover {
+    background-color: color-mix(in srgb, var(--primary-color) 30%, white 70%);
+  }
 }
 
 .flash-msg-container {
@@ -211,7 +222,7 @@ body {
   cursor: pointer;
 }
 .hoverCard:hover {
-  background: rgb(236, 236, 236);
+  background: rgb(245, 245, 245);
 }
 
 .add-task-card {
@@ -233,7 +244,7 @@ body {
 }
 
 .task-details {
-  background-color: #d9e7ff;
+  background-color: color-mix(in srgb, var(--primary-color) 20%, white 80%);
   border: 1px solid rgba(0, 0, 0, 0.08);
   box-shadow: 0 0 6px rgba(0, 0, 0, 0.08);
   height: 100%;
