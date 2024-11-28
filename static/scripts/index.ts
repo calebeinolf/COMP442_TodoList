@@ -51,7 +51,20 @@ document.addEventListener("DOMContentLoaded", async () => {
   const addTaskButton = <HTMLButtonElement>(
     document.getElementById("add-task-btn")
   );
-  addTaskButton.addEventListener("click", postTask);
+  // addTaskButton.addEventListener("click", postTask);
+  addTaskButton.addEventListener("click", () => {
+    const addTaskModal = document.getElementById("addTaskModal");
+    addTaskModal.style.display = "block";
+  });
+
+  const submitTaskBtn = document.getElementById("sumbit-task-btn");
+  submitTaskBtn.addEventListener("click", () => {
+    postTask;
+    closeAddTaskModal;
+  });
+
+  const closeAddTaskModalBtn = document.getElementById("closeAddTaskModal");
+  closeAddTaskModalBtn.addEventListener("click", closeAddTaskModal);
 
   const detailsPanel = <HTMLDivElement>(
     document.getElementById("task-details-container")
@@ -208,6 +221,7 @@ async function postTask() {
       starred: false,
     };
     taskTitleInput.value = "";
+    taskDuedateInput.value = "";
 
     const taskPostURL = "/postUserTask/";
     const response = await fetch(taskPostURL, {
@@ -562,4 +576,9 @@ function emptyCheckIcon(checkIcon: SVGElement) {
   checkIcon.addEventListener("mouseout", () => {
     checkmarkPath.style.display = "none";
   });
+}
+
+function closeAddTaskModal() {
+  const addTaskModal = document.getElementById("addTaskModal");
+  addTaskModal.style.display = "none";
 }

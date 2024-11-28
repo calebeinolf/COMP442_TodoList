@@ -4,7 +4,17 @@ let recording = false;
 document.addEventListener("DOMContentLoaded", async () => {
     loadTasks();
     const addTaskButton = (document.getElementById("add-task-btn"));
-    addTaskButton.addEventListener("click", postTask);
+    addTaskButton.addEventListener("click", () => {
+        const addTaskModal = document.getElementById("addTaskModal");
+        addTaskModal.style.display = "block";
+    });
+    const submitTaskBtn = document.getElementById("sumbit-task-btn");
+    submitTaskBtn.addEventListener("click", () => {
+        postTask;
+        closeAddTaskModal;
+    });
+    const closeAddTaskModalBtn = document.getElementById("closeAddTaskModal");
+    closeAddTaskModalBtn.addEventListener("click", closeAddTaskModal);
     const detailsPanel = (document.getElementById("task-details-container"));
     const closeDetailsBtn = (document.getElementById("close-details-btn"));
     closeDetailsBtn.addEventListener("click", () => detailsPanel.classList.remove("open"));
@@ -118,6 +128,7 @@ async function postTask() {
             starred: false,
         };
         taskTitleInput.value = "";
+        taskDuedateInput.value = "";
         const taskPostURL = "/postUserTask/";
         const response = await fetch(taskPostURL, {
             method: "POST",
@@ -379,4 +390,8 @@ function emptyCheckIcon(checkIcon) {
     checkIcon.addEventListener("mouseout", () => {
         checkmarkPath.style.display = "none";
     });
+}
+function closeAddTaskModal() {
+    const addTaskModal = document.getElementById("addTaskModal");
+    addTaskModal.style.display = "none";
 }
