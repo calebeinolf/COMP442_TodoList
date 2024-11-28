@@ -801,7 +801,6 @@ def deletesubtask(stid):
     db.session.delete(Subtask.query.filter_by(id=stid).first())
     db.session.commit()
 
-
 def deletetasklist(tlid):
     tl = TaskList.query.filter_by(user=current_user, id=tlid).first()
     # if a task belongs to the current user, is in the specified task list, and
