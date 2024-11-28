@@ -2,7 +2,6 @@ let mediaRecorder = null;
 let audioChunks = [];
 let recording = false;
 document.addEventListener("DOMContentLoaded", async () => {
-    console.log("hello");
     loadTasks();
     const addTaskButton = (document.getElementById("add-task-btn"));
     addTaskButton.addEventListener("click", postTask);
@@ -28,18 +27,20 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 async function startRecording() {
     try {
-        const permission = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const permission = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+        });
         mediaRecorder = new MediaRecorder(permission);
         audioChunks = [];
         mediaRecorder.ondataavailable = (recordingSesh) => {
             audioChunks.push(recordingSesh.data);
         };
         mediaRecorder.onstop = async () => {
-            const audioBlob = new Blob(audioChunks, { "type": "audio/webm" });
+            const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
             sendAudioToFlask(audioBlob);
         };
         mediaRecorder.start();
-        const speechBtn = document.getElementById("speechToText");
+        const speechBtn = (document.getElementById("speechToText"));
         speechBtn.textContent = "Stop Recording";
     }
     catch (e) {
@@ -49,17 +50,17 @@ async function startRecording() {
 async function stopRecording() {
     if (mediaRecorder) {
         mediaRecorder.stop();
-        const speechBtn = document.getElementById("speechToText");
+        const speechBtn = (document.getElementById("speechToText"));
         speechBtn.textContent = "Talk to our AI";
     }
 }
 async function sendAudioToFlask(audioBlob) {
     try {
-        const formData = new FormData;
+        const formData = new FormData();
         formData.append("file", audioBlob, "audio.webm");
         const response = await fetch("/speech_for_gpt", {
             method: "POST",
-            body: formData
+            body: formData,
         });
         const data = await validatejson(response);
         console.log(data);
@@ -69,7 +70,7 @@ async function sendAudioToFlask(audioBlob) {
     }
 }
 async function loadTasks() {
-    console.log("Trying to load tasks");
+    console.log("Loading Tasks");
     try {
         const response = await fetch(`/getUserTasks/`, {
             method: "GET",
@@ -81,7 +82,9 @@ async function loadTasks() {
         const tasks = await validatejson(response);
         console.log(tasks);
         for (const task of tasks.tasks) {
-            task.duedate = new Date(task.duedate);
+            if (task.duedate) {
+                task.duedate = new Date(task.duedate);
+            }
             appendTask(task);
         }
     }
@@ -89,7 +92,7 @@ async function loadTasks() {
         console.error("Error fetching tasks:", error);
     }
 }
-function postTask() {
+async function postTask() {
     const randomInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
     const id = randomInt(0, 100);
     const task = {
@@ -100,27 +103,25 @@ function postTask() {
     };
     appendTask(task);
 }
-function appendTask(task) {
+async function appendTask(task) {
     const today = new Date();
-    console.log(`This is the duedate: ${task.duedate}`);
-    const duedate = task.duedate;
-    console.log(today);
-    console.log(duedate);
-    let listId = "";
-    if (duedate < today) {
-        listId = "overdue-list";
+    let listId = "due-today-list";
+    let duedate = null;
+    if (task.duedate) {
+        duedate = new Date(task.duedate);
+        if (duedate < today) {
+            listId = "overdue-list";
+        }
+        else if (duedate === today) {
+            listId = "due-today-list";
+        }
+        else {
+            listId = "upcoming-list";
+        }
     }
-    else if (duedate === today) {
-        listId = "due-today-list";
-    }
-    else {
-        listId = "upcoming-list";
-    }
-    console.log(listId);
     const taskList = document.getElementById(listId);
     const newTask = document.createElement("div");
     taskList.appendChild(newTask);
-    console.log(task.duedate instanceof Date);
     newTask.innerHTML = `
     <div class="card" id="${task.id}">
               <svg class="circle left-icon" viewBox="0 0 15 15" fill="none">
@@ -133,14 +134,16 @@ function appendTask(task) {
                 <div class="task-info">
                   <p>List</p>
                   
-                  <p>•</p>
+                  ${duedate !== null
+        ? `<p>•</p>
                   <svg viewBox="0 0 28 28" width="14px">
                     <path
                       d="M22.611,3.182H20.455V2a1,1,0,0,0-2,0V3.182H9.545V2a1,1,0,0,0-2,0V3.182H5.389A4.394,4.394,0,0,0,1,7.571v15.04A4.394,4.394,0,0,0,5.389,27H22.611A4.394,4.394,0,0,0,27,22.611V7.571A4.394,4.394,0,0,0,22.611,3.182Zm-17.222,2H7.545V6.364a1,1,0,0,0,2,0V5.182h8.91V6.364a1,1,0,1,0,2,0V5.182h2.156A2.391,2.391,0,0,1,25,7.571V9.727H3V7.571A2.391,2.391,0,0,1,5.389,5.182ZM22.611,25H5.389A2.392,2.392,0,0,1,3,22.611V11.727H25V22.611A2.392,2.392,0,0,1,22.611,25Z"
                       fill="#616161"
                     />
                   </svg>
-                  <p>${formatDate(task.duedate)}</p>
+                  <p>${formatDate(duedate)}</p>`
+        : ``}
                 </div>
               </div>
               <svg
@@ -162,7 +165,6 @@ function openDetails(task) {
     const detailsPanel = (document.getElementById("task-details-container"));
     detailsPanel.classList.add("open");
     document.getElementById("details-task-name").innerText = task.name;
-    console.log(`1. ${task.duedate instanceof Date}`);
     document.getElementById("details-task-duedate").innerText = formatDate(task.duedate);
 }
 function formatDate(date) {
@@ -181,13 +183,9 @@ function formatDate(date) {
         "November",
         "December",
     ];
-    console.log(date);
     const dayOfWeek = days[date.getDay()];
-    console.log(dayOfWeek);
     const month = months[date.getMonth()];
-    console.log(month);
     const dayOfMonth = date.getDate();
-    console.log(dayOfMonth);
     return `${dayOfWeek}, ${month} ${dayOfMonth}`;
 }
 async function aiButtonClicked() {

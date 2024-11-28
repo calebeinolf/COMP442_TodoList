@@ -1,4 +1,4 @@
-#pip install assemblyai
+# pip install assemblyai
 from __future__ import annotations
 import os
 import json
@@ -60,7 +60,7 @@ pwd_hasher = UpdatedHasher(pepper_key)
 # =================================================================================
 
 app = Flask(__name__)
-CORS(app, support_credentials=True)
+# CORS(app, support_credentials=True)
 app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 0
 app.config["SECRET_KEY"] = "droporangemineorate"
 app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{dbfile}"
@@ -168,7 +168,8 @@ class Task(db.Model):
     # -----------------------------------------------------
     # optional attributes
     progressnotes = db.Column(db.Unicode, nullable=True)
-    duedate = db.Column(db.Date, nullable=True)
+    # duedate = db.Column(db.Date, nullable=True)
+    duedate = db.Column(db.Integer, nullable=True)
 
     # duedate MUST have a value in order for there to be a duetime
     # enforce this through forms and the way we present options to the user ->
@@ -207,7 +208,7 @@ class Task(db.Model):
     def toDict(self) -> dict:
         return {
             "name": self.name,
-            "duedate": self.duedate.isoformat(),
+            "duedate": self.duedate,
             "complete": self.complete,
         }
 
@@ -280,7 +281,8 @@ with app.app_context():
     nktask1 = Task(
         name="W project checkpoint",
         # User.query.filter_by(username="natekuhns").first().id,
-        duedate=date(2024, 11, 20),
+        # duedate=date(2024, 11, 20),
+        duedate=1732165200000,
         duetime=time(23, 59),
         priority=1,
         user=nk,
@@ -290,16 +292,12 @@ with app.app_context():
     nktask3 = Task(name="task3", user=nk)
 
     nktask4 = Task(
-        name="Run Laundry",
-        duedate=date(2024, 11, 2),
+        name="Christmas!",
+        duedate=1735102800000,
         user=nk,
     )
-    
-    dtask1 = Task(
-        name="Run Laundry",
-        duedate=date(2024, 11, 2),
-        userid=3
-    )
+
+    dtask1 = Task(name="Run Laundry", duedate=date(2024, 11, 2), userid=3)
 
     db.session.add_all((nktask1, nktask2, nktask3, nktask4, dtask1))
 
@@ -603,12 +601,13 @@ import wave
 import assemblyai as aai
 from config import assemblyAIKey
 
+
 @login_required
 @app.post("/speech_for_gpt/")
 def talkToGPT():
-    file = request.files['file']
+    file = request.files["file"]
     file.save("client_side_audio.webm")
-    
+
     aai.settings.api_key = assemblyAIKey
     transcriber = aai.Transcriber()
 
@@ -616,15 +615,13 @@ def talkToGPT():
     # transcript = transcriber.transcribe("./my-local-audio-file.wav")
 
     question = transcript.text
-            
+
     print(question)
     chatGpt = chat_gpt.Chat_GPT()
     response: chat_gpt.Chat_GPT_Response = chatGpt.newAsk(question, [], [])
     addGPTResponse(response)
-    return jsonify({
-        "status": "success",
-        "GPTResponse": response.toDict()
-    })
+    return jsonify({"status": "success", "GPTResponse": response.toDict()})
+
 
 @login_required
 @app.get("/askChatGPT/")
@@ -639,35 +636,34 @@ def askGPT():
 
     addGPTResponse(response)
 
-    return jsonify({
-        "status": "success",
-        "GPTResponse": response.toDict()
-    })
-    
+    return jsonify({"status": "success", "GPTResponse": response.toDict()})
+
+
 def addGPTResponse(response: chat_gpt.Chat_GPT_Response):
     for tasklist in response.tasklists:
         t: TaskList = TaskList(name=tasklist.name, userid=current_user.id)
         db.session.add(t)
     db.session.commit()
-    
+
     for task in response.tasks:
-        db.session.add(Task(
-            name = task.name,
-            starred = task.starred,
-            duedate = datetime.strptime(task.duedate, "%Y-%m-%d,%H:%M"),
-            priority = task.priority,
-            userid=current_user.id
-        ))
+        db.session.add(
+            Task(
+                name=task.name,
+                starred=task.starred,
+                duedate=datetime.strptime(task.duedate, "%Y-%m-%d,%H:%M"),
+                priority=task.priority,
+                userid=current_user.id,
+            )
+        )
     db.session.commit()
-     
+
     for subtask in response.subtasks:
         taskid = Task.query.filter(Task.name == subtask.parenttaskname).first().id
-        db.session.add(Subtask(
-            name=subtask.name,
-            priority=subtask.priority,
-            taskid = taskid
-        ))
+        db.session.add(
+            Subtask(name=subtask.name, priority=subtask.priority, taskid=taskid)
+        )
     db.session.commit()
+
 
 # =================================================================================
 # Deleting Tasks, Subtasks, and Task Lists
@@ -813,17 +809,15 @@ def deletetasklist(tlid):
     db.session.commit()
 
 
-@cross_origin(supports_credentials=True)
+# @cross_origin(supports_credentials=True)
 @app.get("/getUserTasks/")
 def getTasks():
-    print("trying to send tasks")
-
     username = session.get("username")
     tasks = Task.query.join(User).filter(User.username == username).all()
 
-    print("get tasks:")
-    for task in tasks:
-        print(task.toDict())
+    # print("get tasks:")
+    # for task in tasks:
+    #     print(task.toDict())
 
     return jsonify(
         {

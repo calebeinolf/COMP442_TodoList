@@ -1,38 +1,38 @@
 let mediaRecorder: MediaRecorder | null = null;
-let audioChunks: BlobPart[] = []
+let audioChunks: BlobPart[] = [];
 let recording: boolean = false;
 
-namespace gpt{
-  export interface FullTaskList{
-    name: string
+namespace gpt {
+  export interface FullTaskList {
+    name: string;
   }
 
-  export interface FullTask{
-    name: string,
-    starred: boolean,
-    duedate: string,
-    priority: number, 
-    tasklistnames: string[]
+  export interface FullTask {
+    name: string;
+    starred: boolean;
+    duedate: string;
+    priority: number;
+    tasklistnames: string[];
   }
 
-  export interface FullSubTask{
-    name: string,
-    priority: number, 
-    parenttaskname: string
+  export interface FullSubTask {
+    name: string;
+    priority: number;
+    parenttaskname: string;
   }
 
   export interface ChatGPTResponse {
-    tasklists: FullTaskList[],
-    numtasklists: number,
-    tasks: FullTask[],
-    numtasks: number, 
-    subtasks: FullSubTask[],
-    numsubtasks: number
+    tasklists: FullTaskList[];
+    numtasklists: number;
+    tasks: FullTask[];
+    numtasks: number;
+    subtasks: FullSubTask[];
+    numsubtasks: number;
   }
 
   export interface ServerResponse {
-    status: string,
-    GPTResponse: ChatGPTResponse
+    status: string;
+    GPTResponse: ChatGPTResponse;
   }
 }
 
@@ -45,8 +45,6 @@ interface Task {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-  console.log("hello");
-
   loadTasks();
 
   const addTaskButton = <HTMLButtonElement>(
@@ -77,71 +75,74 @@ document.addEventListener("DOMContentLoaded", async () => {
   closeModalBtn.addEventListener("click", closeAIModal);
   submitModalBtn.addEventListener("click", submitAIModal);
 
-  const speechBtn = <HTMLButtonElement> document.getElementById("speechToText");
-  speechBtn.addEventListener("click", ()=> {
-    if (recording){
+  const speechBtn = <HTMLButtonElement>document.getElementById("speechToText");
+  speechBtn.addEventListener("click", () => {
+    if (recording) {
       stopRecording();
     } else {
       startRecording();
     }
-    recording = !recording
+    recording = !recording;
   });
-
 });
 
 async function startRecording() {
   try {
-    const permission = await navigator.mediaDevices.getUserMedia({ audio:true })
+    const permission = await navigator.mediaDevices.getUserMedia({
+      audio: true,
+    });
     mediaRecorder = new MediaRecorder(permission);
     audioChunks = [];
 
-    mediaRecorder.ondataavailable = (recordingSesh)=> {
+    mediaRecorder.ondataavailable = (recordingSesh) => {
       audioChunks.push(recordingSesh.data);
     };
 
     mediaRecorder.onstop = async () => {
-      const audioBlob = new Blob(audioChunks, {"type": "audio/webm"});
+      const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
       sendAudioToFlask(audioBlob);
     };
 
     mediaRecorder.start();
-    const speechBtn = <HTMLButtonElement> document.getElementById("speechToText");
+    const speechBtn = <HTMLButtonElement>(
+      document.getElementById("speechToText")
+    );
     speechBtn.textContent = "Stop Recording";
-  } catch (e){
-    console.log("Error using mic")
+  } catch (e) {
+    console.log("Error using mic");
   }
 }
 
 async function stopRecording() {
   if (mediaRecorder) {
     mediaRecorder.stop();
-    const speechBtn = <HTMLButtonElement> document.getElementById("speechToText");
-    speechBtn.textContent = "Talk to our AI"
+    const speechBtn = <HTMLButtonElement>(
+      document.getElementById("speechToText")
+    );
+    speechBtn.textContent = "Talk to our AI";
   }
 }
 
 async function sendAudioToFlask(audioBlob: Blob) {
-  try{
-    const formData: FormData = new FormData;
+  try {
+    const formData: FormData = new FormData();
     formData.append("file", audioBlob, "audio.webm");
 
     const response = await fetch("/speech_for_gpt", {
       method: "POST",
-      body: formData
+      body: formData,
     });
 
-    const data = <gpt.ServerResponse> await validatejson(response);
+    const data = <gpt.ServerResponse>await validatejson(response);
     console.log(data);
-  } catch (e){
-    console.log("Error sending audio")
+  } catch (e) {
+    console.log("Error sending audio");
   }
-
 }
 
 async function loadTasks() {
   // fetch user tasks from database
-
-  console.log("Trying to load tasks");
+  console.log("Loading Tasks");
 
   try {
     const response = await fetch(`/getUserTasks/`, {
@@ -155,7 +156,10 @@ async function loadTasks() {
     console.log(tasks);
 
     for (const task of tasks.tasks) {
-      task.duedate = new Date(<string> task.duedate);
+      // ONLY SETS DUE DATE IF THERE IS A DUE DATE
+      if (task.duedate) {
+        task.duedate = new Date(<string>task.duedate);
+      }
       appendTask(task);
     }
   } catch (error) {
@@ -163,7 +167,7 @@ async function loadTasks() {
   }
 }
 
-function postTask() {
+async function postTask() {
   // just for testing, make random id:
   const randomInt = (min: number, max: number) =>
     Math.floor(Math.random() * (max - min + 1)) + min;
@@ -178,26 +182,24 @@ function postTask() {
   appendTask(task);
 }
 
-function appendTask(task: Task) {
-  const today = new Date();//.toISOString().split("T")[0];
-  console.log(`This is the duedate: ${task.duedate}`)
-  const duedate = task.duedate;
-  console.log(today);
-  console.log(duedate);
-  let listId = "";
-  if (duedate < today) {
-    listId = "overdue-list";
-  } else if (duedate === today) {
-    listId = "due-today-list";
-  } else {
-    listId = "upcoming-list";
+async function appendTask(task: Task) {
+  const today = new Date();
+  let listId = "due-today-list";
+  let duedate = null;
+  if (task.duedate) {
+    duedate = new Date(task.duedate);
+    if (duedate < today) {
+      listId = "overdue-list";
+    } else if (duedate === today) {
+      listId = "due-today-list";
+    } else {
+      listId = "upcoming-list";
+    }
   }
-  console.log(listId);
 
   const taskList = document.getElementById(listId);
   const newTask = document.createElement("div");
   taskList.appendChild(newTask);
-  console.log(task.duedate instanceof Date);
   newTask.innerHTML = `
     <div class="card" id="${task.id}">
               <svg class="circle left-icon" viewBox="0 0 15 15" fill="none">
@@ -210,14 +212,18 @@ function appendTask(task: Task) {
                 <div class="task-info">
                   <p>List</p>
                   
-                  <p>•</p>
+                  ${
+                    duedate !== null
+                      ? `<p>•</p>
                   <svg viewBox="0 0 28 28" width="14px">
                     <path
                       d="M22.611,3.182H20.455V2a1,1,0,0,0-2,0V3.182H9.545V2a1,1,0,0,0-2,0V3.182H5.389A4.394,4.394,0,0,0,1,7.571v15.04A4.394,4.394,0,0,0,5.389,27H22.611A4.394,4.394,0,0,0,27,22.611V7.571A4.394,4.394,0,0,0,22.611,3.182Zm-17.222,2H7.545V6.364a1,1,0,0,0,2,0V5.182h8.91V6.364a1,1,0,1,0,2,0V5.182h2.156A2.391,2.391,0,0,1,25,7.571V9.727H3V7.571A2.391,2.391,0,0,1,5.389,5.182ZM22.611,25H5.389A2.392,2.392,0,0,1,3,22.611V11.727H25V22.611A2.392,2.392,0,0,1,22.611,25Z"
                       fill="#616161"
                     />
                   </svg>
-                  <p>${formatDate(task.duedate)}</p>
+                  <p>${formatDate(duedate)}</p>`
+                      : ``
+                  }
                 </div>
               </div>
               <svg
@@ -243,7 +249,6 @@ function openDetails(task: Task) {
   detailsPanel.classList.add("open");
 
   document.getElementById("details-task-name").innerText = task.name;
-  console.log(`1. ${task.duedate instanceof Date}`)
   document.getElementById("details-task-duedate").innerText = formatDate(
     task.duedate
   );
@@ -266,13 +271,9 @@ function formatDate(date: Date): string {
     "December",
   ];
 
-  console.log(date)
   const dayOfWeek = days[date.getDay()];
-  console.log(dayOfWeek)
   const month = months[date.getMonth()];
-  console.log(month)
   const dayOfMonth = date.getDate();
-  console.log(dayOfMonth)
 
   return `${dayOfWeek}, ${month} ${dayOfMonth}`;
 }
@@ -302,12 +303,14 @@ async function askChatGPT() {
   textField.value = "";
   console.log(`input before chatGPT: ${input}`);
   const types: string[] = ["Family", "Work", "Personal"];
-  const response = <gpt.ServerResponse> await getChatGPTResponse(input, types);
-  console.log(`starred: ${response.GPTResponse.tasks[0].starred}\nname: ${response.GPTResponse.tasks[0].name}\ndue_date: ${response.GPTResponse.tasks[0].duedate}\n`)
+  const response = <gpt.ServerResponse>await getChatGPTResponse(input, types);
+  console.log(
+    `starred: ${response.GPTResponse.tasks[0].starred}\nname: ${response.GPTResponse.tasks[0].name}\ndue_date: ${response.GPTResponse.tasks[0].duedate}\n`
+  );
 }
 
-async function getChatGPTResponse(question: string, types: string[]){
-  console.log("Trying ChatGPT")
+async function getChatGPTResponse(question: string, types: string[]) {
+  console.log("Trying ChatGPT");
 
   const params = new URLSearchParams({
     question: question,
@@ -315,17 +318,14 @@ async function getChatGPTResponse(question: string, types: string[]){
   });
 
   try {
-    const response = await fetch(
-      `/askChatGPT?${params.toString()}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const response = await fetch(`/askChatGPT?${params.toString()}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
-    const data = <gpt.ServerResponse> await validatejson(response);
+    const data = <gpt.ServerResponse>await validatejson(response);
     return data;
   } catch (error) {
     console.error("Error fetching data:", error);
