@@ -207,6 +207,7 @@ class Task(db.Model):
 
     def to_json(self) -> dict:
         return {
+            "id": self.id,
             "name": self.name,
             "duedate": self.duedate,
             "complete": self.complete,
@@ -845,3 +846,14 @@ def postTask():
     db.session.commit()
     print("added task: " + newTask.name)
     return jsonify(newTask.to_json()), 201
+
+
+@app.post("/markComplete/<int:taskId>")
+@login_required
+def markComplete(taskId):
+    task = Task.query.get_or_404(taskId)
+    task.complete = True
+    db.session.commit()
+    return jsonify(
+        {"message": "Task updated", "task_id": task.id, "complete": task.complete}
+    )

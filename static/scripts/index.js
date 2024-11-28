@@ -97,7 +97,7 @@ async function postTask() {
     const taskTitle = taskTitleInput.value;
     const task = {
         name: taskTitle,
-        duedate: new Date(),
+        duedate: new Date().getTime(),
         complete: false,
     };
     taskTitleInput.value = "";
@@ -110,6 +110,7 @@ async function postTask() {
         body: JSON.stringify(task),
     });
     const serverTask = await validatejson(response);
+    console.log(serverTask);
     appendTask(serverTask);
 }
 async function appendTask(task) {
@@ -133,20 +134,48 @@ async function appendTask(task) {
 }
 function createTaskCard(div, task) {
     const card = document.createElement("div");
-    card.className = "card";
-    card.id = "1";
+    card.className = "card hoverCard";
+    card.id = `task-${task.id}`;
     div.appendChild(card);
-    const leftCircleSVG = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    leftCircleSVG.setAttribute("class", "circle left-icon");
-    leftCircleSVG.setAttribute("viewBox", "0 0 15 15");
-    leftCircleSVG.setAttribute("fill", "none");
-    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-    circle.setAttribute("cx", "7.5");
-    circle.setAttribute("cy", "7.5");
-    circle.setAttribute("r", "7");
-    circle.setAttribute("stroke", "var(--primary-color)");
-    leftCircleSVG.appendChild(circle);
-    card.appendChild(leftCircleSVG);
+    const checkIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    checkIcon.id = `checkIcon-${task.id}`;
+    if (task.complete) {
+        checkIcon.setAttribute("class", "circle left-icon");
+        checkIcon.setAttribute("viewBox", "0 0 408.576 408.576");
+        checkIcon.style.setProperty("enable-background", "new 0 0 408.576 408.576");
+        checkIcon.setAttribute("xml:space", "preserve");
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.setAttribute("fill", "var(--primary-color)");
+        path.setAttribute("d", "M204.288,0C91.648,0,0,91.648,0,204.288s91.648,204.288,204.288,204.288s204.288-91.648,204.288-204.288S316.928,0,204.288,0z M318.464,150.528l-130.56,129.536c-7.68,7.68-19.968,8.192-28.16,0.512L90.624,217.6c-8.192-7.68-8.704-20.48-1.536-28.672c7.68-8.192,20.48-8.704,28.672-1.024l54.784,50.176L289.28,121.344c8.192-8.192,20.992-8.192,29.184,0C326.656,129.536,326.656,142.336,318.464,150.528z");
+        checkIcon.appendChild(path);
+    }
+    else {
+        checkIcon.setAttribute("class", "circle left-icon");
+        checkIcon.setAttribute("viewBox", "0 0 15 15");
+        checkIcon.setAttribute("fill", "none");
+        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        circle.setAttribute("cx", "7.5");
+        circle.setAttribute("cy", "7.5");
+        circle.setAttribute("r", "7");
+        circle.setAttribute("stroke", "var(--primary-color)");
+        checkIcon.appendChild(circle);
+        checkIcon.setAttribute("class", "circle left-icon");
+        checkIcon.setAttribute("viewBox", "0 0 15 15");
+        checkIcon.setAttribute("fill", "none");
+        checkIcon.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+        const checkmarkPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        checkmarkPath.setAttribute("d", "M6.8985 10.2819L11.6917 5.52631C11.9925 5.22556 11.9925 4.75563 11.6917 4.45488C11.391 4.15412 10.921 4.15412 10.6203 4.45488L6.33459 8.74059L4.3233 6.89849C4.02255 6.61654 3.55264 6.63533 3.27069 6.93608C3.0075 7.23684 3.0263 7.70676 3.32705 7.98871L5.86465 10.3007C6.1654 10.5827 6.61654 10.5639 6.8985 10.2819Z");
+        checkmarkPath.setAttribute("fill", "var(--primary-color)");
+        checkmarkPath.style.display = "none";
+        checkIcon.appendChild(checkmarkPath);
+        checkIcon.addEventListener("mouseover", () => {
+            checkmarkPath.style.display = "block";
+        });
+        checkIcon.addEventListener("mouseout", () => {
+            checkmarkPath.style.display = "none";
+        });
+    }
+    card.appendChild(checkIcon);
     const taskContent = document.createElement("div");
     taskContent.className = "task-content";
     card.appendChild(taskContent);
@@ -168,7 +197,7 @@ function createTaskCard(div, task) {
         calendarPath.setAttribute("fill", "#616161");
         calendarSVG.appendChild(calendarPath);
         const dateText = document.createElement("p");
-        dateText.textContent = formatDate(task.duedate);
+        dateText.textContent = formatDate(new Date(task.duedate));
         taskInfo.appendChild(calendarSVG);
         taskInfo.appendChild(dateText);
     }
@@ -183,12 +212,39 @@ function createTaskCard(div, task) {
     starPath.setAttribute("stroke", "var(--primary-color)");
     rightStarSVG.appendChild(starPath);
     card.addEventListener("click", () => openDetails(task));
+    checkIcon.addEventListener("click", () => toggleStar(task));
 }
 function openDetails(task) {
     const detailsPanel = (document.getElementById("task-details-container"));
     detailsPanel.classList.add("open");
     document.getElementById("details-task-name").innerText = task.name;
-    document.getElementById("details-task-duedate").innerText = formatDate(task.duedate);
+    if (task.duedate !== null) {
+        document.getElementById("details-task-duedate").innerText = formatDate(new Date(task.duedate));
+    }
+    else {
+        document.getElementById("details-task-duedate").innerText = "";
+    }
+}
+async function toggleStar(task) {
+    console.log("toggle star");
+    console.log(task.id);
+    const response = await fetch(`/markComplete/${task.id}`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+    });
+    const r = await validatejson(response);
+    console.log(r);
+    const checkIcon = document.getElementById(`checkIcon-${task.id}`);
+    checkIcon.setAttribute("class", "circle left-icon");
+    checkIcon.setAttribute("viewBox", "0 0 408.576 408.576");
+    checkIcon.style.setProperty("enable-background", "new 0 0 408.576 408.576");
+    checkIcon.setAttribute("xml:space", "preserve");
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("fill", "var(--primary-color)");
+    path.setAttribute("d", "M204.288,0C91.648,0,0,91.648,0,204.288s91.648,204.288,204.288,204.288s204.288-91.648,204.288-204.288S316.928,0,204.288,0z M318.464,150.528l-130.56,129.536c-7.68,7.68-19.968,8.192-28.16,0.512L90.624,217.6c-8.192-7.68-8.704-20.48-1.536-28.672c7.68-8.192,20.48-8.704,28.672-1.024l54.784,50.176L289.28,121.344c8.192-8.192,20.992-8.192,29.184,0C326.656,129.536,326.656,142.336,318.464,150.528z");
+    checkIcon.appendChild(path);
 }
 function isSameDay(date1, date2) {
     return (date1.getFullYear() === date2.getFullYear() &&
