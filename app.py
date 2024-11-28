@@ -159,7 +159,7 @@ class Task(db.Model):
 
     # -----------------------------------------------------
     # non-nullable attributes
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     # don't want unique because different users could have same names for their tasks
     name = db.Column(db.Unicode, nullable=False)
     complete = db.Column(db.Boolean, nullable=False, default=False)
@@ -205,12 +205,20 @@ class Task(db.Model):
     # if not user: raise ValueError("A task MUST be associated with a user")
     # self.user = user
 
-    def toDict(self) -> dict:
+    def to_json(self) -> dict:
         return {
             "name": self.name,
             "duedate": self.duedate,
             "complete": self.complete,
         }
+
+    def from_json(json):
+        return Task(
+            name=json["name"],
+            duedate=json["duedate"],
+            complete=json["complete"],
+            userid=current_user.id,
+        )
 
 
 # =================================================================================
@@ -620,7 +628,7 @@ def talkToGPT():
     chatGpt = chat_gpt.Chat_GPT()
     response: chat_gpt.Chat_GPT_Response = chatGpt.newAsk(question, [], [])
     addGPTResponse(response)
-    return jsonify({"status": "success", "GPTResponse": response.toDict()})
+    return jsonify({"status": "success", "GPTResponse": response.to_json()})
 
 
 @login_required
@@ -636,7 +644,7 @@ def askGPT():
 
     addGPTResponse(response)
 
-    return jsonify({"status": "success", "GPTResponse": response.toDict()})
+    return jsonify({"status": "success", "GPTResponse": response.to_json()})
 
 
 def addGPTResponse(response: chat_gpt.Chat_GPT_Response):
@@ -811,18 +819,29 @@ def deletetasklist(tlid):
 
 # @cross_origin(supports_credentials=True)
 @app.get("/getUserTasks/")
+@login_required
 def getTasks():
     username = session.get("username")
     tasks = Task.query.join(User).filter(User.username == username).all()
 
     # print("get tasks:")
     # for task in tasks:
-    #     print(task.toDict())
+    #     print(task.to_json())
 
     return jsonify(
         {
             "retrieved": datetime.now().isoformat(),
             "count": len(tasks),
-            "tasks": [task.toDict() for task in tasks],
+            "tasks": [task.to_json() for task in tasks],
         }
     )
+
+
+@app.post("/postUserTask/")
+@login_required
+def postTask():
+    newTask = Task.from_json(request.json)
+    db.session.add(newTask)
+    db.session.commit()
+    print("added task: " + newTask.name)
+    return jsonify(newTask.to_json()), 201

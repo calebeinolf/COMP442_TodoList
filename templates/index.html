@@ -118,6 +118,20 @@
         <br />
 
         <div class="card add-task-card">
+          <div class="add-task-inputs">
+            <input id="task-title-input" placeholder="Add Task" />
+            <div>
+              <select id="lists-dropdown" name="lists">
+                <!-- Lists will be dynamically generated here -->
+                <option disabled selected value>-- select a list --</option>
+                <option value="volvo">list1</option>
+                <option value="volvo">list2</option>
+                <option value="volvo">list3</option>
+              </select>
+              <input type="date" />
+              <input type="time" />
+            </div>
+          </div>
           <button class="add-task-btn" id="add-task-btn">+</button>
           <!-- adding a wrapper around these button to open the their forms -->
           <form action="http://127.0.0.1:5000/task/" method="get">
@@ -132,9 +146,8 @@
           >
             <button class="delete-subtask">Delete Subtask(s)</button>
           </form>
-          <button class="add-task" id="ask_ai_button">Ask AI</button>
         </div>
-
+        <button class="add-task" id="ask_ai_button">Ask AI</button>
         <div class="task-list" id="task-list">
           <!-- Task items will be dynamically generated here -->
 
