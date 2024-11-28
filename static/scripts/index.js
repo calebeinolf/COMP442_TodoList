@@ -104,24 +104,27 @@ async function loadTasks() {
 }
 async function postTask() {
     const taskTitleInput = (document.getElementById("task-title-input"));
-    const taskTitle = taskTitleInput.value;
-    const task = {
-        name: taskTitle,
-        duedate: new Date().getTime(),
-        complete: false,
-    };
-    taskTitleInput.value = "";
-    const taskPostURL = "/postUserTask/";
-    const response = await fetch(taskPostURL, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(task),
-    });
-    const serverTask = await validatejson(response);
-    console.log(serverTask);
-    appendTask(serverTask);
+    if (taskTitleInput.value !== "") {
+        const taskTitle = taskTitleInput.value;
+        const task = {
+            name: taskTitle,
+            duedate: new Date().getTime(),
+            complete: false,
+            starred: false,
+        };
+        taskTitleInput.value = "";
+        const taskPostURL = "/postUserTask/";
+        const response = await fetch(taskPostURL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(task),
+        });
+        const serverTask = await validatejson(response);
+        console.log(serverTask);
+        appendTask(serverTask);
+    }
 }
 async function appendTask(task) {
     const today = new Date();
@@ -150,40 +153,10 @@ function createTaskCard(div, task) {
     const checkIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     checkIcon.id = `checkIcon-${task.id}`;
     if (task.complete) {
-        checkIcon.setAttribute("class", "circle left-icon");
-        checkIcon.setAttribute("viewBox", "0 0 408.576 408.576");
-        checkIcon.style.setProperty("enable-background", "new 0 0 408.576 408.576");
-        checkIcon.setAttribute("xml:space", "preserve");
-        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        path.setAttribute("fill", "var(--primary-color)");
-        path.setAttribute("d", "M204.288,0C91.648,0,0,91.648,0,204.288s91.648,204.288,204.288,204.288s204.288-91.648,204.288-204.288S316.928,0,204.288,0z M318.464,150.528l-130.56,129.536c-7.68,7.68-19.968,8.192-28.16,0.512L90.624,217.6c-8.192-7.68-8.704-20.48-1.536-28.672c7.68-8.192,20.48-8.704,28.672-1.024l54.784,50.176L289.28,121.344c8.192-8.192,20.992-8.192,29.184,0C326.656,129.536,326.656,142.336,318.464,150.528z");
-        checkIcon.appendChild(path);
+        filledCheckIcon(checkIcon);
     }
     else {
-        checkIcon.setAttribute("class", "circle left-icon");
-        checkIcon.setAttribute("viewBox", "0 0 15 15");
-        checkIcon.setAttribute("fill", "none");
-        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-        circle.setAttribute("cx", "7.5");
-        circle.setAttribute("cy", "7.5");
-        circle.setAttribute("r", "7");
-        circle.setAttribute("stroke", "var(--primary-color)");
-        checkIcon.appendChild(circle);
-        checkIcon.setAttribute("class", "circle left-icon");
-        checkIcon.setAttribute("viewBox", "0 0 15 15");
-        checkIcon.setAttribute("fill", "none");
-        checkIcon.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-        const checkmarkPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        checkmarkPath.setAttribute("d", "M6.8985 10.2819L11.6917 5.52631C11.9925 5.22556 11.9925 4.75563 11.6917 4.45488C11.391 4.15412 10.921 4.15412 10.6203 4.45488L6.33459 8.74059L4.3233 6.89849C4.02255 6.61654 3.55264 6.63533 3.27069 6.93608C3.0075 7.23684 3.0263 7.70676 3.32705 7.98871L5.86465 10.3007C6.1654 10.5827 6.61654 10.5639 6.8985 10.2819Z");
-        checkmarkPath.setAttribute("fill", "var(--primary-color)");
-        checkmarkPath.style.display = "none";
-        checkIcon.appendChild(checkmarkPath);
-        checkIcon.addEventListener("mouseover", () => {
-            checkmarkPath.style.display = "block";
-        });
-        checkIcon.addEventListener("mouseout", () => {
-            checkmarkPath.style.display = "none";
-        });
+        emptyCheckIcon(checkIcon);
     }
     card.appendChild(checkIcon);
     const taskContent = document.createElement("div");
@@ -212,17 +185,30 @@ function createTaskCard(div, task) {
         taskInfo.appendChild(dateText);
     }
     const rightStarSVG = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    rightStarSVG.id = `starIcon-${task.id}`;
     rightStarSVG.setAttribute("class", "right-icon");
     rightStarSVG.setAttribute("width", "20px");
     rightStarSVG.setAttribute("viewBox", "0 0 17 16");
-    rightStarSVG.setAttribute("fill", "none");
+    if (task.starred) {
+        rightStarSVG.setAttribute("fill", "var(--primary-color)");
+    }
+    else {
+        rightStarSVG.setAttribute("fill", "none");
+    }
     card.appendChild(rightStarSVG);
     const starPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
     starPath.setAttribute("d", "M8.95126 1.1067L10.5511 4.45952C10.7698 4.91778 11.2055 5.23431 11.7089 5.30067L15.392 5.78617C15.809 5.84113 15.9759 6.35497 15.6709 6.64452L12.9766 9.20218C12.6083 9.55176 12.4419 10.0639 12.5343 10.5632L13.2108 14.2161C13.2873 14.6296 12.8502 14.9472 12.4806 14.7466L9.21552 12.9744C8.76925 12.7322 8.23075 12.7322 7.78448 12.9744L4.5194 14.7466C4.14977 14.9472 3.71268 14.6296 3.78925 14.2161L4.46565 10.5632C4.5581 10.0639 4.3917 9.55176 4.02344 9.20218L1.3291 6.64451C1.02409 6.35497 1.19104 5.84113 1.608 5.78617L5.29112 5.30067C5.79452 5.23431 6.23018 4.91778 6.44885 4.45952L8.04874 1.10669C8.22986 0.727135 8.77014 0.727133 8.95126 1.1067Z");
     starPath.setAttribute("stroke", "var(--primary-color)");
     rightStarSVG.appendChild(starPath);
     card.addEventListener("click", () => openDetails(task));
-    checkIcon.addEventListener("click", () => toggleStar(task));
+    checkIcon.addEventListener("click", (event) => {
+        event.stopPropagation();
+        toggleComplete(task);
+    });
+    rightStarSVG.addEventListener("click", (event) => {
+        event.stopPropagation();
+        toggleStarred(task);
+    });
 }
 function openDetails(task) {
     const detailsPanel = (document.getElementById("task-details-container"));
@@ -235,10 +221,8 @@ function openDetails(task) {
         document.getElementById("details-task-duedate").innerText = "";
     }
 }
-async function toggleStar(task) {
-    console.log("toggle star");
-    console.log(task.id);
-    const response = await fetch(`/markComplete/${task.id}`, {
+async function toggleComplete(task) {
+    const response = await fetch(`/markComplete/${task.id}/${task.complete ? "0" : "1"}`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -246,15 +230,37 @@ async function toggleStar(task) {
     });
     const r = await validatejson(response);
     console.log(r);
+    task.complete = !task.complete;
     const checkIcon = document.getElementById(`checkIcon-${task.id}`);
-    checkIcon.setAttribute("class", "circle left-icon");
-    checkIcon.setAttribute("viewBox", "0 0 408.576 408.576");
-    checkIcon.style.setProperty("enable-background", "new 0 0 408.576 408.576");
-    checkIcon.setAttribute("xml:space", "preserve");
-    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    path.setAttribute("fill", "var(--primary-color)");
-    path.setAttribute("d", "M204.288,0C91.648,0,0,91.648,0,204.288s91.648,204.288,204.288,204.288s204.288-91.648,204.288-204.288S316.928,0,204.288,0z M318.464,150.528l-130.56,129.536c-7.68,7.68-19.968,8.192-28.16,0.512L90.624,217.6c-8.192-7.68-8.704-20.48-1.536-28.672c7.68-8.192,20.48-8.704,28.672-1.024l54.784,50.176L289.28,121.344c8.192-8.192,20.992-8.192,29.184,0C326.656,129.536,326.656,142.336,318.464,150.528z");
-    checkIcon.appendChild(path);
+    if (checkIcon instanceof SVGElement) {
+        if (task.complete) {
+            filledCheckIcon(checkIcon);
+        }
+        else {
+            emptyCheckIcon(checkIcon);
+        }
+    }
+    else {
+        console.error("The element is not an SVGElement");
+    }
+}
+async function toggleStarred(task) {
+    const response = await fetch(`/markStarred/${task.id}/${task.starred ? "0" : "1"}`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+    });
+    const r = await validatejson(response);
+    console.log(r);
+    task.starred = !task.starred;
+    const starIcon = document.getElementById(`starIcon-${task.id}`);
+    if (task.starred) {
+        starIcon.setAttribute("fill", "var(--primary-color)");
+    }
+    else {
+        starIcon.setAttribute("fill", "none");
+    }
 }
 function isSameDay(date1, date2) {
     return (date1.getFullYear() === date2.getFullYear() &&
@@ -335,4 +341,37 @@ function validatejson(response) {
     else {
         return Promise.reject(response);
     }
+}
+function filledCheckIcon(checkIcon) {
+    checkIcon.setAttribute("class", "circle left-icon");
+    checkIcon.setAttribute("viewBox", "0 0 408.576 408.576");
+    checkIcon.style.setProperty("enable-background", "new 0 0 408.576 408.576");
+    checkIcon.setAttribute("xml:space", "preserve");
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("fill", "var(--primary-color)");
+    path.setAttribute("d", "M204.288,0C91.648,0,0,91.648,0,204.288s91.648,204.288,204.288,204.288s204.288-91.648,204.288-204.288S316.928,0,204.288,0z M318.464,150.528l-130.56,129.536c-7.68,7.68-19.968,8.192-28.16,0.512L90.624,217.6c-8.192-7.68-8.704-20.48-1.536-28.672c7.68-8.192,20.48-8.704,28.672-1.024l54.784,50.176L289.28,121.344c8.192-8.192,20.992-8.192,29.184,0C326.656,129.536,326.656,142.336,318.464,150.528z");
+    checkIcon.appendChild(path);
+}
+function emptyCheckIcon(checkIcon) {
+    checkIcon.setAttribute("class", "circle left-icon");
+    checkIcon.setAttribute("viewBox", "0 0 15 15");
+    checkIcon.setAttribute("fill", "none");
+    checkIcon.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    circle.setAttribute("cx", "7.5");
+    circle.setAttribute("cy", "7.5");
+    circle.setAttribute("r", "7");
+    circle.setAttribute("stroke", "var(--primary-color)");
+    checkIcon.appendChild(circle);
+    const checkmarkPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    checkmarkPath.setAttribute("d", "M6.8985 10.2819L11.6917 5.52631C11.9925 5.22556 11.9925 4.75563 11.6917 4.45488C11.391 4.15412 10.921 4.15412 10.6203 4.45488L6.33459 8.74059L4.3233 6.89849C4.02255 6.61654 3.55264 6.63533 3.27069 6.93608C3.0075 7.23684 3.0263 7.70676 3.32705 7.98871L5.86465 10.3007C6.1654 10.5827 6.61654 10.5639 6.8985 10.2819Z");
+    checkmarkPath.setAttribute("fill", "var(--primary-color)");
+    checkmarkPath.style.display = "none";
+    checkIcon.appendChild(checkmarkPath);
+    checkIcon.addEventListener("mouseover", () => {
+        checkmarkPath.style.display = "block";
+    });
+    checkIcon.addEventListener("mouseout", () => {
+        checkmarkPath.style.display = "none";
+    });
 }

@@ -211,6 +211,7 @@ class Task(db.Model):
             "name": self.name,
             "duedate": self.duedate,
             "complete": self.complete,
+            "starred": self.starred,
         }
 
     def from_json(json):
@@ -218,6 +219,7 @@ class Task(db.Model):
             name=json["name"],
             duedate=json["duedate"],
             complete=json["complete"],
+            starred=json["starred"],
             userid=current_user.id,
         )
 
@@ -300,11 +302,7 @@ with app.app_context():
 
     nktask3 = Task(name="task3", user=nk)
 
-    nktask4 = Task(
-        name="Christmas!",
-        duedate=1735102800000,
-        user=nk,
-    )
+    nktask4 = Task(name="Christmas!", duedate=1735102800000, user=nk, starred=True)
 
     dtask1 = Task(name="Run Laundry", duedate=date(2024, 11, 2), userid=3)
 
@@ -848,12 +846,51 @@ def postTask():
     return jsonify(newTask.to_json()), 201
 
 
-@app.post("/markComplete/<int:taskId>")
+@app.post("/markComplete/<int:taskId>/<int:complete>/")
 @login_required
-def markComplete(taskId):
+# "copmlete" should be a 0 or 1
+def markComplete(taskId, complete):
     task = Task.query.get_or_404(taskId)
-    task.complete = True
+    task.complete = complete
     db.session.commit()
-    return jsonify(
-        {"message": "Task updated", "task_id": task.id, "complete": task.complete}
-    )
+    if complete:
+        return jsonify(
+            {
+                "message": "Task marked completed",
+                "task_id": task.id,
+                "complete": task.complete,
+            }
+        )
+    else:
+        return jsonify(
+            {
+                "message": "Task marked imcomplete",
+                "task_id": task.id,
+                "complete": task.complete,
+            }
+        )
+
+
+@app.post("/markStarred/<int:taskId>/<int:starred>/")
+@login_required
+# "starred" should be a 0 or 1
+def markStarred(taskId, starred):
+    task = Task.query.get_or_404(taskId)
+    task.starred = starred
+    db.session.commit()
+    if starred:
+        return jsonify(
+            {
+                "message": "Task starred",
+                "task_id": task.id,
+                "starred": task.starred,
+            }
+        )
+    else:
+        return jsonify(
+            {
+                "message": "Task unstarred",
+                "task_id": task.id,
+                "starred": task.starred,
+            }
+        )
