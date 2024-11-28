@@ -106,9 +106,14 @@ async function postTask() {
     const taskTitleInput = (document.getElementById("task-title-input"));
     if (taskTitleInput.value !== "") {
         const taskTitle = taskTitleInput.value;
+        const taskDuedateInput = (document.getElementById("task-duedate-input"));
+        const taskDuedateValue = taskDuedateInput.value;
+        const taskDuedateParts = taskDuedateValue.split("-");
+        const taskDuedateDateObj = new Date(parseInt(taskDuedateParts[0], 10), parseInt(taskDuedateParts[1], 10) - 1, parseInt(taskDuedateParts[2], 10));
+        const taskDuedate = taskDuedateDateObj.getTime();
         const task = {
             name: taskTitle,
-            duedate: new Date().getTime(),
+            duedate: taskDuedate ? taskDuedate : new Date().getTime(),
             complete: false,
             starred: false,
         };

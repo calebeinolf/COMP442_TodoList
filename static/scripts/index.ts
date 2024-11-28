@@ -188,9 +188,22 @@ async function postTask() {
   );
   if (taskTitleInput.value !== "") {
     const taskTitle = taskTitleInput.value;
+    const taskDuedateInput = <HTMLInputElement>(
+      document.getElementById("task-duedate-input")
+    );
+    const taskDuedateValue = taskDuedateInput.value;
+    // need to convert to Date object to ensure the correct time zone
+    const taskDuedateParts = taskDuedateValue.split("-");
+    const taskDuedateDateObj = new Date(
+      parseInt(taskDuedateParts[0], 10), // Year
+      parseInt(taskDuedateParts[1], 10) - 1, // Month (0-indexed)
+      parseInt(taskDuedateParts[2], 10) // Day
+    );
+    const taskDuedate = taskDuedateDateObj.getTime();
+
     const task: Task = {
       name: taskTitle,
-      duedate: new Date().getTime(),
+      duedate: taskDuedate ? taskDuedate : new Date().getTime(),
       complete: false,
       starred: false,
     };

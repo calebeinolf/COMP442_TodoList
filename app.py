@@ -818,7 +818,6 @@ def deletetasklist(tlid):
 
 # @cross_origin(supports_credentials=True)
 @app.get("/getUserTasks/")
-@login_required
 def getTasks():
     username = session.get("username")
     tasks = Task.query.join(User).filter(User.username == username).all()
@@ -837,7 +836,6 @@ def getTasks():
 
 
 @app.post("/postUserTask/")
-@login_required
 def postTask():
     newTask = Task.from_json(request.json)
     db.session.add(newTask)
@@ -847,7 +845,6 @@ def postTask():
 
 
 @app.post("/markComplete/<int:taskId>/<int:complete>/")
-@login_required
 # "copmlete" should be a 0 or 1
 def markComplete(taskId, complete):
     task = Task.query.get_or_404(taskId)
@@ -872,7 +869,6 @@ def markComplete(taskId, complete):
 
 
 @app.post("/markStarred/<int:taskId>/<int:starred>/")
-@login_required
 # "starred" should be a 0 or 1
 def markStarred(taskId, starred):
     task = Task.query.get_or_404(taskId)
