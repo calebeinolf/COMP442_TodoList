@@ -48,19 +48,29 @@ interface Task {
 document.addEventListener("DOMContentLoaded", async () => {
   loadTasks();
 
+  const aiAddTaskInput = <HTMLInputElement>(
+    document.getElementById("aiPromptTextField")
+  );
+
+  aiAddTaskInput.addEventListener("keyup", (event) => {
+    if (event.code === "Enter") {
+      askChatGPT();
+    }
+  });
+
   const addTaskButton = <HTMLButtonElement>(
     document.getElementById("add-task-btn")
   );
-  // addTaskButton.addEventListener("click", postTask);
   addTaskButton.addEventListener("click", () => {
     const addTaskModal = document.getElementById("addTaskModal");
-    addTaskModal.style.display = "block";
+    addTaskModal.style.display = "flex";
   });
 
   const submitTaskBtn = document.getElementById("sumbit-task-btn");
   submitTaskBtn.addEventListener("click", () => {
-    postTask;
-    closeAddTaskModal;
+    console.log("CLICK");
+    postTask();
+    closeAddTaskModal();
   });
 
   const closeAddTaskModalBtn = document.getElementById("closeAddTaskModal");
@@ -76,19 +86,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     detailsPanel.classList.remove("open")
   );
 
-  const askAIButton = <HTMLButtonElement>(
-    document.getElementById("ask_ai_button")
-  );
-  askAIButton.addEventListener("click", aiButtonClicked);
-  const closeModalBtn = <HTMLButtonElement>(
-    document.getElementById("closeAIModal")
-  );
-  const submitModalBtn = <HTMLButtonElement>(
-    document.getElementById("submitAIModal")
-  );
-  closeModalBtn.addEventListener("click", closeAIModal);
-  submitModalBtn.addEventListener("click", submitAIModal);
-
   const speechBtn = <HTMLButtonElement>document.getElementById("speechToText");
   speechBtn.addEventListener("click", () => {
     if (recording) {
@@ -103,6 +100,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   themeBtn.addEventListener("click", () =>
     document.body.style.setProperty("--primary-color", randomColor())
   );
+
+  const addTaskModal = document.getElementById("addTaskModal");
+  window.addEventListener("click", function (event) {
+    if (event.target === addTaskModal) {
+      console.log("clicked outside");
+      closeAddTaskModal();
+    }
+  });
 });
 
 function randomColor(): string {
@@ -462,26 +467,9 @@ function formatDate(date: Date): string {
   return `${dayOfWeek}, ${month} ${dayOfMonth}`;
 }
 
-async function aiButtonClicked() {
-  console.log("Clicked");
-  const modal = <HTMLElement>document.getElementById("aiModal");
-  modal.style.display = "block";
-}
-
-async function closeAIModal() {
-  const modal = <HTMLElement>document.getElementById("aiModal");
-  modal.style.display = "none";
-}
-
-async function submitAIModal() {
-  const modal = <HTMLElement>document.getElementById("aiModal");
-  modal.style.display = "none";
-  await askChatGPT();
-}
-
 async function askChatGPT() {
   const textField = <HTMLInputElement>(
-    document.getElementById("aiPromtTextField")
+    document.getElementById("aiPromptTextField")
   );
   const input: string = textField.value;
   textField.value = "";

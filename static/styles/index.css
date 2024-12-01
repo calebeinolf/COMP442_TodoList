@@ -9,6 +9,7 @@ body {
   background-color: #fafafa;
   --primary-color: #4a7fd9;
   --lightgrey: #b3b3b3;
+  font-family: "Geist", sans-serif;
 }
 
 ::-webkit-scrollbar {
@@ -62,7 +63,6 @@ button {
   display: flex;
   grid-template-columns: 250px 1fr 300px;
   height: 100vh;
-  font-family: Arial, sans-serif;
 }
 
 /* Sidebar styles */
@@ -171,9 +171,6 @@ button {
   background-color: var(--primary-color);
   color: #fff;
   border: none;
-  /* font-size: 20px; */
-  /* width: 30px;
-  height: 30px; */
   border-radius: 100px;
   cursor: pointer;
   margin-left: auto;
@@ -228,6 +225,11 @@ button {
 
 .add-task-card {
   width: calc(100% - 20px);
+}
+
+.add-task-header {
+  display: flex;
+  gap: 10px;
 }
 
 /* Task details styles */
@@ -286,12 +288,13 @@ button {
 .task-content h3 {
   margin: 0;
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 400;
 }
 
 .task-content p {
   font-size: 14px;
   color: #616161;
+  font-weight: 300;
 }
 
 .strikethrough {
@@ -314,7 +317,7 @@ button {
   margin-right: 18px;
 }
 
-.modal {
+/* .modal {
   display: none;
   position: fixed;
   z-index: 1;
@@ -346,4 +349,146 @@ button {
   color: black;
   text-decoration: none;
   cursor: pointer;
+} */
+
+/* General modal styles */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed;
+  z-index: 1000; /* Ensure it's above other elements */
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto; /* Enable scrolling if needed */
+  background-color: rgba(0, 0, 0, 0.4); /* Dim background */
+  justify-content: center;
+  align-items: center;
+}
+
+/* Modal content container */
+.modal-content {
+  background-color: #fff;
+
+  padding: 20px;
+  border-radius: 8px;
+  width: 90%; /* Default width */
+  max-width: 600px; /* Limit max width */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  animation: slideDown 0.3s ease-in-out;
+}
+
+/* Modal header */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.close-btn {
+  font-size: 1.5rem;
+  color: #666;
+  cursor: pointer;
+}
+
+.close-btn:hover {
+  color: #000;
+}
+
+/* Input styles */
+.modal-inputs label {
+  display: block;
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 5px;
+}
+
+.modal-inputs input,
+.modal-inputs select {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.modal-inputs-row {
+  display: flex;
+  gap: 15px; /* Space between elements */
+  flex-wrap: wrap; /* Adjust layout for smaller screens */
+}
+
+.modal-inputs-row > div {
+  flex: 1; /* Make all columns equal */
+  min-width: 150px;
+}
+
+/* Submit button */
+.sumbit-modal-btn {
+  display: inline-block;
+  width: 100%;
+  padding: 10px 15px;
+  background-color: var(--primary-color);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  text-align: center;
+  transition: background-color 0.3s ease;
+  margin: 0;
+}
+
+.sumbit-modal-btn:hover {
+  background-color: color-mix(in srgb, var(--primary-color) 80%, black 20%);
+}
+
+/* Modal animation */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+  .modal-content {
+    width: 95%; /* Use more screen width for smaller screens */
+  }
+
+  .modal-inputs-row {
+    flex-direction: column; /* Stack inputs vertically */
+    gap: 10px;
+  }
+}
+
+.ai-add-task-input {
+  font-size: 16px;
+  width: 100%;
+  border: none;
+}
+
+.ai-add-task-input:focus {
+  outline: none;
+}
+
+/* TO DELETE */
+.forms-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }

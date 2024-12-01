@@ -3,27 +3,28 @@ let audioChunks = [];
 let recording = false;
 document.addEventListener("DOMContentLoaded", async () => {
     loadTasks();
+    const aiAddTaskInput = (document.getElementById("aiPromptTextField"));
+    aiAddTaskInput.addEventListener("keyup", (event) => {
+        if (event.code === "Enter") {
+            askChatGPT();
+        }
+    });
     const addTaskButton = (document.getElementById("add-task-btn"));
     addTaskButton.addEventListener("click", () => {
         const addTaskModal = document.getElementById("addTaskModal");
-        addTaskModal.style.display = "block";
+        addTaskModal.style.display = "flex";
     });
     const submitTaskBtn = document.getElementById("sumbit-task-btn");
     submitTaskBtn.addEventListener("click", () => {
-        postTask;
-        closeAddTaskModal;
+        console.log("CLICK");
+        postTask();
+        closeAddTaskModal();
     });
     const closeAddTaskModalBtn = document.getElementById("closeAddTaskModal");
     closeAddTaskModalBtn.addEventListener("click", closeAddTaskModal);
     const detailsPanel = (document.getElementById("task-details-container"));
     const closeDetailsBtn = (document.getElementById("close-details-btn"));
     closeDetailsBtn.addEventListener("click", () => detailsPanel.classList.remove("open"));
-    const askAIButton = (document.getElementById("ask_ai_button"));
-    askAIButton.addEventListener("click", aiButtonClicked);
-    const closeModalBtn = (document.getElementById("closeAIModal"));
-    const submitModalBtn = (document.getElementById("submitAIModal"));
-    closeModalBtn.addEventListener("click", closeAIModal);
-    submitModalBtn.addEventListener("click", submitAIModal);
     const speechBtn = document.getElementById("speechToText");
     speechBtn.addEventListener("click", () => {
         if (recording) {
@@ -36,6 +37,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
     const themeBtn = document.getElementById("theme-btn");
     themeBtn.addEventListener("click", () => document.body.style.setProperty("--primary-color", randomColor()));
+    const addTaskModal = document.getElementById("addTaskModal");
+    window.addEventListener("click", function (event) {
+        if (event.target === addTaskModal) {
+            console.log("clicked outside");
+            closeAddTaskModal();
+        }
+    });
 });
 function randomColor() {
     const letters = "0123456789ABCDEF";
@@ -307,22 +315,8 @@ function formatDate(date) {
     const dayOfMonth = date.getDate();
     return `${dayOfWeek}, ${month} ${dayOfMonth}`;
 }
-async function aiButtonClicked() {
-    console.log("Clicked");
-    const modal = document.getElementById("aiModal");
-    modal.style.display = "block";
-}
-async function closeAIModal() {
-    const modal = document.getElementById("aiModal");
-    modal.style.display = "none";
-}
-async function submitAIModal() {
-    const modal = document.getElementById("aiModal");
-    modal.style.display = "none";
-    await askChatGPT();
-}
 async function askChatGPT() {
-    const textField = (document.getElementById("aiPromtTextField"));
+    const textField = (document.getElementById("aiPromptTextField"));
     const input = textField.value;
     textField.value = "";
     console.log(`input before chatGPT: ${input}`);
