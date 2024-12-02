@@ -627,7 +627,7 @@ def talkToGPT():
     chatGpt = chat_gpt.Chat_GPT()
     response: chat_gpt.Chat_GPT_Response = chatGpt.newAsk(question, [], [])
     addGPTResponse(response)
-    return jsonify({"status": "success", "GPTResponse": response.to_json()})
+    return jsonify({"status": "success", "GPTResponse": response.toDict()})
 
 
 @login_required
@@ -643,7 +643,7 @@ def askGPT():
 
     addGPTResponse(response)
 
-    return jsonify({"status": "success", "GPTResponse": response.to_json()})
+    return jsonify({"status": "success", "GPTResponse": response.toDict()})
 
 
 def addGPTResponse(response: chat_gpt.Chat_GPT_Response):
