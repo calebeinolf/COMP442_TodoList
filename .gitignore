@@ -2,3 +2,5 @@ config.py
 todo.sqlite3
 pepper.bin
 __pycache__/*
+client_side_audio.webm
+.vscode/*
