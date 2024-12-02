@@ -27,11 +27,11 @@
                 
                 {% for task in tasklist.tasks %}
                     
-                    <pre>   - {{task.name}}{% if task.subtasks %} (subtasks listed below){% endif %}</pre>
+                    <pre>    - {{task.name}}{% if task.subtasks %} (subtasks listed below){% endif %}</pre>
                     
                     {% for subtask in task.subtasks %}
                     
-                    <pre>       + {{subtask.name}}</pre>
+                    <pre>        + {{subtask.name}}</pre>
 
                     {% endfor %}
                 
@@ -51,7 +51,7 @@
                 
                 {% for subtask in task.subtasks %}
                 
-                <pre>       + {{subtask.name}}</pre>
+                <pre>        + {{subtask.name}}</pre>
                 
                 {% endfor %}
             
