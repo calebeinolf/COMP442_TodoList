@@ -33,6 +33,7 @@ class Old_Chat_GPT_Response:
 
 class Task:
     def __init__(self, name: str, starred: bool, duedate: str, priority: int, tasklistnames: list[str]):
+        self.id: int = -1
         self.name: str = name
         self.starred: bool = starred
         
@@ -54,6 +55,7 @@ class Task:
     
     def toDict(self) -> dict:
         return{
+            "id": self.id,
             "name": self.name,
             "starred": self.starred,
             "duedate": self.duedate,
@@ -67,6 +69,7 @@ class Task:
 
 class SubTask:
     def __init__(self, name: str, priority: int, parenttaskname: str):
+        self.id: int = -1
         self.name: str = name
         self.priority: int = priority
         self.parenttaskname: str = parenttaskname
@@ -76,6 +79,7 @@ class SubTask:
     
     def toDict(self) -> dict:
         return{
+            "id": self.id,
             "name": self.name,
             "priority": self.priority,
             "parenttaskname": self.parenttaskname
@@ -91,6 +95,7 @@ class SubTask:
 
 class TaskList:
     def __init__(self, name: str):
+        self.id: int = -1
         self.name: str = name
         
     def __str__(self):
@@ -98,6 +103,7 @@ class TaskList:
     
     def toDict(self) -> dict:
         return{
+            "id": self.id,
             "name": self.name
         }
         

@@ -602,9 +602,6 @@ def posttasklistform():
 
 
 import chat_gpt
-import vosk
-import ffmpeg
-import wave
 import assemblyai as aai
 from config import assemblyAIKey
 
@@ -627,6 +624,20 @@ def talkToGPT():
     chatGpt = chat_gpt.Chat_GPT()
     response: chat_gpt.Chat_GPT_Response = chatGpt.newAsk(question, [], [])
     addGPTResponse(response)
+    
+    for tasklist in response.tasklists:
+        dbTasklist: TaskList = TaskList.query.filter_by(name=tasklist.name, userid=current_user.id).first()
+        tasklist.id = dbTasklist.id
+    
+    for subtask in response.subtasks:
+        dbParentTask: Task = Task.query.filter_by(name=subtask.parenttaskname, userid=current_user.id).first()
+        dbSubtask: Subtask = Subtask.query.filter_by(name=subtask.name, taskid=dbParentTask.id)
+        subtask.id = dbSubtask.id
+        
+    for task in response.tasks:
+        dbTask: Task = Task.query.filter_by(name=task.name, userid=current_user.id).first()
+        task.id = dbTask.id
+        
     return jsonify({"status": "success", "GPTResponse": response.toDict()})
 
 
@@ -642,6 +653,19 @@ def askGPT():
     response: chat_gpt.Chat_GPT_Response = chatGpt.newAsk(question, [], [])
 
     addGPTResponse(response)
+
+    for tasklist in response.tasklists:
+        dbTasklist: TaskList = TaskList.query.filter_by(name=tasklist.name, userid=current_user.id).first()
+        tasklist.id = dbTasklist.id
+    
+    for subtask in response.subtasks:
+        dbParentTask: Task = Task.query.filter_by(name=subtask.parenttaskname, userid=current_user.id).first()
+        dbSubtask: Subtask = Subtask.query.filter_by(name=subtask.name, taskid=dbParentTask.id)
+        subtask.id = dbSubtask.id
+        
+    for task in response.tasks:
+        dbTask: Task = Task.query.filter_by(name=task.name, userid=current_user.id).first()
+        task.id = dbTask.id
 
     return jsonify({"status": "success", "GPTResponse": response.toDict()})
 

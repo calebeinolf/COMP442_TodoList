@@ -4,10 +4,12 @@ let recording: boolean = false;
 
 namespace gpt {
   export interface FullTaskList {
+    id: number;
     name: string;
   }
 
   export interface FullTask {
+    id: number;
     name: string;
     starred: boolean;
     duedate: string;
@@ -16,6 +18,7 @@ namespace gpt {
   }
 
   export interface FullSubTask {
+    id: number;
     name: string;
     priority: number;
     parenttaskname: string;
@@ -167,6 +170,21 @@ async function sendAudioToFlask(audioBlob: Blob) {
     });
 
     const data = <gpt.ServerResponse>await validatejson(response);
+    for (const tasklist of data.GPTResponse.tasklists) {
+      // append Tasklists
+    }
+    for (const task of data.GPTResponse.tasks){
+      const dbTask: Task = {
+        id: task.id,
+        name: task.name,
+        complete: false,
+        starred: task.starred
+      };
+      appendTask(dbTask)
+    }
+    for (const subtask of data.GPTResponse.subtasks){
+      // append subtasks
+    }
     console.log(data);
   } catch (e) {
     console.log("Error sending audio");
@@ -476,9 +494,22 @@ async function askChatGPT() {
   console.log(`input before chatGPT: ${input}`);
   const types: string[] = ["Family", "Work", "Personal"];
   const response = <gpt.ServerResponse>await getChatGPTResponse(input, types);
-  console.log(
-    `starred: ${response.GPTResponse.tasks[0].starred}\nname: ${response.GPTResponse.tasks[0].name}\ndue_date: ${response.GPTResponse.tasks[0].duedate}\n`
-  );
+  for (const tasklist of response.GPTResponse.tasklists) {
+    // append Tasklists
+  }
+  for (const task of response.GPTResponse.tasks){
+    const dbTask: Task = {
+      id: task.id,
+      name: task.name,
+      complete: false,
+      starred: task.starred
+    };
+    appendTask(dbTask)
+  }
+  for (const subtask of response.GPTResponse.subtasks){
+    // append subtasks
+  }
+  console.log(response)
 }
 
 async function getChatGPTResponse(question: string, types: string[]) {

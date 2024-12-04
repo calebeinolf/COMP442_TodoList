@@ -91,6 +91,19 @@ async function sendAudioToFlask(audioBlob) {
             body: formData,
         });
         const data = await validatejson(response);
+        for (const tasklist of data.GPTResponse.tasklists) {
+        }
+        for (const task of data.GPTResponse.tasks) {
+            const dbTask = {
+                id: task.id,
+                name: task.name,
+                complete: false,
+                starred: task.starred
+            };
+            appendTask(dbTask);
+        }
+        for (const subtask of data.GPTResponse.subtasks) {
+        }
         console.log(data);
     }
     catch (e) {
@@ -322,7 +335,20 @@ async function askChatGPT() {
     console.log(`input before chatGPT: ${input}`);
     const types = ["Family", "Work", "Personal"];
     const response = await getChatGPTResponse(input, types);
-    console.log(`starred: ${response.GPTResponse.tasks[0].starred}\nname: ${response.GPTResponse.tasks[0].name}\ndue_date: ${response.GPTResponse.tasks[0].duedate}\n`);
+    for (const tasklist of response.GPTResponse.tasklists) {
+    }
+    for (const task of response.GPTResponse.tasks) {
+        const dbTask = {
+            id: task.id,
+            name: task.name,
+            complete: false,
+            starred: task.starred
+        };
+        appendTask(dbTask);
+    }
+    for (const subtask of response.GPTResponse.subtasks) {
+    }
+    console.log(response);
 }
 async function getChatGPTResponse(question, types) {
     console.log("Trying ChatGPT");
