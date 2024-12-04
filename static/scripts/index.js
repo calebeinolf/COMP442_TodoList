@@ -186,7 +186,7 @@ function createTaskCard(div, task) {
     const card = document.createElement("div");
     card.className = "card hoverCard";
     card.id = `task-${task.id}`;
-    div.appendChild(card);
+    card.setAttribute("data-duedate", String(new Date(task.duedate).getTime()));
     const checkIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     checkIcon.id = `checkIcon-${task.id}`;
     if (task.complete) {
@@ -246,6 +246,25 @@ function createTaskCard(div, task) {
         event.stopPropagation();
         toggleStarred(task);
     });
+    const childDivs = Array.from(div.children).filter((child) => child instanceof HTMLDivElement);
+    if (childDivs.length === 0) {
+        div.appendChild(card);
+    }
+    else {
+        let cardAdded = false;
+        for (let i = 0; i < childDivs.length; i++) {
+            const child = childDivs[i];
+            const toAdd_date = new Date(task.duedate).getTime();
+            const existing_date = Number(child.dataset.duedate);
+            if (toAdd_date < existing_date && !cardAdded) {
+                div.insertBefore(card, child);
+                cardAdded = true;
+            }
+        }
+        if (!cardAdded) {
+            div.appendChild(card);
+        }
+    }
 }
 function openDetails(task) {
     const detailsPanel = (document.getElementById("task-details-container"));

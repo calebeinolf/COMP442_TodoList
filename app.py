@@ -303,10 +303,11 @@ with app.app_context():
     nktask3 = Task(name="task3", user=nk)
 
     nktask4 = Task(name="Christmas!", duedate=1735102800000, user=nk, starred=True)
+    nktask5 = Task(name="Christmas Eve", duedate=1735016400000, user=nk, starred=False)
 
     dtask1 = Task(name="Run Laundry", duedate=date(2024, 11, 2), userid=3)
 
-    db.session.add_all((nktask1, nktask2, nktask3, nktask4, dtask1))
+    db.session.add_all((nktask1, nktask2, nktask3, nktask4, nktask5, dtask1))
 
     nktst1 = Subtask(name="sub1", task=nktask3)
 
@@ -825,6 +826,7 @@ def deletesubtask(stid):
     db.session.delete(Subtask.query.filter_by(id=stid).first())
     db.session.commit()
 
+
 def deletetasklist(tlid):
     tl = TaskList.query.filter_by(user=current_user, id=tlid).first()
     # if a task belongs to the current user, is in the specified task list, and
@@ -843,11 +845,16 @@ def deletetasklist(tlid):
 @app.get("/getUserTasks/")
 def getTasks():
     username = session.get("username")
-    tasks = Task.query.join(User).filter(User.username == username).all()
+    tasks = (
+        Task.query.join(User)
+        .filter(User.username == username)
+        .order_by(Task.duedate)
+        .all()
+    )
 
-    # print("get tasks:")
-    # for task in tasks:
-    #     print(task.to_json())
+    print("get tasks:")
+    for task in tasks:
+        print(task.to_json())
 
     return jsonify(
         {
