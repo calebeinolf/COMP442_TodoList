@@ -77,7 +77,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
     const customColorBtn = (document.getElementById("custom-color-btn"));
     customColorBtn.addEventListener("click", () => {
-        changeThemeColor(customColorBtn, customColorBtn.style.background);
+        changeThemeColor(customColorBtn, rgbToHex(customColorBtn.style.background));
     });
     const paletteImg = document.getElementById("palette-img");
     const paletteColorBtns = document.getElementById("palette-color-btns");
@@ -107,7 +107,6 @@ function rgbToHex(rgb) {
         .toUpperCase()}`;
 }
 function changeThemeColor(div, color) {
-    console.log("new primary color: " + color);
     document.body.style.setProperty("--primary-color", color);
     setPrimaryTextColor(color);
     const colorPickerInput = (document.getElementById("colorInput"));

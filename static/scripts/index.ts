@@ -163,7 +163,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("custom-color-btn")
   );
   customColorBtn.addEventListener("click", () => {
-    changeThemeColor(customColorBtn, customColorBtn.style.background);
+    changeThemeColor(customColorBtn, rgbToHex(customColorBtn.style.background));
   });
 
   const paletteImg = document.getElementById("palette-img") as HTMLElement;
@@ -199,7 +199,6 @@ function rgbToHex(rgb: string): string {
 }
 
 function changeThemeColor(div: HTMLDivElement, color: string) {
-  console.log("new primary color: " + color);
   document.body.style.setProperty("--primary-color", color);
   setPrimaryTextColor(color);
 
