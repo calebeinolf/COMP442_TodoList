@@ -16,7 +16,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
     const submitTaskBtn = document.getElementById("sumbit-task-btn");
     submitTaskBtn.addEventListener("click", () => {
-        console.log("CLICK");
         postTask();
         closeAddTaskModal();
     });
@@ -38,17 +37,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     const addTaskModal = document.getElementById("addTaskModal");
     window.addEventListener("click", function (event) {
         if (event.target === addTaskModal) {
-            console.log("clicked outside");
             closeAddTaskModal();
         }
     });
     const aiIconBtn = document.getElementById("ai-icon");
     aiIconBtn.addEventListener("click", askChatGPT);
     const colorPickerInput = (document.getElementById("colorInput"));
-    const rootStyles = getComputedStyle(document.body);
-    const primaryColor = rootStyles.getPropertyValue("--primary-color").trim();
-    console.log("primaryColor");
+    const primaryColor = "#2662cb";
+    document.body.style.setProperty("--primary-color", primaryColor);
     colorPickerInput.setAttribute("value", primaryColor);
+    setPrimaryTextColor(primaryColor);
     let customColorPicked = false;
     colorPickerInput.addEventListener("input", () => {
         const customColorBtn = (document.getElementById("custom-color-btn"));
@@ -64,17 +62,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
     const redBtn = document.getElementById("red-btn");
     redBtn.addEventListener("click", () => {
-        const backgroundColor = window.getComputedStyle(redBtn).backgroundColor;
+        const backgroundColor = rgbToHex(window.getComputedStyle(redBtn).backgroundColor);
         changeThemeColor(redBtn, backgroundColor);
     });
     const blueBtn = document.getElementById("blue-btn");
     blueBtn.addEventListener("click", () => {
-        const backgroundColor = window.getComputedStyle(blueBtn).backgroundColor;
+        const backgroundColor = rgbToHex(window.getComputedStyle(blueBtn).backgroundColor);
         changeThemeColor(blueBtn, backgroundColor);
     });
     const greenBtn = document.getElementById("green-btn");
     greenBtn.addEventListener("click", () => {
-        const backgroundColor = window.getComputedStyle(greenBtn).backgroundColor;
+        const backgroundColor = rgbToHex(window.getComputedStyle(greenBtn).backgroundColor);
         changeThemeColor(greenBtn, backgroundColor);
     });
     const customColorBtn = (document.getElementById("custom-color-btn"));
@@ -84,7 +82,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     const paletteImg = document.getElementById("palette-img");
     const paletteColorBtns = document.getElementById("palette-color-btns");
     paletteImg.addEventListener("click", () => {
-        console.log("here");
         if (paletteColorBtns.classList.contains("active")) {
             paletteColorBtns.classList.remove("active");
             document.getElementById("palette-icon").style.display = "flex";
@@ -97,13 +94,53 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
     });
 });
+function rgbToHex(rgb) {
+    const match = rgb.match(/\d+/g);
+    if (!match || match.length < 3)
+        return "";
+    const r = parseInt(match[0], 10);
+    const g = parseInt(match[1], 10);
+    const b = parseInt(match[2], 10);
+    return `#${((1 << 24) + (r << 16) + (g << 8) + b)
+        .toString(16)
+        .slice(1)
+        .toUpperCase()}`;
+}
 function changeThemeColor(div, color) {
+    console.log("new primary color: " + color);
     document.body.style.setProperty("--primary-color", color);
+    setPrimaryTextColor(color);
+    const colorPickerInput = (document.getElementById("colorInput"));
+    colorPickerInput.setAttribute("value", color);
     const colorBtns = document.getElementById("color-btns");
     for (const child of colorBtns.children) {
         child.classList.remove("selected-color-btn");
     }
     div.classList.add("selected-color-btn");
+}
+function getLuminance(hexColor) {
+    const hex = hexColor.replace(/^#/, "");
+    if (hex.length !== 6)
+        return 1;
+    const r = parseInt(hex.slice(0, 2), 16);
+    const g = parseInt(hex.slice(2, 4), 16);
+    const b = parseInt(hex.slice(4, 6), 16);
+    const rs = r / 255;
+    const gs = g / 255;
+    const bs = b / 255;
+    const rsRGB = rs <= 0.03928 ? rs / 12.92 : Math.pow((rs + 0.055) / 1.055, 2.4);
+    const gsRGB = gs <= 0.03928 ? gs / 12.92 : Math.pow((gs + 0.055) / 1.055, 2.4);
+    const bsRGB = bs <= 0.03928 ? bs / 12.92 : Math.pow((bs + 0.055) / 1.055, 2.4);
+    return 0.2126 * rsRGB + 0.7152 * gsRGB + 0.0722 * bsRGB;
+}
+function setPrimaryTextColor(color) {
+    const luminance = getLuminance(color);
+    if (luminance > 0.5) {
+        document.body.style.setProperty("--primary-text-color", "black");
+    }
+    else {
+        document.body.style.setProperty("--primary-text-color", "white");
+    }
 }
 function randomColor() {
     const letters = "0123456789ABCDEF";

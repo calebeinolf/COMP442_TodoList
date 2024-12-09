@@ -71,7 +71,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const submitTaskBtn = document.getElementById("sumbit-task-btn");
   submitTaskBtn.addEventListener("click", () => {
-    console.log("CLICK");
     postTask();
     closeAddTaskModal();
   });
@@ -107,7 +106,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const addTaskModal = document.getElementById("addTaskModal");
   window.addEventListener("click", function (event) {
     if (event.target === addTaskModal) {
-      console.log("clicked outside");
       closeAddTaskModal();
     }
   });
@@ -118,10 +116,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   const colorPickerInput = <HTMLInputElement>(
     document.getElementById("colorInput")
   );
-  const rootStyles = getComputedStyle(document.body);
-  const primaryColor = rootStyles.getPropertyValue("--primary-color").trim();
-  console.log("primaryColor");
+
+  const primaryColor = "#2662cb";
+  document.body.style.setProperty("--primary-color", primaryColor);
+  // document.body.style.setProperty("--primary-text-color", "white");
   colorPickerInput.setAttribute("value", primaryColor);
+  setPrimaryTextColor(primaryColor);
 
   let customColorPicked = false;
   colorPickerInput.addEventListener("input", () => {
@@ -140,17 +140,23 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const redBtn = <HTMLDivElement>document.getElementById("red-btn");
   redBtn.addEventListener("click", () => {
-    const backgroundColor = window.getComputedStyle(redBtn).backgroundColor;
+    const backgroundColor = rgbToHex(
+      window.getComputedStyle(redBtn).backgroundColor
+    );
     changeThemeColor(redBtn, backgroundColor);
   });
   const blueBtn = <HTMLDivElement>document.getElementById("blue-btn");
   blueBtn.addEventListener("click", () => {
-    const backgroundColor = window.getComputedStyle(blueBtn).backgroundColor;
+    const backgroundColor = rgbToHex(
+      window.getComputedStyle(blueBtn).backgroundColor
+    );
     changeThemeColor(blueBtn, backgroundColor);
   });
   const greenBtn = <HTMLDivElement>document.getElementById("green-btn");
   greenBtn.addEventListener("click", () => {
-    const backgroundColor = window.getComputedStyle(greenBtn).backgroundColor;
+    const backgroundColor = rgbToHex(
+      window.getComputedStyle(greenBtn).backgroundColor
+    );
     changeThemeColor(greenBtn, backgroundColor);
   });
   const customColorBtn = <HTMLDivElement>(
@@ -166,7 +172,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   ) as HTMLElement;
 
   paletteImg.addEventListener("click", () => {
-    console.log("here");
     if (paletteColorBtns.classList.contains("active")) {
       paletteColorBtns.classList.remove("active");
       document.getElementById("palette-icon").style.display = "flex";
@@ -179,13 +184,73 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 });
 
+function rgbToHex(rgb: string): string {
+  const match = rgb.match(/\d+/g); // Extract the numeric values
+  if (!match || match.length < 3) return ""; // Ensure valid RGB value
+
+  const r = parseInt(match[0], 10);
+  const g = parseInt(match[1], 10);
+  const b = parseInt(match[2], 10);
+
+  return `#${((1 << 24) + (r << 16) + (g << 8) + b)
+    .toString(16)
+    .slice(1)
+    .toUpperCase()}`;
+}
+
 function changeThemeColor(div: HTMLDivElement, color: string) {
+  console.log("new primary color: " + color);
   document.body.style.setProperty("--primary-color", color);
+  setPrimaryTextColor(color);
+
+  const colorPickerInput = <HTMLInputElement>(
+    document.getElementById("colorInput")
+  );
+  colorPickerInput.setAttribute("value", color);
+
   const colorBtns = document.getElementById("color-btns");
   for (const child of colorBtns.children) {
     child.classList.remove("selected-color-btn");
   }
   div.classList.add("selected-color-btn");
+}
+
+// Calculate relative luminance
+function getLuminance(hexColor: string): number {
+  // Remove the hash if present and ensure the string is 6 characters long
+  const hex = hexColor.replace(/^#/, "");
+  if (hex.length !== 6) return 1;
+
+  // Parse the hex string into RGB components
+  const r = parseInt(hex.slice(0, 2), 16);
+  const g = parseInt(hex.slice(2, 4), 16);
+  const b = parseInt(hex.slice(4, 6), 16);
+
+  // Convert RGB values to range 0-1
+  const rs = r / 255;
+  const gs = g / 255;
+  const bs = b / 255;
+
+  // Convert to sRGB
+  const rsRGB =
+    rs <= 0.03928 ? rs / 12.92 : Math.pow((rs + 0.055) / 1.055, 2.4);
+  const gsRGB =
+    gs <= 0.03928 ? gs / 12.92 : Math.pow((gs + 0.055) / 1.055, 2.4);
+  const bsRGB =
+    bs <= 0.03928 ? bs / 12.92 : Math.pow((bs + 0.055) / 1.055, 2.4);
+
+  // Calculate luminance
+  return 0.2126 * rsRGB + 0.7152 * gsRGB + 0.0722 * bsRGB;
+}
+
+// Determine text color based on background luminance
+function setPrimaryTextColor(color: string) {
+  const luminance = getLuminance(color);
+  if (luminance > 0.5) {
+    document.body.style.setProperty("--primary-text-color", "black");
+  } else {
+    document.body.style.setProperty("--primary-text-color", "white");
+  }
 }
 
 function randomColor(): string {

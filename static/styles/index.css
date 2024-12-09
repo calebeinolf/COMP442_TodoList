@@ -7,7 +7,7 @@
 
 body {
   background-color: #fafafa;
-  --primary-color: #4a7fd9;
+  --primary-color: #2662cb;
   --light-primary-color: color-mix(
     in srgb,
     var(--primary-color) 20%,
@@ -15,6 +15,7 @@ body {
   );
   --dark-primary-color: color-mix(in srgb, var(--primary-color) 80%, black 20%);
   --lightgrey: #b3b3b3;
+  --primary-text-color: "white"; /* For text on top of the primary color*/
   /* --ai-gradient: linear-gradient(#e66465, #9198e5); */
   font-family: "Geist", sans-serif;
 }
@@ -226,7 +227,7 @@ button {
 .cardBtn {
   cursor: pointer;
   background: var(--primary-color);
-  color: white;
+  color: var(--primary-text-color);
   font-weight: 500;
   padding: 8px 18px;
 
