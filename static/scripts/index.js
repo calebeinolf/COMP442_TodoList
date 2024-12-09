@@ -35,8 +35,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
         recording = !recording;
     });
-    const themeBtn = document.getElementById("theme-btn");
-    themeBtn.addEventListener("click", () => document.body.style.setProperty("--primary-color", randomColor()));
     const addTaskModal = document.getElementById("addTaskModal");
     window.addEventListener("click", function (event) {
         if (event.target === addTaskModal) {
@@ -44,7 +42,69 @@ document.addEventListener("DOMContentLoaded", async () => {
             closeAddTaskModal();
         }
     });
+    const aiIconBtn = document.getElementById("ai-icon");
+    aiIconBtn.addEventListener("click", askChatGPT);
+    const colorPickerInput = (document.getElementById("colorInput"));
+    const rootStyles = getComputedStyle(document.body);
+    const primaryColor = rootStyles.getPropertyValue("--primary-color").trim();
+    console.log("primaryColor");
+    colorPickerInput.setAttribute("value", primaryColor);
+    let customColorPicked = false;
+    colorPickerInput.addEventListener("input", () => {
+        const customColorBtn = (document.getElementById("custom-color-btn"));
+        if (customColorPicked) {
+            customColorBtn.style.background = colorPickerInput.value;
+        }
+        else {
+            customColorBtn.style.display = "flex";
+            customColorBtn.style.background = colorPickerInput.value;
+            customColorPicked = true;
+        }
+        changeThemeColor(customColorBtn, colorPickerInput.value);
+    });
+    const redBtn = document.getElementById("red-btn");
+    redBtn.addEventListener("click", () => {
+        const backgroundColor = window.getComputedStyle(redBtn).backgroundColor;
+        changeThemeColor(redBtn, backgroundColor);
+    });
+    const blueBtn = document.getElementById("blue-btn");
+    blueBtn.addEventListener("click", () => {
+        const backgroundColor = window.getComputedStyle(blueBtn).backgroundColor;
+        changeThemeColor(blueBtn, backgroundColor);
+    });
+    const greenBtn = document.getElementById("green-btn");
+    greenBtn.addEventListener("click", () => {
+        const backgroundColor = window.getComputedStyle(greenBtn).backgroundColor;
+        changeThemeColor(greenBtn, backgroundColor);
+    });
+    const customColorBtn = (document.getElementById("custom-color-btn"));
+    customColorBtn.addEventListener("click", () => {
+        changeThemeColor(customColorBtn, customColorBtn.style.background);
+    });
+    const paletteImg = document.getElementById("palette-img");
+    const paletteColorBtns = document.getElementById("palette-color-btns");
+    paletteImg.addEventListener("click", () => {
+        console.log("here");
+        if (paletteColorBtns.classList.contains("active")) {
+            paletteColorBtns.classList.remove("active");
+            document.getElementById("palette-icon").style.display = "flex";
+            document.getElementById("colors-close-icon").style.display = "none";
+        }
+        else {
+            document.getElementById("colors-close-icon").style.display = "flex";
+            document.getElementById("palette-icon").style.display = "none";
+            paletteColorBtns.classList.add("active");
+        }
+    });
 });
+function changeThemeColor(div, color) {
+    document.body.style.setProperty("--primary-color", color);
+    const colorBtns = document.getElementById("color-btns");
+    for (const child of colorBtns.children) {
+        child.classList.remove("selected-color-btn");
+    }
+    div.classList.add("selected-color-btn");
+}
 function randomColor() {
     const letters = "0123456789ABCDEF";
     let color = "#";
@@ -98,7 +158,7 @@ async function sendAudioToFlask(audioBlob) {
                 id: task.id,
                 name: task.name,
                 complete: false,
-                starred: task.starred
+                starred: task.starred,
             };
             appendTask(dbTask);
         }
@@ -167,6 +227,7 @@ async function appendTask(task) {
     const today = new Date();
     let listId = "due-today-list";
     let duedate = null;
+    let overdue = false;
     if (task.duedate) {
         duedate = new Date(task.duedate);
         if (isSameDay(duedate, today)) {
@@ -174,15 +235,16 @@ async function appendTask(task) {
         }
         else if (duedate < today) {
             listId = "overdue-list";
+            overdue = true;
         }
         else {
             listId = "upcoming-list";
         }
     }
     const taskList = document.getElementById(listId);
-    createTaskCard(taskList, task);
+    createTaskCard(taskList, task, overdue);
 }
-function createTaskCard(div, task) {
+function createTaskCard(div, task, overdue) {
     const card = document.createElement("div");
     card.className = "card hoverCard";
     card.id = `task-${task.id}`;
@@ -214,10 +276,13 @@ function createTaskCard(div, task) {
         calendarSVG.setAttribute("width", "14px");
         const calendarPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
         calendarPath.setAttribute("d", "M22.611,3.182H20.455V2a1,1,0,0,0-2,0V3.182H9.545V2a1,1,0,0,0-2,0V3.182H5.389A4.394,4.394,0,0,0,1,7.571v15.04A4.394,4.394,0,0,0,5.389,27H22.611A4.394,4.394,0,0,0,27,22.611V7.571A4.394,4.394,0,0,0,22.611,3.182Zm-17.222,2H7.545V6.364a1,1,0,0,0,2,0V5.182h8.91V6.364a1,1,0,1,0,2,0V5.182h2.156A2.391,2.391,0,0,1,25,7.571V9.727H3V7.571A2.391,2.391,0,0,1,5.389,5.182ZM22.611,25H5.389A2.392,2.392,0,0,1,3,22.611V11.727H25V22.611A2.392,2.392,0,0,1,22.611,25Z");
-        calendarPath.setAttribute("fill", "#616161");
+        calendarPath.setAttribute("fill", overdue ? "#e83a3a" : "#616161");
         calendarSVG.appendChild(calendarPath);
         const dateText = document.createElement("p");
         dateText.textContent = formatDate(new Date(task.duedate));
+        if (overdue) {
+            dateText.style.color = "#e83a3a";
+        }
         taskInfo.appendChild(calendarSVG);
         taskInfo.appendChild(dateText);
     }
@@ -349,25 +414,27 @@ function formatDate(date) {
 }
 async function askChatGPT() {
     const textField = (document.getElementById("aiPromptTextField"));
-    const input = textField.value;
-    textField.value = "";
-    console.log(`input before chatGPT: ${input}`);
-    const types = ["Family", "Work", "Personal"];
-    const response = await getChatGPTResponse(input, types);
-    for (const tasklist of response.GPTResponse.tasklists) {
+    if (textField.value != "") {
+        const input = textField.value;
+        textField.value = "";
+        console.log(`input before chatGPT: ${input}`);
+        const types = ["Family", "Work", "Personal"];
+        const response = await getChatGPTResponse(input, types);
+        for (const tasklist of response.GPTResponse.tasklists) {
+        }
+        for (const task of response.GPTResponse.tasks) {
+            const dbTask = {
+                id: task.id,
+                name: task.name,
+                complete: false,
+                starred: task.starred,
+            };
+            appendTask(dbTask);
+        }
+        for (const subtask of response.GPTResponse.subtasks) {
+        }
+        console.log(response);
     }
-    for (const task of response.GPTResponse.tasks) {
-        const dbTask = {
-            id: task.id,
-            name: task.name,
-            complete: false,
-            starred: task.starred
-        };
-        appendTask(dbTask);
-    }
-    for (const subtask of response.GPTResponse.subtasks) {
-    }
-    console.log(response);
 }
 async function getChatGPTResponse(question, types) {
     console.log("Trying ChatGPT");
