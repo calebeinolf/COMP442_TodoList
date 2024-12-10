@@ -3,11 +3,12 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  font-family: "Geist", sans-serif;
 }
 
 body {
   background-color: #fafafa;
-  --primary-color: #2662cb;
+  --primary-color: #cecece;
   --light-primary-color: color-mix(
     in srgb,
     var(--primary-color) 20%,
@@ -17,7 +18,6 @@ body {
   --lightgrey: #b3b3b3;
   --primary-text-color: "white"; /* For text on top of the primary color*/
   /* --ai-gradient: linear-gradient(#e66465, #9198e5); */
-  font-family: "Geist", sans-serif;
 }
 
 ::-webkit-scrollbar {
@@ -78,9 +78,9 @@ button {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  width: 30vw;
+  width: 27vw;
   max-width: 350px;
-  min-width: 300px;
+  min-width: 250px;
   background-color: #fff;
   padding: 40px 20px 20px 20px;
   box-shadow: 0 0 6px rgba(0, 0, 0, 0.08);
@@ -184,15 +184,15 @@ button {
   gap: 30px;
   overflow-y: scroll;
   padding-bottom: 30px;
-  margin-top: 30px;
+  margin-top: 20px;
   flex-grow: 1;
 }
 
 .task-list::-webkit-scrollbar {
-  width: 20px;
+  width: 18px;
 }
 .task-list::-webkit-scrollbar-thumb {
-  box-shadow: inset 0 0 10px 10px rgb(210, 210, 210);
+  box-shadow: inset 0 0 8px 8px rgb(210, 210, 210);
   border: solid 8px transparent;
   border-radius: 100px;
 }
@@ -229,12 +229,12 @@ button {
   background: var(--primary-color);
   color: var(--primary-text-color);
   font-weight: 500;
-  padding: 8px 18px;
+  padding: 0 12px;
 
-  transition: 0.1s ease-in-out;
+  /* transition: 0.1s ease-in-out;
   & > * {
     transition: 0.1s ease-in-out;
-  }
+  } */
 }
 .cardBtn:hover {
   background: var(--dark-primary-color);
@@ -246,6 +246,7 @@ button {
 
 .add-task-card {
   width: calc(100% - 20px);
+  padding: 12px 18px;
 }
 
 .add-task-header {
@@ -307,12 +308,12 @@ button {
 
 .task-content h3 {
   margin: 0;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 400;
 }
 
 .task-content p {
-  font-size: 14px;
+  font-size: 13px;
   color: #616161;
   font-weight: 300;
 }
@@ -325,7 +326,6 @@ button {
   margin: 4px 0 0 0;
   display: flex;
   gap: 8px;
-  font-size: 14px;
   color: #616161;
 }
 
@@ -497,7 +497,7 @@ button {
 }
 
 .ai-add-task-input {
-  font-size: 16px;
+  font-size: 14px;
   width: 100%;
   border: none;
 }
@@ -514,8 +514,7 @@ button {
 }
 
 .speechToTextBtn {
-  padding-left: 15px;
-  padding-right: 15px;
+  padding: 0 8px 0 8px;
   cursor: pointer;
 }
 
@@ -560,15 +559,15 @@ button {
 }
 
 .red-btn {
-  background: #e34242;
+  /* background: #e34242; */
 }
 
 .blue-btn {
-  background: #4a7fd9;
+  /* background: #4a7fd9; */
 }
 
 .green-btn {
-  background: #6ab05f;
+  /* background: #6ab05f; */
 }
 
 .custom-color-btn {
@@ -629,13 +628,13 @@ button {
 
 .colorInput-btn {
   box-sizing: border-box;
-  border: 2px solid black;
+  border: 1.7px solid black;
   position: relative;
   color: black;
 }
 
 .color-input-plus {
-  transform: translate(-0.3px, -1.2px);
+  transform: translate(0px, -1px);
 }
 
 .selected-color-btn {
@@ -645,7 +644,7 @@ button {
 
 .palette-container {
   background: white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
   border-radius: 100px;
   padding: 7px;
   display: flex;

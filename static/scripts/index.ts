@@ -117,9 +117,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("colorInput")
   );
 
-  const primaryColor = "#2662cb";
+  // const primaryColor = "#eba434"; // Get this from the database
+
+  const primaryColor = await getPrimaryColor();
+
   document.body.style.setProperty("--primary-color", primaryColor);
-  // document.body.style.setProperty("--primary-text-color", "white");
   colorPickerInput.setAttribute("value", primaryColor);
   setPrimaryTextColor(primaryColor);
 
@@ -129,16 +131,17 @@ document.addEventListener("DOMContentLoaded", async () => {
       document.getElementById("custom-color-btn")
     );
     if (customColorPicked) {
-      customColorBtn.style.background = colorPickerInput.value;
+      customColorBtn.style.backgroundColor = colorPickerInput.value;
     } else {
       customColorBtn.style.display = "flex";
-      customColorBtn.style.background = colorPickerInput.value;
+      customColorBtn.style.backgroundColor = colorPickerInput.value;
       customColorPicked = true;
     }
     changeThemeColor(customColorBtn, colorPickerInput.value);
   });
 
   const redBtn = <HTMLDivElement>document.getElementById("red-btn");
+  redBtn.style.backgroundColor = "#e34242";
   redBtn.addEventListener("click", () => {
     const backgroundColor = rgbToHex(
       window.getComputedStyle(redBtn).backgroundColor
@@ -146,6 +149,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     changeThemeColor(redBtn, backgroundColor);
   });
   const blueBtn = <HTMLDivElement>document.getElementById("blue-btn");
+  blueBtn.style.backgroundColor = "#2662cb";
   blueBtn.addEventListener("click", () => {
     const backgroundColor = rgbToHex(
       window.getComputedStyle(blueBtn).backgroundColor
@@ -153,6 +157,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     changeThemeColor(blueBtn, backgroundColor);
   });
   const greenBtn = <HTMLDivElement>document.getElementById("green-btn");
+  greenBtn.style.backgroundColor = "#6ab05f";
   greenBtn.addEventListener("click", () => {
     const backgroundColor = rgbToHex(
       window.getComputedStyle(greenBtn).backgroundColor
@@ -163,8 +168,31 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("custom-color-btn")
   );
   customColorBtn.addEventListener("click", () => {
-    changeThemeColor(customColorBtn, rgbToHex(customColorBtn.style.background));
+    changeThemeColor(
+      customColorBtn,
+      rgbToHex(customColorBtn.style.backgroundColor)
+    );
   });
+
+  const colorBtns = document.getElementById("color-btns");
+  let defaultColor = false;
+  for (let i = 0; i < colorBtns.children.length - 1; i++) {
+    const divChild = colorBtns.children[i] as HTMLDivElement;
+    console.log("here");
+    if (
+      primaryColor === rgbToHex(divChild.style.backgroundColor).toLowerCase()
+    ) {
+      // child.classList.remove("selected-color-btn");
+      colorBtns.children[i].classList.add("selected-color-btn");
+      defaultColor = true;
+    }
+  }
+  if (!defaultColor) {
+    console.log("here!");
+    customColorBtn.style.display = "flex";
+    customColorBtn.classList.add("selected-color-btn");
+    customColorBtn.style.backgroundColor = colorPickerInput.value;
+  }
 
   const paletteImg = document.getElementById("palette-img") as HTMLElement;
   const paletteColorBtns = document.getElementById(
@@ -183,6 +211,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 });
+
+async function getPrimaryColor() {
+  // const response = await fetch(`/getUserColor/`, {
+  //   method: "GET",
+  //   headers: {
+  //     "Content-Type": "application/json",
+  //   },
+  //   credentials: "include",
+  // });
+  // const r = await validatejson(response);
+  // console.log(r);
+
+  return "#2662cb";
+}
 
 function rgbToHex(rgb: string): string {
   const match = rgb.match(/\d+/g); // Extract the numeric values

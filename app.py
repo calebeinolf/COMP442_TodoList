@@ -625,20 +625,28 @@ def talkToGPT():
     chatGpt = chat_gpt.Chat_GPT()
     response: chat_gpt.Chat_GPT_Response = chatGpt.newAsk(question, [], [])
     addGPTResponse(response)
-    
+
     for tasklist in response.tasklists:
-        dbTasklist: TaskList = TaskList.query.filter_by(name=tasklist.name, userid=current_user.id).first()
+        dbTasklist: TaskList = TaskList.query.filter_by(
+            name=tasklist.name, userid=current_user.id
+        ).first()
         tasklist.id = dbTasklist.id
-    
+
     for subtask in response.subtasks:
-        dbParentTask: Task = Task.query.filter_by(name=subtask.parenttaskname, userid=current_user.id).first()
-        dbSubtask: Subtask = Subtask.query.filter_by(name=subtask.name, taskid=dbParentTask.id)
+        dbParentTask: Task = Task.query.filter_by(
+            name=subtask.parenttaskname, userid=current_user.id
+        ).first()
+        dbSubtask: Subtask = Subtask.query.filter_by(
+            name=subtask.name, taskid=dbParentTask.id
+        )
         subtask.id = dbSubtask.id
-        
+
     for task in response.tasks:
-        dbTask: Task = Task.query.filter_by(name=task.name, userid=current_user.id).first()
+        dbTask: Task = Task.query.filter_by(
+            name=task.name, userid=current_user.id
+        ).first()
         task.id = dbTask.id
-        
+
     return jsonify({"status": "success", "GPTResponse": response.toDict()})
 
 
@@ -656,16 +664,24 @@ def askGPT():
     addGPTResponse(response)
 
     for tasklist in response.tasklists:
-        dbTasklist: TaskList = TaskList.query.filter_by(name=tasklist.name, userid=current_user.id).first()
+        dbTasklist: TaskList = TaskList.query.filter_by(
+            name=tasklist.name, userid=current_user.id
+        ).first()
         tasklist.id = dbTasklist.id
-    
+
     for subtask in response.subtasks:
-        dbParentTask: Task = Task.query.filter_by(name=subtask.parenttaskname, userid=current_user.id).first()
-        dbSubtask: Subtask = Subtask.query.filter_by(name=subtask.name, taskid=dbParentTask.id)
+        dbParentTask: Task = Task.query.filter_by(
+            name=subtask.parenttaskname, userid=current_user.id
+        ).first()
+        dbSubtask: Subtask = Subtask.query.filter_by(
+            name=subtask.name, taskid=dbParentTask.id
+        )
         subtask.id = dbSubtask.id
-        
+
     for task in response.tasks:
-        dbTask: Task = Task.query.filter_by(name=task.name, userid=current_user.id).first()
+        dbTask: Task = Task.query.filter_by(
+            name=task.name, userid=current_user.id
+        ).first()
         task.id = dbTask.id
 
     return jsonify({"status": "success", "GPTResponse": response.toDict()})
@@ -920,3 +936,36 @@ def markStarred(taskId, starred):
                 "starred": task.starred,
             }
         )
+
+
+# To be implemented:
+# @app.get("/getUserColor/")
+# def getColor():
+#     username = session.get("username")
+#     tasks = (
+#         Task.query.join(User)
+#         .filter(User.username == username)
+#         .order_by(Task.duedate)
+#         .all()
+#     )
+
+#     print("get tasks:")
+#     for task in tasks:
+#         print(task.to_json())
+
+#     return jsonify(
+#         {
+#             "retrieved": datetime.now().isoformat(),
+#             "count": len(tasks),
+#             "tasks": [task.to_json() for task in tasks],
+#         }
+#     )
+
+
+# @app.post("/postUserColor/")
+# def postColor():
+#     newTask = Task.from_json(request.json)
+#     db.session.add(newTask)
+#     db.session.commit()
+#     print("added task: " + newTask.name)
+#     return jsonify(newTask.to_json()), 201
