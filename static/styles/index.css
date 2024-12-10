@@ -128,8 +128,8 @@ button {
 }
 
 .list-icon {
-  width: 17px;
-  min-width: 17px;
+  width: 16px;
+  min-width: 16px;
 }
 
 .lists::-webkit-scrollbar {
@@ -151,11 +151,14 @@ button {
 }
 
 .profile-icon {
-  width: 25px;
+  width: 23px;
 }
 
 .logout-btn {
-  width: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
   margin-left: auto;
 }
 
@@ -175,16 +178,16 @@ button {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 14px;
 }
 
 .task-list {
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  gap: 10px;
   overflow-y: scroll;
   padding-bottom: 30px;
-  margin-top: 20px;
+  margin-top: 10px;
   flex-grow: 1;
 }
 
@@ -198,20 +201,27 @@ button {
 }
 
 .task-list-section {
-  display: flex;
+  display: none;
+  margin-top: 10px;
   flex-direction: column;
   gap: 10px;
+
+  h4 {
+    font-weight: 600;
+    color: #616161;
+  }
 }
 
 .end-of-task-list {
   align-self: center;
+  margin-top: 14px;
   color: #aeaeae;
 }
 
 .card {
   display: flex;
   align-items: center;
-  padding: 13px 24px;
+  padding: 12px 24px;
   background: white;
   border-radius: 6px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -229,6 +239,7 @@ button {
   background: var(--primary-color);
   color: var(--primary-text-color);
   font-weight: 500;
+  font-size: 15px;
   padding: 0 12px;
 
   /* transition: 0.1s ease-in-out;
@@ -313,7 +324,7 @@ button {
 }
 
 .task-content p {
-  font-size: 13px;
+  font-size: 12px;
   color: #616161;
   font-weight: 300;
 }
@@ -323,7 +334,7 @@ button {
 }
 
 .task-info {
-  margin: 4px 0 0 0;
+  margin-top: 2px;
   display: flex;
   gap: 8px;
   color: #616161;
@@ -656,8 +667,8 @@ button {
 }
 
 .palette-img {
-  width: 23px;
-  height: 23px;
+  width: 21px;
+  height: 21px;
   font-size: 30px;
   color: var(--primary-color);
   display: flex;

@@ -178,7 +178,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   let defaultColor = false;
   for (let i = 0; i < colorBtns.children.length - 1; i++) {
     const divChild = colorBtns.children[i] as HTMLDivElement;
-    console.log("here");
     if (
       primaryColor === rgbToHex(divChild.style.backgroundColor).toLowerCase()
     ) {
@@ -188,7 +187,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
   if (!defaultColor) {
-    console.log("here!");
     customColorBtn.style.display = "flex";
     customColorBtn.classList.add("selected-color-btn");
     customColorBtn.style.backgroundColor = colorPickerInput.value;
@@ -446,10 +444,12 @@ async function appendTask(task: Task) {
   let listId = "due-today-list";
   let duedate = null;
   let overdue = false;
+  let dueToday = false;
   if (task.duedate) {
     duedate = new Date(task.duedate);
     if (isSameDay(duedate, today)) {
       listId = "due-today-list";
+      dueToday = true;
     } else if (duedate < today) {
       listId = "overdue-list";
       overdue = true;
@@ -458,10 +458,39 @@ async function appendTask(task: Task) {
     }
   }
   const taskList = document.getElementById(listId);
-  createTaskCard(taskList, task, overdue);
+  createTaskCard(taskList, task, overdue, dueToday);
+  checkListSections();
 }
 
-function createTaskCard(div: HTMLElement, task: Task, overdue: Boolean) {
+function checkListSections() {
+  const overdueList = document.getElementById("overdue-list");
+  overdueList.style.display = Array.from(overdueList.children).some(
+    (child) => child.tagName === "DIV"
+  )
+    ? "flex"
+    : "none";
+
+  const dueTodayList = document.getElementById("due-today-list");
+  dueTodayList.style.display = Array.from(dueTodayList.children).some(
+    (child) => child.tagName === "DIV"
+  )
+    ? "flex"
+    : "none";
+
+  const upcomingList = document.getElementById("upcoming-list");
+  upcomingList.style.display = Array.from(upcomingList.children).some(
+    (child) => child.tagName === "DIV"
+  )
+    ? "flex"
+    : "none";
+}
+
+function createTaskCard(
+  div: HTMLElement,
+  task: Task,
+  overdue: Boolean,
+  dueToday: Boolean
+) {
   const card = document.createElement("div");
   card.className = "card hoverCard";
   card.id = `task-${task.id}`;
@@ -519,15 +548,20 @@ function createTaskCard(div: HTMLElement, task: Task, overdue: Boolean) {
       "d",
       "M22.611,3.182H20.455V2a1,1,0,0,0-2,0V3.182H9.545V2a1,1,0,0,0-2,0V3.182H5.389A4.394,4.394,0,0,0,1,7.571v15.04A4.394,4.394,0,0,0,5.389,27H22.611A4.394,4.394,0,0,0,27,22.611V7.571A4.394,4.394,0,0,0,22.611,3.182Zm-17.222,2H7.545V6.364a1,1,0,0,0,2,0V5.182h8.91V6.364a1,1,0,1,0,2,0V5.182h2.156A2.391,2.391,0,0,1,25,7.571V9.727H3V7.571A2.391,2.391,0,0,1,5.389,5.182ZM22.611,25H5.389A2.392,2.392,0,0,1,3,22.611V11.727H25V22.611A2.392,2.392,0,0,1,22.611,25Z"
     );
-    calendarPath.setAttribute("fill", overdue ? "#e83a3a" : "#616161");
+    calendarPath.setAttribute(
+      "fill",
+      overdue ? "#e83a3a" : dueToday ? "var(--primary-color)" : "#616161"
+    );
     calendarSVG.appendChild(calendarPath);
 
     // Date text
     const dateText = document.createElement("p");
     dateText.textContent = formatDate(new Date(task.duedate));
-    if (overdue) {
-      dateText.style.color = "#e83a3a";
-    }
+    dateText.style.color = overdue
+      ? "#e83a3a"
+      : dueToday
+      ? "var(--primary-color)"
+      : "#616161";
 
     taskInfo.appendChild(calendarSVG);
     taskInfo.appendChild(dateText);

@@ -307,7 +307,13 @@ with app.app_context():
 
     dtask1 = Task(name="Run Laundry", duedate=date(2024, 11, 2), userid=3)
 
-    db.session.add_all((nktask1, nktask2, nktask3, nktask4, nktask5, dtask1))
+    ctask1 = Task(name="Run Laundry", duedate=date(2024, 12, 10), userid=2)
+    ctask2 = Task(name="Christmas Eve", duedate=date(2024, 12, 24), userid=2)
+    ctask3 = Task(name="Christmas", duedate=date(2024, 12, 25), userid=2)
+
+    db.session.add_all(
+        (nktask1, nktask2, nktask3, nktask4, nktask5, dtask1, ctask1, ctask2, ctask3)
+    )
 
     nktst1 = Subtask(name="sub1", task=nktask3)
 
