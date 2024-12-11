@@ -20,6 +20,10 @@ body {
   /* --ai-gradient: linear-gradient(#e66465, #9198e5); */
 }
 
+p {
+  font-size: 15px;
+}
+
 ::-webkit-scrollbar {
   width: 16px;
 }
@@ -574,7 +578,7 @@ button {
 }
 
 .blue-btn {
-  /* background: #4a7fd9; */
+  /* background: #2662cb; */
 }
 
 .green-btn {
@@ -634,19 +638,13 @@ button {
 }
 
 .colorInput-btn {
-  font-size: medium;
-}
-
-.colorInput-btn {
   box-sizing: border-box;
-  border: 1.7px solid black;
   position: relative;
-  color: black;
 }
 
-.color-input-plus {
+/* .color-input-plus {
   transform: translate(0px, -1px);
-}
+} */
 
 .selected-color-btn {
   border: 3px solid white;
@@ -656,24 +654,29 @@ button {
 .palette-container {
   background: white;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
-  border-radius: 100px;
-  padding: 7px;
   display: flex;
   align-items: center;
   gap: 5px;
   position: relative;
   width: fit-content;
   cursor: pointer;
+  border-radius: 100px;
 }
 
 .palette-img {
-  width: 21px;
-  height: 21px;
+  border-radius: 100px;
+  padding: 7px;
+  width: 33px;
+  height: 33px;
   font-size: 30px;
   color: var(--primary-color);
   display: flex;
   align-items: center;
   justify-content: center;
+  p {
+    font-size: 25px;
+    font-weight: 300;
+  }
 }
 
 .palette-color-btns {

@@ -60,38 +60,46 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
         changeThemeColor(customColorBtn, colorPickerInput.value);
     });
+    colorPickerInput.addEventListener("blur", (event) => {
+        postPrimaryColor(colorPickerInput.value);
+    });
     const redBtn = document.getElementById("red-btn");
     redBtn.style.backgroundColor = "#e34242";
     redBtn.addEventListener("click", () => {
         const backgroundColor = rgbToHex(window.getComputedStyle(redBtn).backgroundColor);
         changeThemeColor(redBtn, backgroundColor);
+        postPrimaryColor(backgroundColor);
     });
     const blueBtn = document.getElementById("blue-btn");
     blueBtn.style.backgroundColor = "#2662cb";
     blueBtn.addEventListener("click", () => {
         const backgroundColor = rgbToHex(window.getComputedStyle(blueBtn).backgroundColor);
         changeThemeColor(blueBtn, backgroundColor);
+        postPrimaryColor(backgroundColor);
     });
     const greenBtn = document.getElementById("green-btn");
     greenBtn.style.backgroundColor = "#6ab05f";
     greenBtn.addEventListener("click", () => {
         const backgroundColor = rgbToHex(window.getComputedStyle(greenBtn).backgroundColor);
         changeThemeColor(greenBtn, backgroundColor);
+        postPrimaryColor(backgroundColor);
     });
     const customColorBtn = (document.getElementById("custom-color-btn"));
     customColorBtn.addEventListener("click", () => {
         changeThemeColor(customColorBtn, rgbToHex(customColorBtn.style.backgroundColor));
+        postPrimaryColor(rgbToHex(customColorBtn.style.backgroundColor));
     });
     const colorBtns = document.getElementById("color-btns");
     let defaultColor = false;
     for (let i = 0; i < colorBtns.children.length - 1; i++) {
         const divChild = colorBtns.children[i];
-        if (primaryColor === rgbToHex(divChild.style.backgroundColor).toLowerCase()) {
+        if (primaryColor === rgbToHex(divChild.style.backgroundColor)) {
             colorBtns.children[i].classList.add("selected-color-btn");
             defaultColor = true;
         }
     }
     if (!defaultColor) {
+        console.log("not a default color!");
         customColorBtn.style.display = "flex";
         customColorBtn.classList.add("selected-color-btn");
         customColorBtn.style.backgroundColor = colorPickerInput.value;
@@ -112,7 +120,26 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 });
 async function getPrimaryColor() {
-    return "#2662cb";
+    const response = await fetch(`/getUserColor/`, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        credentials: "include",
+    });
+    const r = await validatejson(response);
+    return r.userColor;
+}
+async function postPrimaryColor(color) {
+    const response = await fetch("/postUserColor/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(color),
+    });
+    const ServerResponse = await validatejson(response);
+    console.log("new color server response: ", ServerResponse);
 }
 function rgbToHex(rgb) {
     const match = rgb.match(/\d+/g);

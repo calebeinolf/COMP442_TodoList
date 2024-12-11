@@ -95,8 +95,7 @@ class User(UserMixin, db.Model):
     __tablename__ = "Users"
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.Unicode, nullable=False, unique=True)
-    # if we don't need users' emails we shouldn't store them
-    # email = db.Column(db.Unicode, nullable=False, unique=True)
+    themecolor = db.Column(db.Unicode, default="#2662cb")
     password_hash = db.Column(db.LargeBinary)  # hash is a binary attribute
 
     tasklists = db.relationship("TaskList", backref="user")
@@ -945,33 +944,21 @@ def markStarred(taskId, starred):
 
 
 # To be implemented:
-# @app.get("/getUserColor/")
-# def getColor():
-#     username = session.get("username")
-#     tasks = (
-#         Task.query.join(User)
-#         .filter(User.username == username)
-#         .order_by(Task.duedate)
-#         .all()
-#     )
-
-#     print("get tasks:")
-#     for task in tasks:
-#         print(task.to_json())
-
-#     return jsonify(
-#         {
-#             "retrieved": datetime.now().isoformat(),
-#             "count": len(tasks),
-#             "tasks": [task.to_json() for task in tasks],
-#         }
-#     )
+@app.get("/getUserColor/")
+def getColor():
+    username = session.get("username")
+    userColor = User.query.filter_by(username=username).first().themecolor
+    return jsonify(
+        {
+            "retrieved": datetime.now().isoformat(),
+            "userColor": userColor,
+        }
+    )
 
 
-# @app.post("/postUserColor/")
-# def postColor():
-#     newTask = Task.from_json(request.json)
-#     db.session.add(newTask)
-#     db.session.commit()
-#     print("added task: " + newTask.name)
-#     return jsonify(newTask.to_json()), 201
+@app.post("/postUserColor/")
+def postColor():
+    newColor = request.json
+    current_user.themecolor = newColor
+    db.session.commit()
+    return jsonify(newColor), 201

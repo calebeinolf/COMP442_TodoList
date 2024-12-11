@@ -138,55 +138,6 @@
           <div class="task-list-header-title">
             <h2>All Tasks</h2>
 
-            <!-- <div class="tooltip-container" id="theme-btn">
-              <svg
-                height="20"
-                viewBox="0 0 511.989 511.989"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <g fill="var(--primary-color)">
-                  <path
-                    d="m256 .03c-142.915 0-256 119.679-256 256 0 66.721 25.776 129.995 72.581 178.167 46.703 48.068 109.008 75.666 175.438 77.71 55.853 1.727 106.539-39.306 112.378-94.481 2.015-19.039-1.094-38.16-8.99-55.296-6.827-14.816-1.26-28.258 6.227-35.897 7.486-7.639 20.813-13.478 35.764-6.95 8.806 3.844 29.877 15.943 58.717 10.258 35.464-6.991 60.258-40.106 59.871-76.297-1.497-139.623-116.332-253.214-255.986-253.214zm190.312 300.077c-18.843 3.717-32.57-4.675-40.912-8.319-23.833-10.404-50.992-5.126-69.193 13.446s-22.93 45.833-12.047 69.45c5.635 12.229 7.85 25.917 6.403 39.583-4.082 38.564-40.667 68.924-81.622 67.653-120.725-3.715-218.941-105.049-218.941-225.89 0-122.505 103.495-226 226-226 123.289 0 224.666 100.278 225.986 223.536.241 22.476-15.095 42.485-35.674 46.541z"
-                  />
-                  <path
-                    d="m376 121.03c-24.813 0-45 20.187-45 45s20.187 45 45 45c26.075 0 45-18.925 45-45 0-24.813-20.187-45-45-45zm0 60c-8.271 0-15-6.729-15-15s6.729-15 15-15 15 6.729 15 15c0 5.602-1.949 15-15 15z"
-                  />
-                  <path
-                    d="m256 61.03c-24.813 0-45 20.187-45 45s20.187 45 45 45 45-20.187 45-45-20.187-45-45-45zm0 60c-8.271 0-15-6.729-15-15s6.729-15 15-15 15 6.729 15 15-6.729 15-15 15z"
-                  />
-                  <path
-                    d="m136 211.03c24.813 0 45-20.187 45-45s-20.187-45-45-45-45 20.187-45 45 20.187 45 45 45zm0-60c8.271 0 15 6.729 15 15s-6.729 15-15 15-15-6.729-15-15 6.729-15 15-15z"
-                  />
-                  <path
-                    d="m121 241.03c-33.084 0-60 26.916-60 60s26.916 60 60 60 60-26.916 60-60-26.916-60-60-60zm0 90c-16.542 0-30-13.458-30-30s13.458-30 30-30 30 13.458 30 30-13.458 30-30 30z"
-                  />
-                  <path
-                    d="m241 331.03c-33.084 0-60 26.916-60 60s26.916 60 60 60 60-26.916 60-60-26.916-60-60-60zm0 90c-16.542 0-30-13.458-30-30s13.458-30 30-30 30 13.458 30 30-13.458 30-30 30z"
-                  />
-                </g>
-              </svg>
-              <div class="tooltip">
-                <div id="color-btns" class="colors">
-                  <div id="blue-btn" class="color-btn blue-btn"></div>
-                  <div id="red-btn" class="color-btn red-btn"></div>
-                  <div id="green-btn" class="color-btn green-btn"></div>
-                  <div
-                    id="custom-color-btn"
-                    class="color-btn custom-color-btn"
-                  ></div>
-                </div>
-                <div id="colorInput-btn" class="color-btn colorInput-btn">
-                  +
-                  <input
-                    class="colorInput"
-                    type="color"
-                    id="colorInput"
-                    name="colorInput"
-                  />
-                </div>
-              </div>
-            </div> -->
-
             <div id="palette-container" class="palette-container hoverCard">
               <div id="palette-color-btns" class="palette-color-btns">
                 <div id="color-btns" class="colors">
@@ -199,7 +150,23 @@
                   ></div>
                 </div>
                 <div id="colorInput-btn" class="color-btn colorInput-btn">
-                  <div class="color-input-plus">+</div>
+                  <svg
+                    viewBox="0 0 15 15"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M7 4.5C7 4.22386 7.22388 4 7.5 4C7.77612 4 8 4.22386 8 4.5V7H10.5C10.7761 7 11 7.22386 11 7.5C11 7.77614 10.7761 8 10.5 8H8V10.5C8 10.7761 7.77612 11 7.5 11C7.22388 11 7 10.7761 7 10.5V8H4.5C4.22388 8 4 7.77614 4 7.5C4 7.22386 4.22388 7 4.5 7H7V4.5Z"
+                      fill="#000000"
+                    />
+                    <path
+                      fill-rule="evenodd"
+                      clip-rule="evenodd"
+                      d="M7.5 15C11.6422 15 15 11.6421 15 7.5C15 3.35786 11.6422 0 7.5 0C3.35785 0 0 3.35786 0 7.5C0 11.6421 3.35785 15 7.5 15ZM7.5 14C11.0898 14 14 11.0899 14 7.5C14 3.91015 11.0898 1 7.5 1C3.91016 1 1 3.91015 1 7.5C1 11.0899 3.91016 14 7.5 14Z"
+                      fill="#000000"
+                    />
+                  </svg>
+
                   <input
                     class="colorInput"
                     type="color"
@@ -246,22 +213,6 @@
               </div>
             </div>
           </div>
-
-          <!-- Modal -->
-          <!-- <div class="modal" id="colorModal">
-            <div class="modal-content color-picker-modal-content">
-              <div class="modal-header">
-                <h3>Select Color</h3>
-                <span class="close-btn" id="color-picker-modal-close-btn"
-                  >&times;</span
-                >
-              </div>
-
-              <input type="color" id="colorInput" name="colorInput" />
-
-              <button class="sumbit-modal-btn">Done</button>
-            </div>
-          </div> -->
 
           <div class="add-task-header">
             <div class="card add-task-card">

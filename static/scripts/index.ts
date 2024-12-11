@@ -140,6 +140,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     changeThemeColor(customColorBtn, colorPickerInput.value);
   });
 
+  colorPickerInput.addEventListener("blur", (event) => {
+    postPrimaryColor(colorPickerInput.value);
+  });
+
   const redBtn = <HTMLDivElement>document.getElementById("red-btn");
   redBtn.style.backgroundColor = "#e34242";
   redBtn.addEventListener("click", () => {
@@ -147,6 +151,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       window.getComputedStyle(redBtn).backgroundColor
     );
     changeThemeColor(redBtn, backgroundColor);
+    postPrimaryColor(backgroundColor);
   });
   const blueBtn = <HTMLDivElement>document.getElementById("blue-btn");
   blueBtn.style.backgroundColor = "#2662cb";
@@ -155,6 +160,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       window.getComputedStyle(blueBtn).backgroundColor
     );
     changeThemeColor(blueBtn, backgroundColor);
+    postPrimaryColor(backgroundColor);
   });
   const greenBtn = <HTMLDivElement>document.getElementById("green-btn");
   greenBtn.style.backgroundColor = "#6ab05f";
@@ -163,6 +169,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       window.getComputedStyle(greenBtn).backgroundColor
     );
     changeThemeColor(greenBtn, backgroundColor);
+    postPrimaryColor(backgroundColor);
   });
   const customColorBtn = <HTMLDivElement>(
     document.getElementById("custom-color-btn")
@@ -172,21 +179,20 @@ document.addEventListener("DOMContentLoaded", async () => {
       customColorBtn,
       rgbToHex(customColorBtn.style.backgroundColor)
     );
+    postPrimaryColor(rgbToHex(customColorBtn.style.backgroundColor));
   });
 
   const colorBtns = document.getElementById("color-btns");
   let defaultColor = false;
   for (let i = 0; i < colorBtns.children.length - 1; i++) {
     const divChild = colorBtns.children[i] as HTMLDivElement;
-    if (
-      primaryColor === rgbToHex(divChild.style.backgroundColor).toLowerCase()
-    ) {
-      // child.classList.remove("selected-color-btn");
+    if (primaryColor === rgbToHex(divChild.style.backgroundColor)) {
       colorBtns.children[i].classList.add("selected-color-btn");
       defaultColor = true;
     }
   }
   if (!defaultColor) {
+    console.log("not a default color!");
     customColorBtn.style.display = "flex";
     customColorBtn.classList.add("selected-color-btn");
     customColorBtn.style.backgroundColor = colorPickerInput.value;
@@ -211,17 +217,27 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 async function getPrimaryColor() {
-  // const response = await fetch(`/getUserColor/`, {
-  //   method: "GET",
-  //   headers: {
-  //     "Content-Type": "application/json",
-  //   },
-  //   credentials: "include",
-  // });
-  // const r = await validatejson(response);
-  // console.log(r);
+  const response = await fetch(`/getUserColor/`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+  });
+  const r = await validatejson(response);
+  return r.userColor;
+}
 
-  return "#2662cb";
+async function postPrimaryColor(color: String) {
+  const response = await fetch("/postUserColor/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(color),
+  });
+  const ServerResponse = await validatejson(response);
+  console.log("new color server response: ", ServerResponse);
 }
 
 function rgbToHex(rgb: string): string {
@@ -254,7 +270,7 @@ function changeThemeColor(div: HTMLDivElement, color: string) {
   div.classList.add("selected-color-btn");
 }
 
-// Calculate relative luminance
+// Helper for setPrimaryTextColor()
 function getLuminance(hexColor: string): number {
   // Remove the hash if present and ensure the string is 6 characters long
   const hex = hexColor.replace(/^#/, "");
@@ -282,7 +298,6 @@ function getLuminance(hexColor: string): number {
   return 0.2126 * rsRGB + 0.7152 * gsRGB + 0.0722 * bsRGB;
 }
 
-// Determine text color based on background luminance
 function setPrimaryTextColor(color: string) {
   const luminance = getLuminance(color);
   if (luminance > 0.5) {
