@@ -93,13 +93,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     let defaultColor = false;
     for (let i = 0; i < colorBtns.children.length - 1; i++) {
         const divChild = colorBtns.children[i];
-        if (primaryColor === rgbToHex(divChild.style.backgroundColor)) {
+        if (primaryColor.toLowerCase() ===
+            rgbToHex(divChild.style.backgroundColor).toLowerCase()) {
             colorBtns.children[i].classList.add("selected-color-btn");
             defaultColor = true;
         }
     }
     if (!defaultColor) {
-        console.log("not a default color!");
         customColorBtn.style.display = "flex";
         customColorBtn.classList.add("selected-color-btn");
         customColorBtn.style.backgroundColor = colorPickerInput.value;
@@ -120,6 +120,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             document.addEventListener("click", handleOutsidePaletteClick);
         }
     });
+    const saveBtn = document.getElementById("task-details-save-btn");
+    saveBtn.addEventListener("click", saveTaskFromDetailsPanel);
 });
 const handleOutsidePaletteClick = (event) => {
     const paletteContainer = document.getElementById("palette-container");
@@ -150,7 +152,6 @@ async function postPrimaryColor(color) {
         body: JSON.stringify(color),
     });
     const ServerResponse = await validatejson(response);
-    console.log("new color server response: ", ServerResponse);
 }
 function rgbToHex(rgb) {
     const match = rgb.match(/\d+/g);
@@ -287,6 +288,27 @@ async function loadTasks() {
         console.error("Error fetching tasks:", error);
     }
 }
+async function saveTaskFromDetailsPanel() {
+    console.log("saving task from details panel");
+    const titleInput = (document.getElementById("details-task-name-input"));
+    const newTitle = titleInput.value;
+    const detailsPanel = (document.getElementById("task-details-container"));
+    const taskStub = {
+        id: Number(detailsPanel.dataset.taskId),
+        name: newTitle,
+    };
+    console.log(taskStub);
+    const taskPostURL = "/updateUserTask/";
+    const response = await fetch(taskPostURL, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(taskStub),
+    });
+    const serverResponse = await validatejson(response);
+    console.log(serverResponse);
+}
 async function postTask() {
     const taskTitleInput = (document.getElementById("task-title-input"));
     if (taskTitleInput.value !== "") {
@@ -374,6 +396,15 @@ function createTaskCard(div, task, overdue, dueToday) {
     card.appendChild(taskContent);
     const heading = document.createElement("h3");
     heading.textContent = task.name;
+    heading.id = `task-name-${task.id}`;
+    if (task.complete) {
+        heading.style.color = "var(--dark-grey)";
+        heading.style.textDecoration = "line-through";
+    }
+    else {
+        heading.style.color = "black";
+        heading.style.textDecoration = "none";
+    }
     taskContent.appendChild(heading);
     const taskInfo = document.createElement("div");
     taskInfo.className = "task-info";
@@ -449,12 +480,43 @@ function createTaskCard(div, task, overdue, dueToday) {
 function openDetails(task) {
     const detailsPanel = (document.getElementById("task-details-container"));
     detailsPanel.classList.add("open");
-    document.getElementById("details-task-name").innerText = task.name;
+    detailsPanel.setAttribute("data-task-id", String(task.id));
+    const nameInput = (document.getElementById("details-task-name-input"));
+    nameInput.value = task.name;
     if (task.duedate !== null) {
         document.getElementById("details-task-duedate").innerText = formatDate(new Date(task.duedate));
     }
     else {
         document.getElementById("details-task-duedate").innerText = "";
+    }
+    const checkIcon = document.getElementById("details-checkIcon");
+    const starIcon = document.getElementById("details-starIcon");
+    const newCheckIcon = checkIcon.cloneNode(true);
+    checkIcon.parentNode?.replaceChild(newCheckIcon, checkIcon);
+    newCheckIcon.addEventListener("click", () => {
+        toggleComplete(task);
+    });
+    const newStarIcon = starIcon.cloneNode(true);
+    starIcon.parentNode?.replaceChild(newStarIcon, starIcon);
+    newStarIcon.addEventListener("click", () => {
+        toggleStarred(task);
+    });
+    if (newCheckIcon instanceof SVGElement) {
+        if (task.complete) {
+            filledCheckIcon(newCheckIcon);
+        }
+        else {
+            emptyCheckIcon(newCheckIcon);
+        }
+    }
+    else {
+        console.error("The element is not an SVGElement");
+    }
+    if (task.starred) {
+        newStarIcon.setAttribute("fill", "var(--primary-color)");
+    }
+    else {
+        newStarIcon.setAttribute("fill", "none");
     }
 }
 async function toggleComplete(task) {
@@ -479,6 +541,27 @@ async function toggleComplete(task) {
     else {
         console.error("The element is not an SVGElement");
     }
+    const detailsCheckIcon = document.getElementById("details-checkIcon");
+    if (detailsCheckIcon instanceof SVGElement) {
+        if (task.complete) {
+            filledCheckIcon(detailsCheckIcon);
+        }
+        else {
+            emptyCheckIcon(detailsCheckIcon);
+        }
+    }
+    else {
+        console.error("The element is not an SVGElement");
+    }
+    const taskTitle = document.getElementById(`task-name-${task.id}`);
+    if (task.complete) {
+        taskTitle.style.color = "var(--dark-grey)";
+        taskTitle.style.textDecoration = "line-through";
+    }
+    else {
+        taskTitle.style.color = "black";
+        taskTitle.style.textDecoration = "none";
+    }
 }
 async function toggleStarred(task) {
     const response = await fetch(`/markStarred/${task.id}/${task.starred ? "0" : "1"}`, {
@@ -496,6 +579,13 @@ async function toggleStarred(task) {
     }
     else {
         starIcon.setAttribute("fill", "none");
+    }
+    const detailsStarIcon = document.getElementById("details-starIcon");
+    if (task.starred) {
+        detailsStarIcon.setAttribute("fill", "var(--primary-color)");
+    }
+    else {
+        detailsStarIcon.setAttribute("fill", "none");
     }
 }
 function isSameDay(date1, date2) {

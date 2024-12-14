@@ -48,6 +48,11 @@ interface Task {
   starred: boolean;
 }
 
+interface TaskStub {
+  id: number;
+  name: string;
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
   loadTasks();
 
@@ -186,13 +191,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   let defaultColor = false;
   for (let i = 0; i < colorBtns.children.length - 1; i++) {
     const divChild = colorBtns.children[i] as HTMLDivElement;
-    if (primaryColor === rgbToHex(divChild.style.backgroundColor)) {
+    if (
+      primaryColor.toLowerCase() ===
+      rgbToHex(divChild.style.backgroundColor).toLowerCase()
+    ) {
       colorBtns.children[i].classList.add("selected-color-btn");
       defaultColor = true;
     }
   }
   if (!defaultColor) {
-    console.log("not a default color!");
     customColorBtn.style.display = "flex";
     customColorBtn.classList.add("selected-color-btn");
     customColorBtn.style.backgroundColor = colorPickerInput.value;
@@ -219,6 +226,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       document.addEventListener("click", handleOutsidePaletteClick);
     }
   });
+
+  const saveBtn = document.getElementById("task-details-save-btn");
+  saveBtn.addEventListener("click", saveTaskFromDetailsPanel);
 });
 
 const handleOutsidePaletteClick = (event: MouseEvent) => {
@@ -254,7 +264,7 @@ async function postPrimaryColor(color: String) {
     body: JSON.stringify(color),
   });
   const ServerResponse = await validatejson(response);
-  console.log("new color server response: ", ServerResponse);
+  // console.log("new color server response: ", ServerResponse);
 }
 
 function rgbToHex(rgb: string): string {
@@ -423,10 +433,41 @@ async function loadTasks() {
         task.duedate = new Date(<string>task.duedate);
       }
       appendTask(task);
+      // openDetails(task); // TO DELETE
     }
   } catch (error) {
     console.error("Error fetching tasks:", error);
   }
+}
+
+async function saveTaskFromDetailsPanel() {
+  console.log("saving task from details panel");
+
+  const titleInput = <HTMLInputElement>(
+    document.getElementById("details-task-name-input")
+  );
+  const newTitle = titleInput.value;
+
+  const detailsPanel = <HTMLDivElement>(
+    document.getElementById("task-details-container")
+  );
+  const taskStub: TaskStub = {
+    id: Number(detailsPanel.dataset.taskId),
+    name: newTitle,
+  };
+
+  console.log(taskStub);
+
+  const taskPostURL = "/updateUserTask/";
+  const response = await fetch(taskPostURL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(taskStub),
+  });
+  const serverResponse = <Task>await validatejson(response);
+  console.log(serverResponse);
 }
 
 async function postTask() {
@@ -551,6 +592,14 @@ function createTaskCard(
   // Task name
   const heading = document.createElement("h3");
   heading.textContent = task.name;
+  heading.id = `task-name-${task.id}`;
+  if (task.complete) {
+    heading.style.color = "var(--dark-grey)";
+    heading.style.textDecoration = "line-through";
+  } else {
+    heading.style.color = "black";
+    heading.style.textDecoration = "none";
+  }
   taskContent.appendChild(heading);
 
   // Task info div
@@ -671,14 +720,54 @@ function openDetails(task: Task) {
     document.getElementById("task-details-container")
   );
   detailsPanel.classList.add("open");
+  detailsPanel.setAttribute("data-task-id", String(task.id));
 
-  document.getElementById("details-task-name").innerText = task.name;
+  // document.getElementById("details-task-name").innerText = task.name;
+  const nameInput = <HTMLInputElement>(
+    document.getElementById("details-task-name-input")
+  );
+  nameInput.value = task.name;
+
   if (task.duedate !== null) {
     document.getElementById("details-task-duedate").innerText = formatDate(
       new Date(task.duedate)
     );
   } else {
     document.getElementById("details-task-duedate").innerText = "";
+  }
+
+  const checkIcon = document.getElementById("details-checkIcon");
+  const starIcon = document.getElementById("details-starIcon");
+
+  // clone & replace check and star icons, then add event listeners:
+
+  const newCheckIcon = checkIcon.cloneNode(true) as HTMLElement;
+  checkIcon.parentNode?.replaceChild(newCheckIcon, checkIcon);
+  newCheckIcon.addEventListener("click", () => {
+    toggleComplete(task);
+  });
+
+  const newStarIcon = starIcon.cloneNode(true) as HTMLElement;
+  starIcon.parentNode?.replaceChild(newStarIcon, starIcon);
+  newStarIcon.addEventListener("click", () => {
+    toggleStarred(task);
+  });
+
+  // toggle check and star accordingly
+  if (newCheckIcon instanceof SVGElement) {
+    if (task.complete) {
+      filledCheckIcon(newCheckIcon);
+    } else {
+      emptyCheckIcon(newCheckIcon);
+    }
+  } else {
+    console.error("The element is not an SVGElement");
+  }
+
+  if (task.starred) {
+    newStarIcon.setAttribute("fill", "var(--primary-color)");
+  } else {
+    newStarIcon.setAttribute("fill", "none");
   }
 }
 
@@ -696,6 +785,7 @@ async function toggleComplete(task: Task) {
   console.log(r);
   task.complete = !task.complete;
 
+  // toggle the check icon in the task card
   const checkIcon = document.getElementById(`checkIcon-${task.id}`);
   if (checkIcon instanceof SVGElement) {
     if (task.complete) {
@@ -705,6 +795,28 @@ async function toggleComplete(task: Task) {
     }
   } else {
     console.error("The element is not an SVGElement");
+  }
+
+  // toggle the check icon in the details panel
+  const detailsCheckIcon = document.getElementById("details-checkIcon");
+  if (detailsCheckIcon instanceof SVGElement) {
+    if (task.complete) {
+      filledCheckIcon(detailsCheckIcon);
+    } else {
+      emptyCheckIcon(detailsCheckIcon);
+    }
+  } else {
+    console.error("The element is not an SVGElement");
+  }
+
+  // change task name text color
+  const taskTitle = document.getElementById(`task-name-${task.id}`);
+  if (task.complete) {
+    taskTitle.style.color = "var(--dark-grey)";
+    taskTitle.style.textDecoration = "line-through";
+  } else {
+    taskTitle.style.color = "black";
+    taskTitle.style.textDecoration = "none";
   }
 }
 
@@ -727,6 +839,14 @@ async function toggleStarred(task: Task) {
     starIcon.setAttribute("fill", "var(--primary-color)");
   } else {
     starIcon.setAttribute("fill", "none");
+  }
+
+  // toggle the check icon in the details panel
+  const detailsStarIcon = document.getElementById("details-starIcon");
+  if (task.starred) {
+    detailsStarIcon.setAttribute("fill", "var(--primary-color)");
+  } else {
+    detailsStarIcon.setAttribute("fill", "none");
   }
 }
 

@@ -895,6 +895,12 @@ def postTask():
     return jsonify(newTask.to_json()), 201
 
 
+@app.post("/updateUserTask/")
+def updateTask():
+    print(request.json)
+    return jsonify({"error": "Method not implemented"}), 501
+
+
 @app.post("/markComplete/<int:taskId>/<int:complete>/")
 # "copmlete" should be a 0 or 1
 def markComplete(taskId, complete):
@@ -943,7 +949,6 @@ def markStarred(taskId, starred):
         )
 
 
-# To be implemented:
 @app.get("/getUserColor/")
 def getColor():
     username = session.get("username")

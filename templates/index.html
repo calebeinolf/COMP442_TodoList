@@ -224,7 +224,7 @@
                 type="text"
                 id="aiPromptTextField"
                 placeholder="Type to add task with AI..."
-                class="ai-add-task-input"
+                class="blank-input"
               />
               <div
                 style="
@@ -319,18 +319,54 @@
       {% if current_user.is_authenticated %}
       <div class="task-details-container" id="task-details-container">
         <div class="task-details">
-          <button id="close-details-btn">&times;</button>
-          <h3>Task Details</h3>
+          <div class="task-details-header">
+            <h3>Task Details</h3>
+            <!-- <div class="close-details-btn" id="close-details-btn">&times;</div> -->
+            <svg
+              id="close-details-btn"
+              class="close-details-btn"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              version="1.1"
+              xmlns="http://www.w3.org/2000/svg"
+              xmlns:xlink="http://www.w3.org/1999/xlink"
+            >
+              <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                <g
+                  id="ic_fluent_pane_close_24_filled"
+                  fill="var(--primary-color)"
+                  fill-rule="nonzero"
+                >
+                  <path
+                    d="M19.25,4 C20.7125481,4 21.9084055,5.14170743 21.9949813,6.58247798 L22,6.75 L22,17.25 C22,18.7125481 20.8583111,19.9084055 19.4175241,19.9949813 L19.25,20 L4.75,20 C3.28747111,20 2.09159594,18.8583111 2.00501881,17.4175241 L2,17.25 L2,6.75 C2,5.28747111 3.14170743,4.09159594 4.58247798,4.00501881 L4.75,4 L19.25,4 Z M15.0017,5.5 L4.75,5.5 C4.05965,5.5 3.5,6.05964 3.5,6.75 L3.5,17.25 C3.5,17.9404 4.05964,18.5 4.75,18.5 L15.0017,18.5 L15.0017,5.5 Z M10.3508,9.14537 L12.85,11.6446 C13.0453,11.8399 13.0453,12.1565 12.85,12.3517 L10.3508,14.851 C10.1555,15.0463 9.83891,15.0463 9.64365,14.851 C9.44839,14.6557 9.44839,14.3391 9.64365,14.1439 L11.2893,12.4983 L6.50485,12.5 C6.22871,12.5001 6.00477,12.2763 6.00466993,12.0002 C6.00457,11.724 6.22835,11.5001 6.50449,11.5 L11.2894,11.4983 L9.64365,9.85247 C9.44839,9.65721 9.44839,9.34063 9.64365,9.14537 C9.83891,8.9501 10.1555,8.9501 10.3508,9.14537 Z"
+                  ></path>
+                </g>
+              </g>
+            </svg>
+          </div>
           <!-- Task details will be displayed here -->
           <div class="details-list">
             <div class="card detail-card">
-              <svg class="circle left-icon" viewBox="0 0 15 15" fill="none">
+              <svg
+                id="details-checkIcon"
+                class="circle left-icon"
+                viewBox="0 0 15 15"
+                fill="none"
+              >
                 <circle cx="7.5" cy="7.5" r="7" stroke="var(--primary-color)" />
               </svg>
-              <div class="task-content">
-                <h3 id="details-task-name">Run Laundry</h3>
+              <div class="details-task-content">
+                <!-- <h3 id="details-task-name">Run Laundry</h3> -->
+                <input
+                  id="details-task-name-input"
+                  value="Run Laundry"
+                  class="blank-input"
+                  style="font-size: 16px"
+                />
               </div>
               <svg
+                id="details-starIcon"
                 class="right-icon"
                 width="20px"
                 viewBox="0 0 17 16"
@@ -350,7 +386,7 @@
                 />
               </svg>
 
-              <div class="task-content">
+              <div class="details-task-content">
                 <p id="details-task-duedate">Due Sun, November 10</p>
               </div>
               <svg width="13px" viewBox="0 0 329.26933 329" class="right-icon">
@@ -375,7 +411,7 @@
                   <line x1="1.65" y1="1.35" x2="1.35" y2="1.35" />
                 </g>
               </svg>
-              <div class="task-content">
+              <div class="details-task-content">
                 <p>List</p>
               </div>
               <svg class="right-icon" width="13px" viewBox="0 0 329.26933 329">
@@ -389,17 +425,56 @@
               <svg class="left-icon" viewBox="0 0 512 512" width="18px">
                 <path
                   d="m256 439.98c-13.81 0-25-11.19-25-25v-317.96c0-13.81 11.19-25 25-25s25 11.19 25 25v317.96c0 13.81-11.19 25-25 25z"
-                  fill="var(--lightgrey)"
+                  fill="var(--dark-grey)"
                 />
                 <path
                   d="m414.98 281h-317.96c-13.81 0-25-11.19-25-25s11.19-25 25-25h317.96c13.81 0 25 11.19 25 25s-11.19 25-25 25z"
-                  fill="var(--lightgrey)"
+                  fill="var(--dark-grey)"
                 />
               </svg>
-              <div class="task-content">
+              <div class="details-task-content">
                 <p>Add note</p>
               </div>
             </div>
+          </div>
+
+          <div class="task-details-footer">
+            <div class="actionBtn">
+              <svg
+                width="15"
+                height="15"
+                xmlns="http://www.w3.org/2000/svg"
+                xmlns:xlink="http://www.w3.org/1999/xlink"
+                viewBox="0 0 512 512"
+                style="enable-background: new 0 0 512 512"
+                xml:space="preserve"
+                fill="var(--dark-grey)"
+              >
+                <g>
+                  <path
+                    d="M436,60h-75V45c0-24.813-20.187-45-45-45H196c-24.813,0-45,20.187-45,45v15H76c-24.813,0-45,20.187-45,45
+		c0,19.928,13.025,36.861,31.005,42.761L88.76,470.736C90.687,493.875,110.385,512,133.604,512h244.792
+		c23.22,0,42.918-18.125,44.846-41.271l26.753-322.969C467.975,141.861,481,124.928,481,105C481,80.187,460.813,60,436,60z M181,45
+		c0-8.271,6.729-15,15-15h120c8.271,0,15,6.729,15,15v15H181V45z M393.344,468.246c-0.643,7.712-7.208,13.754-14.948,13.754
+		H133.604c-7.739,0-14.305-6.042-14.946-13.747L92.294,150h327.412L393.344,468.246z M436,120H76c-8.271,0-15-6.729-15-15
+		s6.729-15,15-15h360c8.271,0,15,6.729,15,15S444.271,120,436,120z"
+                  />
+                  <path
+                    d="M195.971,436.071l-15-242c-0.513-8.269-7.67-14.558-15.899-14.043c-8.269,0.513-14.556,7.631-14.044,15.899l15,242.001
+		c0.493,7.953,7.097,14.072,14.957,14.072C189.672,452,196.504,444.684,195.971,436.071z"
+                  />
+                  <path
+                    d="M256,180c-8.284,0-15,6.716-15,15v242c0,8.284,6.716,15,15,15s15-6.716,15-15V195C271,186.716,264.284,180,256,180z"
+                  />
+                  <path
+                    d="M346.927,180.029c-8.25-0.513-15.387,5.774-15.899,14.043l-15,242c-0.511,8.268,5.776,15.386,14.044,15.899
+		c8.273,0.512,15.387-5.778,15.899-14.043l15-242C361.483,187.659,355.196,180.541,346.927,180.029z"
+                  />
+                </g>
+              </svg>
+              Delete
+            </div>
+            <div id="task-details-save-btn" class="actionBtn saveBtn">Save</div>
           </div>
         </div>
       </div>
@@ -409,7 +484,7 @@
     <div id="addTaskModal" class="modal">
       <div class="modal-content">
         <div class="modal-header">
-          <h2>Add Task</h2>
+          <h2>Create Task</h2>
           <span id="closeAddTaskModal" class="close-btn">&times;</span>
         </div>
         <div class="modal-inputs">

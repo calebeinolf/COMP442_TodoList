@@ -15,13 +15,13 @@ body {
     white 80%
   );
   --dark-primary-color: color-mix(in srgb, var(--primary-color) 80%, black 20%);
-  --lightgrey: #b3b3b3;
   --primary-text-color: "white"; /* For text on top of the primary color*/
+  --dark-grey: rgb(97, 97, 97);
   /* --ai-gradient: linear-gradient(#e66465, #9198e5); */
 }
 
 p {
-  font-size: 15px;
+  font-size: 16px;
 }
 
 ::-webkit-scrollbar {
@@ -212,7 +212,7 @@ button {
 
   h4 {
     font-weight: 600;
-    color: #616161;
+    color: var(--dark-grey);
   }
 }
 
@@ -243,7 +243,7 @@ button {
   background: var(--primary-color);
   color: var(--primary-text-color);
   font-weight: 500;
-  font-size: 15px;
+  font-size: 16px;
   padding: 0 12px;
 
   /* transition: 0.1s ease-in-out;
@@ -272,8 +272,8 @@ button {
 /* Task details styles */
 .task-details-container {
   display: none;
-  width: 40vw;
-  max-width: 450px;
+  width: 60vw;
+  max-width: 600px;
   min-width: 350px;
   padding: 20px;
   padding-left: 0;
@@ -289,6 +289,8 @@ button {
   height: 100%;
   border-radius: 6px;
   padding: 20px;
+  display: flex;
+  flex-direction: column;
 }
 
 .details-list {
@@ -298,8 +300,64 @@ button {
   gap: 10px;
 }
 
+.task-details-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 15px;
+}
+
+.actionBtn {
+  cursor: pointer;
+  border-radius: 6px;
+  padding: 8px 20px;
+  font-size: 16px;
+  border: 1px solid var(--dark-grey);
+  color: var(--dark-grey);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+.actionBtn:hover {
+  border: 1px solid rgb(230, 44, 44);
+  background-color: rgba(255, 255, 255, 0.2);
+  color: rgb(230, 44, 44);
+  svg {
+    fill: rgb(230, 44, 44);
+  }
+}
+
+.saveBtn {
+  border: none;
+  background-color: var(--primary-color);
+  color: white;
+}
+.saveBtn:hover {
+  border: none;
+  background-color: var(--dark-primary-color);
+  color: white;
+}
+
 .detail-card {
   padding: 16px 24px;
+}
+
+.task-details-header {
+  margin-top: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--primary-color);
+  h3 {
+    font-weight: 600;
+  }
+}
+
+.close-details-btn {
+  cursor: pointer;
+  font-size: 25px;
+  font-weight: 300;
 }
 
 .circle {
@@ -323,13 +381,18 @@ button {
 
 .task-content h3 {
   margin: 0;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 400;
 }
 
 .task-content p {
-  font-size: 12px;
+  font-size: 13px;
   color: #616161;
+  font-weight: 300;
+}
+
+.details-task-content p {
+  font-size: 16px;
   font-weight: 300;
 }
 
@@ -341,15 +404,17 @@ button {
   margin-top: 2px;
   display: flex;
   gap: 8px;
-  color: #616161;
+  color: var(--dark-grey);
 }
 
 .right-icon {
   margin-left: auto;
+  cursor: pointer;
 }
 
 .left-icon {
   margin-right: 18px;
+  cursor: pointer;
 }
 
 /* .modal {
@@ -479,7 +544,7 @@ button {
   font-size: 1rem;
   cursor: pointer;
   text-align: center;
-  transition: background-color 0.3s ease;
+  /* transition: background-color 0.3s ease; */
   margin: 0;
 }
 
@@ -511,13 +576,13 @@ button {
   }
 }
 
-.ai-add-task-input {
+.blank-input {
   font-size: 14px;
   width: 100%;
   border: none;
 }
 
-.ai-add-task-input:focus {
+.blank-input:focus {
   outline: none;
 }
 
