@@ -111,14 +111,25 @@ document.addEventListener("DOMContentLoaded", async () => {
             paletteColorBtns.classList.remove("active");
             document.getElementById("palette-icon").style.display = "flex";
             document.getElementById("colors-close-icon").style.display = "none";
+            document.removeEventListener("click", handleOutsidePaletteClick);
         }
         else {
             document.getElementById("colors-close-icon").style.display = "flex";
             document.getElementById("palette-icon").style.display = "none";
             paletteColorBtns.classList.add("active");
+            document.addEventListener("click", handleOutsidePaletteClick);
         }
     });
 });
+const handleOutsidePaletteClick = (event) => {
+    const paletteContainer = document.getElementById("palette-container");
+    if (paletteContainer && !paletteContainer.contains(event.target)) {
+        const paletteColorBtns = document.getElementById("palette-color-btns");
+        paletteColorBtns.classList.remove("active");
+        document.getElementById("palette-icon").style.display = "flex";
+        document.getElementById("colors-close-icon").style.display = "none";
+    }
+};
 async function getPrimaryColor() {
     const response = await fetch(`/getUserColor/`, {
         method: "GET",
@@ -368,7 +379,7 @@ function createTaskCard(div, task, overdue, dueToday) {
     taskInfo.className = "task-info";
     taskContent.appendChild(taskInfo);
     const listText = document.createElement("p");
-    listText.textContent = `List${task.duedate !== null ? " • " : ""}`;
+    listText.textContent = `List${task.duedate !== null ? " \u00a0•\u00a0 " : ""}`;
     taskInfo.appendChild(listText);
     if (task.duedate !== null) {
         const calendarSVG = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -377,6 +388,7 @@ function createTaskCard(div, task, overdue, dueToday) {
         const calendarPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
         calendarPath.setAttribute("d", "M22.611,3.182H20.455V2a1,1,0,0,0-2,0V3.182H9.545V2a1,1,0,0,0-2,0V3.182H5.389A4.394,4.394,0,0,0,1,7.571v15.04A4.394,4.394,0,0,0,5.389,27H22.611A4.394,4.394,0,0,0,27,22.611V7.571A4.394,4.394,0,0,0,22.611,3.182Zm-17.222,2H7.545V6.364a1,1,0,0,0,2,0V5.182h8.91V6.364a1,1,0,1,0,2,0V5.182h2.156A2.391,2.391,0,0,1,25,7.571V9.727H3V7.571A2.391,2.391,0,0,1,5.389,5.182ZM22.611,25H5.389A2.392,2.392,0,0,1,3,22.611V11.727H25V22.611A2.392,2.392,0,0,1,22.611,25Z");
         calendarPath.setAttribute("fill", overdue ? "#e83a3a" : dueToday ? "var(--primary-color)" : "#616161");
+        calendarSVG.style.marginLeft = "-2px";
         calendarSVG.appendChild(calendarPath);
         const dateText = document.createElement("p");
         dateText.textContent = formatDate(new Date(task.duedate));
@@ -385,6 +397,7 @@ function createTaskCard(div, task, overdue, dueToday) {
             : dueToday
                 ? "var(--primary-color)"
                 : "#616161";
+        dateText.style.marginLeft = "-2px";
         taskInfo.appendChild(calendarSVG);
         taskInfo.appendChild(dateText);
     }

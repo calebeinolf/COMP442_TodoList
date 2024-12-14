@@ -208,13 +208,30 @@ document.addEventListener("DOMContentLoaded", async () => {
       paletteColorBtns.classList.remove("active");
       document.getElementById("palette-icon").style.display = "flex";
       document.getElementById("colors-close-icon").style.display = "none";
+
+      document.removeEventListener("click", handleOutsidePaletteClick);
     } else {
+      // if the menu is open
       document.getElementById("colors-close-icon").style.display = "flex";
       document.getElementById("palette-icon").style.display = "none";
       paletteColorBtns.classList.add("active");
+
+      document.addEventListener("click", handleOutsidePaletteClick);
     }
   });
 });
+
+const handleOutsidePaletteClick = (event: MouseEvent) => {
+  const paletteContainer = document.getElementById("palette-container");
+  if (paletteContainer && !paletteContainer.contains(event.target as Node)) {
+    const paletteColorBtns = document.getElementById(
+      "palette-color-btns"
+    ) as HTMLElement;
+    paletteColorBtns.classList.remove("active");
+    document.getElementById("palette-icon").style.display = "flex";
+    document.getElementById("colors-close-icon").style.display = "none";
+  }
+};
 
 async function getPrimaryColor() {
   const response = await fetch(`/getUserColor/`, {
@@ -543,7 +560,9 @@ function createTaskCard(
 
   // List text
   const listText = document.createElement("p");
-  listText.textContent = `List${task.duedate !== null ? " • " : ""}`;
+  listText.textContent = `List${
+    task.duedate !== null ? " \u00a0•\u00a0 " : ""
+  }`;
   taskInfo.appendChild(listText);
 
   if (task.duedate !== null) {
@@ -567,6 +586,7 @@ function createTaskCard(
       "fill",
       overdue ? "#e83a3a" : dueToday ? "var(--primary-color)" : "#616161"
     );
+    calendarSVG.style.marginLeft = "-2px";
     calendarSVG.appendChild(calendarPath);
 
     // Date text
@@ -578,6 +598,7 @@ function createTaskCard(
       ? "var(--primary-color)"
       : "#616161";
 
+    dateText.style.marginLeft = "-2px";
     taskInfo.appendChild(calendarSVG);
     taskInfo.appendChild(dateText);
   }
