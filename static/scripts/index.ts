@@ -50,7 +50,7 @@ interface Task {
 
 interface TaskStub {
   id: number;
-  name: string;
+  name?: string;
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -168,7 +168,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     postPrimaryColor(backgroundColor);
   });
   const greenBtn = <HTMLDivElement>document.getElementById("green-btn");
-  greenBtn.style.backgroundColor = "#6ab05f";
+  greenBtn.style.backgroundColor = "#429b35";
   greenBtn.addEventListener("click", () => {
     const backgroundColor = rgbToHex(
       window.getComputedStyle(greenBtn).backgroundColor
@@ -229,6 +229,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const saveBtn = document.getElementById("task-details-save-btn");
   saveBtn.addEventListener("click", saveTaskFromDetailsPanel);
+
+  const detailsPanelNameInput = document.getElementById(
+    "details-task-name-input"
+  );
+  detailsPanelNameInput.addEventListener("keyup", (event) => {
+    if (event.code === "Enter") {
+      saveTaskFromDetailsPanel();
+    }
+  });
 });
 
 const handleOutsidePaletteClick = (event: MouseEvent) => {
@@ -297,8 +306,8 @@ function changeThemeColor(div: HTMLDivElement, color: string) {
   div.classList.add("selected-color-btn");
 }
 
-// Helper for setPrimaryTextColor()
 function getLuminance(hexColor: string): number {
+  // Helper for setPrimaryTextColor()
   // Remove the hash if present and ensure the string is 6 characters long
   const hex = hexColor.replace(/^#/, "");
   if (hex.length !== 6) return 1;
@@ -441,7 +450,9 @@ async function loadTasks() {
 }
 
 async function saveTaskFromDetailsPanel() {
-  console.log("saving task from details panel");
+  // Sends the updated task info to the server in a stub format.
+  // Server returns the full updated task object.
+  // Typescript updates the corresponding task card in the list.
 
   const titleInput = <HTMLInputElement>(
     document.getElementById("details-task-name-input")
@@ -456,8 +467,6 @@ async function saveTaskFromDetailsPanel() {
     name: newTitle,
   };
 
-  console.log(taskStub);
-
   const taskPostURL = "/updateUserTask/";
   const response = await fetch(taskPostURL, {
     method: "POST",
@@ -466,8 +475,11 @@ async function saveTaskFromDetailsPanel() {
     },
     body: JSON.stringify(taskStub),
   });
-  const serverResponse = <Task>await validatejson(response);
-  console.log(serverResponse);
+  const updatedTask = <Task>await validatejson(response);
+
+  const oldTaskCard = document.getElementById(`task-${updatedTask.id}`);
+  oldTaskCard.parentNode.removeChild(oldTaskCard);
+  appendTask(updatedTask);
 }
 
 async function postTask() {

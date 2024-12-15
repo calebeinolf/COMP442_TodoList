@@ -897,8 +897,16 @@ def postTask():
 
 @app.post("/updateUserTask/")
 def updateTask():
-    print(request.json)
-    return jsonify({"error": "Method not implemented"}), 501
+    response = request.json
+    print(response)
+    taskId = response["id"]
+    task = Task.query.get_or_404(taskId)
+    if "name" in response:
+        task.name = response["name"]
+
+    db.session.commit()
+
+    return task.to_json()
 
 
 @app.post("/markComplete/<int:taskId>/<int:complete>/")

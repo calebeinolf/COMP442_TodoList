@@ -78,7 +78,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         postPrimaryColor(backgroundColor);
     });
     const greenBtn = document.getElementById("green-btn");
-    greenBtn.style.backgroundColor = "#6ab05f";
+    greenBtn.style.backgroundColor = "#429b35";
     greenBtn.addEventListener("click", () => {
         const backgroundColor = rgbToHex(window.getComputedStyle(greenBtn).backgroundColor);
         changeThemeColor(greenBtn, backgroundColor);
@@ -122,6 +122,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
     const saveBtn = document.getElementById("task-details-save-btn");
     saveBtn.addEventListener("click", saveTaskFromDetailsPanel);
+    const detailsPanelNameInput = document.getElementById("details-task-name-input");
+    detailsPanelNameInput.addEventListener("keyup", (event) => {
+        if (event.code === "Enter") {
+            saveTaskFromDetailsPanel();
+        }
+    });
 });
 const handleOutsidePaletteClick = (event) => {
     const paletteContainer = document.getElementById("palette-container");
@@ -289,7 +295,6 @@ async function loadTasks() {
     }
 }
 async function saveTaskFromDetailsPanel() {
-    console.log("saving task from details panel");
     const titleInput = (document.getElementById("details-task-name-input"));
     const newTitle = titleInput.value;
     const detailsPanel = (document.getElementById("task-details-container"));
@@ -297,7 +302,6 @@ async function saveTaskFromDetailsPanel() {
         id: Number(detailsPanel.dataset.taskId),
         name: newTitle,
     };
-    console.log(taskStub);
     const taskPostURL = "/updateUserTask/";
     const response = await fetch(taskPostURL, {
         method: "POST",
@@ -306,8 +310,10 @@ async function saveTaskFromDetailsPanel() {
         },
         body: JSON.stringify(taskStub),
     });
-    const serverResponse = await validatejson(response);
-    console.log(serverResponse);
+    const updatedTask = await validatejson(response);
+    const oldTaskCard = document.getElementById(`task-${updatedTask.id}`);
+    oldTaskCard.parentNode.removeChild(oldTaskCard);
+    appendTask(updatedTask);
 }
 async function postTask() {
     const taskTitleInput = (document.getElementById("task-title-input"));
