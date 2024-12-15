@@ -1048,21 +1048,15 @@ def postTask():
         db.session.commit() # like before
 
         print("added task: " + newtask.name)
-        # FIXME: is it incorrect to return json here because application/x-www-form-urlencoded is
-        # what was sent to us?
+        # is it incorrect to return json here because application/x-www-form-urlencoded is
+        # what was sent to us? -> answer: nah, I think it's fine
         return jsonify(newtask.to_json()), 201
     # if failed add, tell them why
     for field, em in form.errors.items():
         flash(f"Error in {field}: {em}")
         print(f"flashed 'Error in {field}: {em}'")
 
-    # FIXME: is it incorrect to return json here because application/x-www-form-urlencoded is
-    # what was sent to us?
-    return jsonify({"message":"requested creation of an invalid task"}),400
-
-
-    # return Task(name=json["name"],duedate=json["duedate"],complete=json["complete"],starred=json["starred"],userid=current_user.id,)
-    #form = TaskCreationForm(data={"name":newTask.name,"duedate":newTask.duedate,"complete":newTask.complete,"starred":newTask.starred})
+    return jsonify({"message":"Requested creation of an invalid task: task creation failed"}),400
 
 
 @app.post("/updateUserTask/")
