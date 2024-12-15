@@ -12,7 +12,7 @@ namespace gpt {
     id: number;
     name: string;
     starred: boolean;
-    duedate: string;
+    duedate: number;
     priority: number;
     tasklistnames: string[];
   }
@@ -408,6 +408,7 @@ async function sendAudioToFlask(audioBlob: Blob) {
         id: task.id,
         name: task.name,
         complete: false,
+        duedate: (task.duedate * 1000),
         starred: task.starred,
       };
       appendTask(dbTask);
@@ -915,6 +916,7 @@ async function askChatGPT() {
         id: task.id,
         name: task.name,
         complete: false,
+        duedate: (task.duedate * 1000),
         starred: task.starred,
       };
       appendTask(dbTask);

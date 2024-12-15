@@ -259,6 +259,7 @@ async function sendAudioToFlask(audioBlob) {
                 id: task.id,
                 name: task.name,
                 complete: false,
+                duedate: (task.duedate * 1000),
                 starred: task.starred,
             };
             appendTask(dbTask);
@@ -638,6 +639,7 @@ async function askChatGPT() {
                 id: task.id,
                 name: task.name,
                 complete: false,
+                duedate: (task.duedate * 1000),
                 starred: task.starred,
             };
             appendTask(dbTask);

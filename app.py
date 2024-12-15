@@ -688,6 +688,7 @@ def askGPT():
             name=task.name, userid=current_user.id
         ).first()
         task.id = dbTask.id
+        # task.duedate = dbTask.duedate
 
     return jsonify({"status": "success", "GPTResponse": response.toDict()})
 
@@ -703,7 +704,7 @@ def addGPTResponse(response: chat_gpt.Chat_GPT_Response):
             Task(
                 name=task.name,
                 starred=task.starred,
-                duedate=datetime.strptime(task.duedate, "%Y-%m-%d,%H:%M"),
+                duedate=task.duedate,
                 priority=task.priority,
                 userid=current_user.id,
             )

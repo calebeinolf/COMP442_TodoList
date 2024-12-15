@@ -41,7 +41,7 @@ class Task:
         
         dates = (fullDate[0]).split("/")
         newDate = f"{dates[2]}-{dates[0]}-{dates[1]},{fullDate[1]}"
-        self.duedate: str = newDate
+        self.duedate: datetime = datetime.strptime(duedate, "%m/%d/%Y,%H:%M")
         self.priority: int = priority
         self.tasklistnames: list[str] = tasklistnames
         
@@ -54,11 +54,12 @@ class Task:
             )
     
     def toDict(self) -> dict:
+        print(f"Due Date: {self.duedate}")
         return{
             "id": self.id,
             "name": self.name,
             "starred": self.starred,
-            "duedate": self.duedate,
+            "duedate": self.duedate.timestamp(),
             "priority": self.priority,
             "tasklistnames": ','.join(self.tasklistnames)
         }
@@ -209,8 +210,14 @@ class Chat_GPT:
         return reply
         
     def newAsk (self, question: str, taskLists: list[str], tasks: list[str]) -> Chat_GPT_Response:
+        
         self.promptEngineering += f"\nHere is a list of all the tasks already in the app:\n{','.join(tasks)}"
         self.promptEngineering += f"\nHere is a list of all the task lists already in the app:\n{','.join(taskLists)}"
+        
+        currentDate: datetime = datetime.now()
+        self.promptEngineering += f"\nthe current date is: {currentDate.strftime("%m/%d/%Y,%H:%M %A")}"
+        
+        print(f"Current date: {currentDate.strftime("%m/%d/%Y,%H:%M %A")}")
         
         self.messages = [{
             "role": "system", 
