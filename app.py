@@ -180,7 +180,7 @@ class Task(db.Model):
 
     # should be a value in range [1,10] if not null
     priority = db.Column(db.Integer, nullable=True)
-    generalnotes = db.Column(db.Unicode, nullable=True)
+    notes = db.Column(db.Unicode, nullable=True)
     userid = db.Column(db.Integer, db.ForeignKey("Users.id"), nullable=False)
 
     # now we have a list of subtasks which can refer to their task through the task var
@@ -192,19 +192,6 @@ class Task(db.Model):
     def __eq__(self, othertask):
         return isinstance(othertask, Task) and self.id == othertask.id
 
-    # def __init__(self,name,userid=None,complete=False,progressnotes="",duedate=None,duetime=None,priority=None,generalnotes="",user=None):
-    # self.name=name
-    # self.userid=userid
-    # self.complete=complete
-    # self.progressnotes=progressnotes
-    # self.duedate=duedate
-    # self.duetime=duetime
-    # self.priority=priority
-    # self.generalnotes=generalnotes
-    # NOTE:user should never be None
-    # if not user: raise ValueError("A task MUST be associated with a user")
-    # self.user = user
-
     def to_json(self) -> dict:
         return {
             "id": self.id,
@@ -212,6 +199,7 @@ class Task(db.Model):
             "duedate": self.duedate,
             "complete": self.complete,
             "starred": self.starred,
+            "notes": self.notes,
         }
 
     def from_json(json):
@@ -268,12 +256,10 @@ class TaskList(db.Model):
     # method which is being used with Task.tasklists)
     def __eq__(self, othertl):
         return isinstance(othertl, TaskList) and self.id == othertl.id
-    
+
     def to_json(self):
-        return{
-            "id": self.id,
-            "name": self.name
-        }
+        return {"id": self.id, "name": self.name}
+
     # def __init__(self,name,userid=None,user=None):
     # self.name=name
     # self.userid=userid
@@ -645,7 +631,7 @@ def posttaskform():
             duedate=form.duedate.data,
             duetime=form.duetime.data,
             priority=form.priority.data,
-            generalnotes=form.generalnotes.data,
+            notes=form.notes.data,
             user=current_user,
         )
 
@@ -1002,17 +988,15 @@ def deletetasklist(tlid):
     db.session.delete(tl)
     db.session.commit()
 
+
 @app.get("/getUserTaskLists/")
 def getUserTaskLists():
     tasklists: list[TaskList] = TaskList.query.filter_by(userid=current_user.id).all()
-    
+
     print(f"Task Lists: {tasklists}")
-    
-    return jsonify(
-        {
-            "tasklists": [taskList.to_json() for taskList in tasklists]
-        }
-    )
+
+    return jsonify({"tasklists": [taskList.to_json() for taskList in tasklists]})
+
 
 # @cross_origin(supports_credentials=True)
 @app.get("/getUserTasks/")
@@ -1085,8 +1069,10 @@ def updateTask():
     print(response)
     taskId = response["id"]
     task = Task.query.get_or_404(taskId)
-    if "name" in response:
-        task.name = response["name"]
+
+    task.name = response["name"]
+    task.duedate = response["duedate"]
+    task.notes = response["notes"]
 
     db.session.commit()
 
@@ -1139,6 +1125,7 @@ def markStarred(taskId, starred):
                 "starred": task.starred,
             }
         )
+
 
 @app.get("/getUserColor/")
 def getColor():

@@ -46,16 +46,19 @@ interface Task {
   // lists: [string];
   duedate?: number;
   starred: boolean;
+  notes: string;
 }
 
 interface TaskList {
   id: number;
-  name: string
+  name: string;
 }
 
 interface TaskStub {
   id: number;
   name?: string;
+  duedate?: number;
+  notes?: string;
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -421,8 +424,9 @@ async function sendAudioToFlask(audioBlob: Blob) {
         id: task.id,
         name: task.name,
         complete: false,
-        duedate: (task.duedate * 1000),
+        duedate: task.duedate * 1000,
         starred: task.starred,
+        notes: "",
       };
       appendTask(dbTask);
     }
@@ -436,20 +440,19 @@ async function sendAudioToFlask(audioBlob: Blob) {
 }
 
 async function loadTaskLists() {
-  try{
+  try {
     const response = await fetch("/getUserTaskLists/", {
       method: "GET",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
-      credentials: "include"
+      credentials: "include",
     });
     const taskLists = await validatejson(response);
 
     for (const taskList of taskLists.tasklists) {
       appendTaskList(taskList);
     }
-
   } catch (error) {
     console.error("Error fetching task lists:", error);
   }
@@ -476,7 +479,7 @@ async function loadTasks() {
         task.duedate = new Date(<string>task.duedate);
       }
       appendTask(task);
-      // openDetails(task); // TO DELETE
+      openDetails(task); // TO DELETE
     }
   } catch (error) {
     console.error("Error fetching tasks:", error);
@@ -488,10 +491,26 @@ async function saveTaskFromDetailsPanel() {
   // Server returns the full updated task object.
   // Typescript updates the corresponding task card in the list.
 
+  // get title
   const titleInput = <HTMLInputElement>(
     document.getElementById("details-task-name-input")
   );
   const newTitle = titleInput.value;
+
+  // duedate
+  const duedateInput = <HTMLInputElement>(
+    document.getElementById("details-task-duedate-input")
+  );
+  const inputValue = duedateInput.value; // Get the value as a string
+  const [year, month, day] = inputValue.split("-"); // Extract year, month, and day
+  // Create a new Date object using the local time zone, set the time to midnight
+  const newDuedate = new Date(`${year}-${month}-${day}T00:00:00`);
+
+  //notes
+  const notesInput = <HTMLInputElement>(
+    document.getElementById("details-task-notes-input")
+  );
+  const newNotes = notesInput.value;
 
   const detailsPanel = <HTMLDivElement>(
     document.getElementById("task-details-container")
@@ -499,6 +518,8 @@ async function saveTaskFromDetailsPanel() {
   const taskStub: TaskStub = {
     id: Number(detailsPanel.dataset.taskId),
     name: newTitle,
+    duedate: newDuedate.getTime(),
+    notes: newNotes,
   };
 
   const taskPostURL = "/updateUserTask/";
@@ -510,6 +531,7 @@ async function saveTaskFromDetailsPanel() {
     body: JSON.stringify(taskStub),
   });
   const updatedTask = <Task>await validatejson(response);
+  console.log(updatedTask);
 
   const oldTaskCard = document.getElementById(`task-${updatedTask.id}`);
   oldTaskCard.parentNode.removeChild(oldTaskCard);
@@ -536,14 +558,22 @@ async function postTask() {
     const taskDuedate = taskDuedateDateObj.getTime();
 
     const urlsps = new URLSearchParams();
-    urlsps.append("name",taskTitle);
-    urlsps.append("duedate",`${taskDuedate ? taskDuedate : new Date().getTime()}`);
-    urlsps.append("complete","false");
-    urlsps.append("starred","false");
-    const csrfinpele:HTMLDivElement = document.createElement("div");
-    csrfinpele.innerHTML = await (await fetch("/api/v0/getcsrftok/create/task")).text();
+    urlsps.append("name", taskTitle);
+    urlsps.append(
+      "duedate",
+      `${taskDuedate ? taskDuedate : new Date().getTime()}`
+    );
+    urlsps.append("complete", "false");
+    urlsps.append("starred", "false");
+    const csrfinpele: HTMLDivElement = document.createElement("div");
+    csrfinpele.innerHTML = await (
+      await fetch("/api/v0/getcsrftok/create/task")
+    ).text();
     console.log(csrfinpele.innerHTML);
-    urlsps.append("csrf_token",csrfinpele.firstElementChild.getAttribute("value"));
+    urlsps.append(
+      "csrf_token",
+      csrfinpele.firstElementChild.getAttribute("value")
+    );
 
     taskTitleInput.value = "";
     taskDuedateInput.value = "";
@@ -554,11 +584,11 @@ async function postTask() {
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
         // want to get form.hidden_tag() in here
-        "X-CSRFToken": urlsps.get("csrf_token")
+        "X-CSRFToken": urlsps.get("csrf_token"),
       },
-      body: urlsps.toString()
+      body: urlsps.toString(),
     });
-    const serverTask = <Task> await validatejson(response);
+    const serverTask = <Task>await validatejson(response);
     console.log("task created: " + JSON.stringify(serverTask));
     appendTask(serverTask);
   }
@@ -574,14 +604,22 @@ function createLine(x1: number, y1: number, x2: number, y2: number) {
 }
 
 async function appendTaskList(taskList: TaskList) {
-  const taskListElement = <HTMLUListElement> document.getElementById("task_lists");
+  const taskListElement = <HTMLUListElement>(
+    document.getElementById("task_lists")
+  );
   const listItem: HTMLLIElement = document.createElement("li");
 
-  const svgElement: SVGSVGElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  const svgElement: SVGSVGElement = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "svg"
+  );
   svgElement.classList.add("list-icon");
   svgElement.setAttribute("viewBox", "0 0 14 14");
   svgElement.setAttribute("fill", "none");
-  const gElement: SVGGElement = document.createElementNS("http://www.w3.org/2000/svg", "g");
+  const gElement: SVGGElement = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "g"
+  );
   gElement.setAttribute("stroke", "var(--primary-color)");
   gElement.setAttribute("stroke-width", "1.4");
   gElement.setAttribute("stroke-linecap", "round");
@@ -818,13 +856,19 @@ function openDetails(task: Task) {
   );
   nameInput.value = task.name;
 
+  const dateInput = <HTMLInputElement>(
+    document.getElementById("details-task-duedate-input")
+  );
   if (task.duedate !== null) {
-    document.getElementById("details-task-duedate").innerText = formatDate(
-      new Date(task.duedate)
-    );
+    dateInput.value = formatDateForInputField(new Date(task.duedate));
   } else {
-    document.getElementById("details-task-duedate").innerText = "";
+    dateInput.value = "";
   }
+
+  const notesIput = <HTMLInputElement>(
+    document.getElementById("details-task-notes-input")
+  );
+  notesIput.value = task.notes;
 
   const checkIcon = document.getElementById("details-checkIcon");
   const starIcon = document.getElementById("details-starIcon");
@@ -975,6 +1019,14 @@ function formatDate(date: Date): string {
   return `${dayOfWeek}, ${month} ${dayOfMonth}`;
 }
 
+function formatDateForInputField(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are 0-based
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
 async function askChatGPT() {
   const textField = <HTMLInputElement>(
     document.getElementById("aiPromptTextField")
@@ -990,7 +1042,7 @@ async function askChatGPT() {
     console.log("HELLLOOOO");
 
     const response = <gpt.ServerResponse>await getChatGPTResponse(input, types);
-    
+
     spinner.style.display = "none";
 
     for (const tasklist of response.GPTResponse.tasklists) {
@@ -1001,8 +1053,9 @@ async function askChatGPT() {
         id: task.id,
         name: task.name,
         complete: false,
-        duedate: (task.duedate * 1000),
+        duedate: task.duedate * 1000,
         starred: task.starred,
+        notes: "",
       };
       appendTask(dbTask);
     }
