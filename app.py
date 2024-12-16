@@ -523,6 +523,7 @@ def post_login():
         if user is not None and user.verify_password(form.password.data):
             # log this user in through the login_manager
             login_user(user)
+            print(f"current_user:{current_user}")
             # redirect the user to the page they wanted or the home page
             next = request.args.get("next")
             if next is None or not next.startswith("/"):
@@ -583,7 +584,7 @@ def index():
         flash("Please login")
         return redirect(url_for("get_login"))
 
-
+@login_required
 @app.get("/viewalltasks/")
 def viewalltasks():
     return render_template(
@@ -842,6 +843,10 @@ def addGPTResponse(response: chat_gpt.Chat_GPT_Response):
     db.session.commit()
 
     for task in response.tasks:
+        taskLists: list[TaskList] = TaskList.query.filter(
+                                        TaskList.name.in_(task.tasklistnames), 
+                                        TaskList.userid == current_user.id
+                                    ).all()
         db.session.add(
             Task(
                 name=task.name,
@@ -849,6 +854,7 @@ def addGPTResponse(response: chat_gpt.Chat_GPT_Response):
                 duedate=task.duedate,
                 priority=task.priority,
                 userid=current_user.id,
+                tasklists=taskLists
             )
         )
     db.session.commit()
@@ -1001,6 +1007,18 @@ def deletetasklist(tlid):
 
     db.session.delete(tl)
     db.session.commit()
+
+@app.get("/getListTasks/<int:listId>/")
+def getTasksFromList(listId):
+    tasks: list[Task] = (
+        Task.query.join(TasksToTaskLists).filter(TasksToTaskLists.c.tlid == listId).filter(Task.userid == current_user.id).all()
+    )
+    
+    return jsonify(
+        {
+            "tasks": [task.to_json() for task in tasks]
+        }
+    )
 
 @app.get("/getUserTaskLists/")
 def getUserTaskLists():

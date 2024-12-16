@@ -40,7 +40,7 @@ class Task:
         fullDate = duedate.split(",")
         
         dates = (fullDate[0]).split("/")
-        newDate = f"{dates[2]}-{dates[0]}-{dates[1]},{fullDate[1]}"
+        # newDate = f"{dates[2]}-{dates[0]}-{dates[1]},{fullDate[1]}"
         self.duedate: datetime = datetime.strptime(duedate, "%m/%d/%Y,%H:%M")
         self.priority: int = priority
         self.tasklistnames: list[str] = tasklistnames

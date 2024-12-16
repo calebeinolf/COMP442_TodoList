@@ -63,6 +63,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   loadTaskLists();
 
+  const allTasksButton = <HTMLDivElement> document.getElementById("all-tasks-btn");
+  allTasksButton.addEventListener("click", () => {backToAllTasks()});
+
   const aiAddTaskInput = <HTMLInputElement>(
     document.getElementById("aiPromptTextField")
   );
@@ -72,6 +75,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       askChatGPT();
     }
   });
+
 
   const addTaskButton = <HTMLButtonElement>(
     document.getElementById("add-task-btn")
@@ -246,6 +250,38 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 });
+
+async function backToAllTasks(){
+
+  console.log("backToAllTasks")
+
+  const overdueSection = <HTMLDivElement> document.getElementById("overdue-list");
+  const dueTodaySection = <HTMLDivElement> document.getElementById("due-today-list");
+  const upcomingSection = <HTMLDivElement> document.getElementById("upcoming-list");
+
+  let children = Array.from(overdueSection.children);
+  children.forEach((child) => {
+    if (child.tagName.toLowerCase() === "div") {
+      overdueSection.removeChild(child);
+    }
+  });
+
+  children = Array.from(dueTodaySection.children);
+  children.forEach((child) => {
+    if (child.tagName.toLowerCase() === "div") {
+      dueTodaySection.removeChild(child);
+    }
+  });
+
+  children = Array.from(upcomingSection.children);
+  children.forEach((child) => {
+    if (child.tagName.toLowerCase() === "div") {
+      upcomingSection.removeChild(child);
+    }
+  });
+
+  loadTasks();
+}
 
 const handleOutsidePaletteClick = (event: MouseEvent) => {
   const paletteContainer = document.getElementById("palette-container");
@@ -595,11 +631,62 @@ async function appendTaskList(taskList: TaskList) {
 
   svgElement.appendChild(gElement);
   const aElement: HTMLAnchorElement = document.createElement("a");
-  aElement.href = "#";
+  aElement.style.cursor = "pointer";
+  // aElement.href = "#";
+  aElement.addEventListener("click", () => loadTasksFromList(taskList.id, aElement));
   aElement.innerText = taskList.name;
   listItem.appendChild(svgElement);
   listItem.appendChild(aElement);
   taskListElement.appendChild(listItem);
+}
+
+async function loadTasksFromList(taskId: number, aElement: HTMLAnchorElement){
+
+  try{
+
+    console.log("Loading Tasks from List")
+    const response = await fetch(`/getListTasks/${taskId}/`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      credentials: "include"
+    });
+    const tasks = await validatejson(response);
+
+    const taskListElement = <HTMLUListElement> document.getElementById("task_lists");
+    const overdueSection = <HTMLDivElement> document.getElementById("overdue-list");
+    const dueTodaySection = <HTMLDivElement> document.getElementById("due-today-list");
+    const upcomingSection = <HTMLDivElement> document.getElementById("upcoming-list");
+
+    let children = Array.from(overdueSection.children);
+    children.forEach((child) => {
+      if (child.tagName.toLowerCase() === "div") {
+        overdueSection.removeChild(child);
+      }
+    });
+
+    children = Array.from(dueTodaySection.children);
+    children.forEach((child) => {
+      if (child.tagName.toLowerCase() === "div") {
+        dueTodaySection.removeChild(child);
+      }
+    });
+
+    children = Array.from(upcomingSection.children);
+    children.forEach((child) => {
+      if (child.tagName.toLowerCase() === "div") {
+        upcomingSection.removeChild(child);
+      }
+    });
+
+    for (const task of tasks.tasks) {
+      appendTask(task);
+    }
+  } catch (error) {
+    console.error("Error fetching tasks:", error);
+  }
+
 }
 
 async function appendTask(task: Task) {
