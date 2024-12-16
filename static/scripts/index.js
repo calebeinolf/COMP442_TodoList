@@ -299,7 +299,7 @@ async function loadTaskLists() {
 async function loadTasks() {
     console.log("Loading Tasks");
     try {
-        const response = await fetch(`/getUserTasks/`, {
+        const response = await fetch("/getUserTasks/", {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -349,24 +349,21 @@ async function postTask() {
         const taskDuedateParts = taskDuedateValue.split("-");
         const taskDuedateDateObj = new Date(parseInt(taskDuedateParts[0], 10), parseInt(taskDuedateParts[1], 10) - 1, parseInt(taskDuedateParts[2], 10));
         const taskDuedate = taskDuedateDateObj.getTime();
-        const task = {
-            name: taskTitle,
-            duedate: taskDuedate ? taskDuedate : new Date().getTime(),
-            complete: false,
-            starred: false,
-        };
+        const urlsps = await get_params_for_task_to_post(taskTitle, taskDuedate);
         taskTitleInput.value = "";
         taskDuedateInput.value = "";
         const taskPostURL = "/postUserTask/";
         const response = await fetch(taskPostURL, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json",
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-CSRFToken": urlsps.get("csrf_token")
             },
-            body: JSON.stringify(task),
+            body: urlsps.toString()
         });
+        console.log("response: " + JSON.stringify(response));
         const serverTask = await validatejson(response);
-        console.log(serverTask);
+        console.log("task created: " + serverTask);
         appendTask(serverTask);
     }
 }
