@@ -762,73 +762,91 @@ def talkToGPT():
     question = transcript.text
 
     print(question)
+    
+    allTaskLists: list[TaskList] = TaskList.query.filter_by(userid=current_user.id).all()
+    allTaskListNames: list[str] = [taskList.name for taskList in allTaskLists]
+    allTasks: list[Task] = Task.query.filter_by(userid = current_user.id).all()
+    allTaskNames: list[str] = [task.name for task in allTasks]
+    
     chatGpt = chat_gpt.Chat_GPT()
-    response: chat_gpt.Chat_GPT_Response = chatGpt.newAsk(question, [], [])
-    addGPTResponse(response)
+    response: chat_gpt.Chat_GPT_Response = chatGpt.newAsk(question, allTaskListNames, allTaskNames)
+    if response.error_message == "None":
+        addGPTResponse(response)
 
-    for tasklist in response.tasklists:
-        dbTasklist: TaskList = TaskList.query.filter_by(
-            name=tasklist.name, userid=current_user.id
-        ).first()
-        tasklist.id = dbTasklist.id
+        for tasklist in response.tasklists:
+            dbTasklist: TaskList = TaskList.query.filter_by(
+                name=tasklist.name, userid=current_user.id
+            ).first()
+            tasklist.id = dbTasklist.id
 
-    for subtask in response.subtasks:
-        dbParentTask: Task = Task.query.filter_by(
-            name=subtask.parenttaskname, userid=current_user.id
-        ).first()
-        dbSubtask: Subtask = Subtask.query.filter_by(
-            name=subtask.name, taskid=dbParentTask.id
-        )
-        subtask.id = dbSubtask.id
+        for subtask in response.subtasks:
+            dbParentTask: Task = Task.query.filter_by(
+                name=subtask.parenttaskname, userid=current_user.id
+            ).first()
+            dbSubtask: Subtask = Subtask.query.filter_by(
+                name=subtask.name, taskid=dbParentTask.id
+            )
+            subtask.id = dbSubtask.id
 
-    for task in response.tasks:
-        dbTask: Task = Task.query.filter_by(
-            name=task.name, userid=current_user.id
-        ).first()
-        task.id = dbTask.id
+        for task in response.tasks:
+            dbTask: Task = Task.query.filter_by(
+                name=task.name, userid=current_user.id
+            ).first()
+            task.id = dbTask.id
 
-    return jsonify({"status": "success", "GPTResponse": response.toDict()})
+        return jsonify({"status": "success", "GPTResponse": response.toDict()})
+    else:
+        flash(f"ChatGPT Error: {response.error_message}")
+        return jsonify({"status": "error", "GPTResponse": response.toDict()})
 
 
 @login_required
 @app.get("/askChatGPT/")
 def askGPT():
     question: str = request.args.get("question")
-    types = request.args.get("types")
-    print(types)
-    actualTypes = [item.strip() for item in types.split(",")]
+        
+    allTaskLists: list[TaskList] = TaskList.query.filter_by(userid=current_user.id).all()
+    allTaskListNames: list[str] = [taskList.name for taskList in allTaskLists]
+    allTasks: list[Task] = Task.query.filter_by(userid = current_user.id).all()
+    allTaskNames: list[str] = [task.name for task in allTasks]
 
     chatGpt = chat_gpt.Chat_GPT()
-    response: chat_gpt.Chat_GPT_Response = chatGpt.newAsk(question, [], [])
+    response: chat_gpt.Chat_GPT_Response = chatGpt.newAsk(question, allTaskListNames, allTaskNames)
 
-    addGPTResponse(response)
+    if response.error_message == "None":
 
-    for tasklist in response.tasklists:
-        dbTasklist: TaskList = TaskList.query.filter_by(
-            name=tasklist.name, userid=current_user.id
-        ).first()
-        tasklist.id = dbTasklist.id
+        addGPTResponse(response)
 
-    for subtask in response.subtasks:
-        dbParentTask: Task = Task.query.filter_by(
-            name=subtask.parenttaskname, userid=current_user.id
-        ).first()
-        dbSubtask: Subtask = Subtask.query.filter_by(
-            name=subtask.name, taskid=dbParentTask.id
-        )
-        subtask.id = dbSubtask.id
+        for tasklist in response.tasklists:
+            dbTasklist: TaskList = TaskList.query.filter_by(
+                name=tasklist.name, userid=current_user.id
+            ).first()
+            tasklist.id = dbTasklist.id
 
-    for task in response.tasks:
-        dbTask: Task = Task.query.filter_by(
-            name=task.name, userid=current_user.id
-        ).first()
-        task.id = dbTask.id
-        # task.duedate = dbTask.duedate
+        for subtask in response.subtasks:
+            dbParentTask: Task = Task.query.filter_by(
+                name=subtask.parenttaskname, userid=current_user.id
+            ).first()
+            dbSubtask: Subtask = Subtask.query.filter_by(
+                name=subtask.name, taskid=dbParentTask.id
+            )
+            subtask.id = dbSubtask.id
 
-    return jsonify({"status": "success", "GPTResponse": response.toDict()})
+        for task in response.tasks:
+            dbTask: Task = Task.query.filter_by(
+                name=task.name, userid=current_user.id
+            ).first()
+            task.id = dbTask.id
+            # task.duedate = dbTask.duedate
+
+        return jsonify({"status": "success", "GPTResponse": response.toDict()}) 
+    else:
+        flash(f"ChatGPT Error: {response.error_message}")
+        return jsonify({"status": "error", "GPTResponse": response.toDict()})
 
 
 def addGPTResponse(response: chat_gpt.Chat_GPT_Response):
+    
     for tasklist in response.tasklists:
         t: TaskList = TaskList(name=tasklist.name, userid=current_user.id)
         db.session.add(t)

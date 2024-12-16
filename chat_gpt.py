@@ -113,19 +113,21 @@ class TaskList:
         return TaskList(d["name"])
 
 class Chat_GPT_Response:
-    def __init__(self, tasklists: list[TaskList], numtasklists: int, tasks: list[Task], numtasks: int, subtasks: list[SubTask], numsubtasks: int):
+    def __init__(self, tasklists: list[TaskList], numtasklists: int, tasks: list[Task], numtasks: int, subtasks: list[SubTask], numsubtasks: int, error_message: str):
         self.tasklists: list[TaskList] = tasklists
         self.numtasklists: int = numtasklists
         self.tasks: list[Task] = tasks
         self.numtasks: int = numtasks
         self.subtasks: list[SubTask] = subtasks
         self.numsubtasks: int = numsubtasks
+        self.error_message: str = error_message
         
     def __str__(self):
         return(
             f"numtasklists: {self.numtasklists}\ntasklists: {self.tasklists}\n"
             f"numtasks: {self.numtasks}\ntasks: {self.tasks}\n"
-            f"numsubtasks: {self.numsubtasks}\nsubtasks: {self.subtasks}"
+            f"numsubtasks: {self.numsubtasks}\nsubtasks: {self.subtasks}\n"
+            f"error_message: {self.error_message}"
         )
         
     def toDict(self) -> dict:
@@ -147,7 +149,8 @@ class Chat_GPT_Response:
             "numtasks": self.numtasks,
             "tasks": newtasks,
             "numsubtasks": self.numsubtasks,
-            "subtasks": newsubtasks
+            "subtasks": newsubtasks,
+            "error_message": self.error_message
         }
         
     @staticmethod
@@ -173,7 +176,8 @@ class Chat_GPT_Response:
             tasks=tasks, 
             numtasks=response.numtasks, 
             subtasks=subtasks, 
-            numsubtasks=response.numsubtasks)
+            numsubtasks=response.numsubtasks,
+            error_message=response.error_message)
 
 def response_from_json(json_data):
     data = json.loads(json_data)

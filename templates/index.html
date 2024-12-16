@@ -74,23 +74,23 @@
           <!-- adding a wrapper around these button to open the their forms -->
           <p>forms:</p>
           <!-- button to view tasks -->
-          <form action="{{ url_for('viewalltasks') }}/" method="get">
+          <!-- <form action="{{ url_for('viewalltasks') }}/" method="get">
             <button class="view-all-tasks" id="view_all_tasks_button">
               <h3>View All Tasks</h3>
             </button>
-          </form>
-          <form action="{{ url_for('gettaskform') }}/" method="get">
+          </form> -->
+          <!-- <form action="{{ url_for('gettaskform') }}/" method="get">
             <button class="add-task">Add Task</button>
-          </form>
+          </form> -->
           <form action="{{ url_for('gettaskdeletion') }}/" method="get">
             <button class="delete-task">Delete Task(s)</button>
           </form>
-          <form
+          <!-- <form
             action="{{ url_for('gettasksforsubtaskdeletion') }}/"
             method="get"
           >
             <button class="delete-subtask">Delete Subtask(s)</button>
-          </form>
+          </form> -->
 
           <!-- button to add a task list -->
           <form action="{{ url_for('gettasklistform') }}/" method="get">

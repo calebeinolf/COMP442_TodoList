@@ -4,6 +4,8 @@ let recording = false;
 document.addEventListener("DOMContentLoaded", async () => {
     loadTasks();
     loadTaskLists();
+    const taskListElement = (document.getElementById("task_lists"));
+    taskListElement.style.height = "500px";
     const allTasksButton = document.getElementById("all-tasks-btn");
     allTasksButton.addEventListener("click", () => { backToAllTasks(); });
     const aiAddTaskInput = (document.getElementById("aiPromptTextField"));
@@ -304,23 +306,28 @@ async function sendAudioToFlask(audioBlob) {
             body: formData,
         });
         const data = await validatejson(response);
-        for (const tasklist of data.GPTResponse.tasklists) {
-            appendTaskList(tasklist);
+        if (data.status === "error") {
+            reloadflashedmessages();
         }
-        for (const task of data.GPTResponse.tasks) {
-            const dbTask = {
-                id: task.id,
-                name: task.name,
-                complete: false,
-                duedate: task.duedate * 1000,
-                starred: task.starred,
-                notes: "",
-            };
-            appendTask(dbTask);
+        else {
+            for (const tasklist of data.GPTResponse.tasklists) {
+                appendTaskList(tasklist);
+            }
+            for (const task of data.GPTResponse.tasks) {
+                const dbTask = {
+                    id: task.id,
+                    name: task.name,
+                    complete: false,
+                    duedate: task.duedate * 1000,
+                    starred: task.starred,
+                    notes: "",
+                };
+                appendTask(dbTask);
+            }
+            for (const subtask of data.GPTResponse.subtasks) {
+            }
+            console.log(data);
         }
-        for (const subtask of data.GPTResponse.subtasks) {
-        }
-        console.log(data);
     }
     catch (e) {
         console.log("Error sending audio");
@@ -806,36 +813,39 @@ async function askChatGPT() {
         const input = textField.value;
         textField.value = "";
         console.log(`input before chatGPT: ${input}`);
-        const types = ["Family", "Work", "Personal"];
         const spinner = document.getElementById("loading-spinner");
         spinner.style.display = "block";
         console.log("HELLLOOOO");
-        const response = await getChatGPTResponse(input, types);
+        const response = await getChatGPTResponse(input);
         spinner.style.display = "none";
-        for (const tasklist of response.GPTResponse.tasklists) {
-            appendTaskList(tasklist);
+        if (response.status === "error") {
+            reloadflashedmessages();
         }
-        for (const task of response.GPTResponse.tasks) {
-            const dbTask = {
-                id: task.id,
-                name: task.name,
-                complete: false,
-                duedate: task.duedate * 1000,
-                starred: task.starred,
-                notes: "",
-            };
-            appendTask(dbTask);
+        else {
+            for (const tasklist of response.GPTResponse.tasklists) {
+                appendTaskList(tasklist);
+            }
+            for (const task of response.GPTResponse.tasks) {
+                const dbTask = {
+                    id: task.id,
+                    name: task.name,
+                    complete: false,
+                    duedate: task.duedate * 1000,
+                    starred: task.starred,
+                    notes: "",
+                };
+                appendTask(dbTask);
+            }
+            for (const subtask of response.GPTResponse.subtasks) {
+            }
+            console.log(response);
         }
-        for (const subtask of response.GPTResponse.subtasks) {
-        }
-        console.log(response);
     }
 }
-async function getChatGPTResponse(question, types) {
+async function getChatGPTResponse(question) {
     console.log("Trying ChatGPT");
     const params = new URLSearchParams({
-        question: question,
-        types: types.join(","),
+        question: question
     });
     try {
         const response = await fetch(`/askChatGPT?${params.toString()}`, {

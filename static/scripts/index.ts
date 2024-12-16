@@ -31,6 +31,7 @@ namespace gpt {
     numtasks: number;
     subtasks: FullSubTask[];
     numsubtasks: number;
+    error_message: string;
   }
 
   export interface ServerResponse {
@@ -65,6 +66,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   loadTasks();
 
   loadTaskLists();
+
+  const taskListElement = <HTMLUListElement>(
+    document.getElementById("task_lists")
+  );
+  taskListElement.style.height = "500px";
 
   const allTasksButton = <HTMLDivElement> document.getElementById("all-tasks-btn");
   allTasksButton.addEventListener("click", () => {backToAllTasks()});
@@ -488,24 +494,28 @@ async function sendAudioToFlask(audioBlob: Blob) {
     });
     const data = <gpt.ServerResponse>await validatejson(response);
 
-    for (const tasklist of data.GPTResponse.tasklists) {
-      appendTaskList(tasklist);
+    if (data.status === "error"){
+      reloadflashedmessages();
+    } else {
+      for (const tasklist of data.GPTResponse.tasklists) {
+        appendTaskList(tasklist);
+      }
+      for (const task of data.GPTResponse.tasks) {
+        const dbTask: Task = {
+          id: task.id,
+          name: task.name,
+          complete: false,
+          duedate: task.duedate * 1000,
+          starred: task.starred,
+          notes: "",
+        };
+        appendTask(dbTask);
+      }
+      for (const subtask of data.GPTResponse.subtasks) {
+        // append subtasks
+      }
+      console.log(data);
     }
-    for (const task of data.GPTResponse.tasks) {
-      const dbTask: Task = {
-        id: task.id,
-        name: task.name,
-        complete: false,
-        duedate: task.duedate * 1000,
-        starred: task.starred,
-        notes: "",
-      };
-      appendTask(dbTask);
-    }
-    for (const subtask of data.GPTResponse.subtasks) {
-      // append subtasks
-    }
-    console.log(data);
   } catch (e) {
     console.log("Error sending audio");
   }
@@ -1165,44 +1175,46 @@ async function askChatGPT() {
     const input: string = textField.value;
     textField.value = "";
     console.log(`input before chatGPT: ${input}`);
-    const types: string[] = ["Family", "Work", "Personal"];
 
     const spinner = document.getElementById("loading-spinner");
     spinner.style.display = "block";
     console.log("HELLLOOOO");
 
-    const response = <gpt.ServerResponse>await getChatGPTResponse(input, types);
+    const response = <gpt.ServerResponse>await getChatGPTResponse(input);
 
     spinner.style.display = "none";
 
-    for (const tasklist of response.GPTResponse.tasklists) {
-      appendTaskList(tasklist);
+    if (response.status === "error"){
+      reloadflashedmessages()
+    } else {
+      for (const tasklist of response.GPTResponse.tasklists) {
+        appendTaskList(tasklist);
+      }
+      for (const task of response.GPTResponse.tasks) {
+        // use url search params to perform server side validation
+        const dbTask: Task = {
+          id: task.id,
+          name: task.name,
+          complete: false,
+          duedate: task.duedate * 1000,
+          starred: task.starred,
+          notes: "",
+        };
+        appendTask(dbTask);
+      }
+      for (const subtask of response.GPTResponse.subtasks) {
+        // append subtasks
+      }
+      console.log(response);
     }
-    for (const task of response.GPTResponse.tasks) {
-      // use url search params to perform server side validation
-      const dbTask: Task = {
-        id: task.id,
-        name: task.name,
-        complete: false,
-        duedate: task.duedate * 1000,
-        starred: task.starred,
-        notes: "",
-      };
-      appendTask(dbTask);
-    }
-    for (const subtask of response.GPTResponse.subtasks) {
-      // append subtasks
-    }
-    console.log(response);
   }
 }
 
-async function getChatGPTResponse(question: string, types: string[]) {
+async function getChatGPTResponse(question: string) {
   console.log("Trying ChatGPT");
 
   const params = new URLSearchParams({
-    question: question,
-    types: types.join(","),
+    question: question
   });
 
   try {
