@@ -14,7 +14,7 @@ namespace gpt {
     starred: boolean;
     duedate: number;
     priority: number;
-    tasklistnames: string[];
+    tasklistnames: string;
   }
 
   export interface FullSubTask {
@@ -44,11 +44,10 @@ interface Task {
   id: number;
   name: string;
   complete: boolean;
-  // lists: [string];
   duedate: number;
   starred: boolean;
   notes: string;
-  tasklists?: [TaskList];
+  tasklistnames: string[];
 }
 
 interface TaskList {
@@ -520,6 +519,7 @@ async function sendAudioToFlask(audioBlob: Blob) {
           duedate: task.duedate * 1000,
           starred: task.starred,
           notes: "",
+          tasklistnames: task.tasklistnames.split(","),
         };
         appendTask(dbTask);
       }
@@ -894,24 +894,24 @@ function createTaskCard(
   taskContent.appendChild(taskInfo);
 
   // List text
-  if (task.tasklists.length > 0) {
+  if (task.tasklistnames.length > 0) {
     const listText = document.createElement("p");
-    for (let i = 0; i < task.tasklists.length; i++) {
-      const list = task.tasklists[i];
+    for (let i = 0; i < task.tasklistnames.length; i++) {
+      const list = task.tasklistnames[i];
 
       // Check if the current list is not the last one
-      if (i < task.tasklists.length - 1) {
-        listText.innerText += `${list.name}, `;
+      if (i < task.tasklistnames.length - 1) {
+        listText.innerText += `${list}, `;
       } else {
-        listText.innerText += `${list.name}`;
+        listText.innerText += `${list}`;
       }
     }
     taskInfo.appendChild(listText);
   }
 
-  if (task.duedate !== null && task.tasklists.length > 0) {
+  if (task.duedate !== null && task.tasklistnames.length > 0) {
     const dotText = document.createElement("p");
-    dotText.textContent = `${task.duedate !== null ? " \u00a0•\u00a0 " : ""}`;
+    dotText.textContent = `${task.duedate !== null ? "•\u00a0 " : ""}`;
     taskInfo.appendChild(dotText);
   }
 
@@ -1232,6 +1232,7 @@ async function askChatGPT() {
           duedate: task.duedate * 1000,
           starred: task.starred,
           notes: "",
+          tasklistnames: task.tasklistnames.split(","),
         };
         appendTask(dbTask);
       }

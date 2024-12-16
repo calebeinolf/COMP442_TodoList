@@ -201,7 +201,7 @@ class Task(db.Model):
             "complete": self.complete,
             "starred": self.starred,
             "notes": self.notes,
-            "tasklists": [tasklist.to_json() for tasklist in self.tasklists],
+            "tasklistnames": [tasklist.name for tasklist in self.tasklists],
         }
 
     def from_json(json):
