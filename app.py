@@ -456,8 +456,8 @@ def index():
 def view():
     return render_template(
         "view.html",
-        alltasklists=TaskList.query.filter_by(user=current_user).all(),
-        alltasks=Task.query.filter_by(user=current_user).all(),
+        alltasklists=TaskList.query.filter_by(userid=current_user.id).all(),
+        alltasks=Task.query.filter_by(userid=current_user.id).all(),
     )
 
 
@@ -465,7 +465,7 @@ def view():
 # Create Task
 def alltlchoices():
     # get all of the current user's task lists
-    tasklists = TaskList.query.filter_by(user=current_user).all()
+    tasklists = TaskList.query.filter_by(userid=current_user.id).all()
     # tl is both identified by and labeled by name attribute
     return [(tl.id, tl.name) for tl in tasklists]
 
@@ -482,7 +482,7 @@ def posttaskform():
     if (form := TaskCreationForm()).validate():
 
         # check to make sure there are no subtasks for this task that have the same name
-        tasks = Task.query.filter_by(user=current_user).all()
+        tasks = Task.query.filter_by(userid=current_user.id).all()
         for t in tasks:
             if t.name == form.name.data:
                 flash(
@@ -508,7 +508,7 @@ def posttaskform():
         for tasklistid in form.tasklistids.data:
             # print(f"attempting to add {TaskList.query.filter_by(user=current_user,id=tasklistid).first()} (filter by current user and task list name)")
             newtask.tasklists.append(
-                TaskList.query.filter_by(user=current_user, id=tasklistid).first()
+                TaskList.query.filter_by(userid=current_user.id, id=tasklistid).first()
             )
         # add and commit to the database, then we ask if the user would like to add subtasks
         db.session.add(newtask)
@@ -568,7 +568,7 @@ def postsubtaskform():
 def alltaskchoices():
     # current_user is of type User -> sweet
     # get the tasks for the current user
-    tasks = Task.query.filter_by(user=current_user).all()
+    tasks = Task.query.filter_by(userid=current_user.id).all()
     return [(task.id, task.name) for task in tasks]
 
 
@@ -589,7 +589,7 @@ def posttasklistform():
         # input(f"taskids.data: {form.taskids.data}. Hit Ctrl-C")
 
         # check to make sure there are no subtasks for this task that have the same name
-        tasklists = TaskList.query.filter_by(user=current_user).all()
+        tasklists = TaskList.query.filter_by(userid=current_user.id).all()
         for tl in tasklists:
             if tl.name == form.name.data:
                 flash(
@@ -597,13 +597,13 @@ def posttasklistform():
                 )
                 return redirect(url_for("gettasklistform"))
 
-        newtl = TaskList(name=form.name.data, user=current_user)
+        newtl = TaskList(name=form.name.data, userid=current_user.id)
 
         # add a db task to the task list for each of the ids in taskids
         # each task added must belong to the current user
         for taskid in form.taskids.data:
             # print(f"attempting to add {Task.query.filter_by(user=current_user,id=taskid).first()} (filter by current user and task list id)")
-            newtl.appendtask(Task.query.filter_by(user=current_user, id=taskid).first())
+            newtl.appendtask(Task.query.filter_by(userid=current_user.id, id=taskid).first())
         db.session.add(newtl)
         db.session.commit()
         return redirect(url_for("index"))
@@ -855,11 +855,11 @@ def deletesubtask(stid):
 
 
 def deletetasklist(tlid):
-    tl = TaskList.query.filter_by(user=current_user, id=tlid).first()
+    tl = TaskList.query.filter_by(userid=current_user.id, id=tlid).first()
     # if a task belongs to the current user, is in the specified task list, and
     # the task list being deleted is the only task list that it belongs to ->
     # delete the task
-    tasks = Task.query.filter_by(user=current_user).all()
+    tasks = Task.query.filter_by(userid=current_user.id).all()
     for task in tasks:
         if tl in task.tasklists and len(task.tasklists) < 2:
             deletetask(task.id)
