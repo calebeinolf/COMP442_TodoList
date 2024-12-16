@@ -472,6 +472,10 @@ class SubtaskCreationForm(FlaskForm):
 # =================================================================================
 # Deletion Forms
 # =================================================================================
+class SingleTaskDeletionForm(FlaskForm):
+    taskid = IntegerField("Task ID", validators=[InputRequired()])
+    submit = SubmitField("Delete Task")
+
 class TaskDeletionForm(FlaskForm):
 
     title = "Task Deletion Form"
@@ -966,6 +970,17 @@ def gettaskdeletion():
     form.taskids.choices = alltaskchoices()
     return render_template("genericform.html", form=form)
 
+
+@app.post("/singletaskdelete/")
+def deleteSingleTask():
+    try:
+        taskid = request.args.get("taskid")
+        deletetask(taskid)
+        return {
+            "taskid": taskid
+        }
+    except:
+        return 400
 
 @app.post("/taskdeleteform/")
 def posttaskdeletion():

@@ -67,6 +67,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   loadTaskLists();
 
+  const deleteBtn = <HTMLButtonElement> document.getElementById("DeleteBtn");
+  deleteBtn.addEventListener("click", () => {deleteCurrentTask()})
+
   const taskListElement = <HTMLUListElement>(
     document.getElementById("task_lists")
   );
@@ -262,6 +265,63 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 });
+
+async function deleteCurrentTask(){
+  
+  try{
+    const detailsContainer = <HTMLDivElement> document.getElementById("task-details-container");
+    const taskId = detailsContainer.dataset.taskId;
+
+    const params = new URLSearchParams({
+      taskid: taskId,
+    });
+
+    const response = await fetch(`/singletaskdelete?${params.toString()}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    detailsContainer.classList.remove("open");
+
+    const overdueSection = <HTMLDivElement>(
+      document.getElementById("overdue-list")
+    );
+    const dueTodaySection = <HTMLDivElement>(
+      document.getElementById("due-today-list")
+    );
+    const upcomingSection = <HTMLDivElement>(
+      document.getElementById("upcoming-list")
+    );
+
+    let children = Array.from(overdueSection.children);
+    children.forEach((child) => {
+      if (child.tagName.toLowerCase() === "div") {
+        overdueSection.removeChild(child);
+      }
+    });
+
+    children = Array.from(dueTodaySection.children);
+    children.forEach((child) => {
+      if (child.tagName.toLowerCase() === "div") {
+        dueTodaySection.removeChild(child);
+      }
+    });
+
+    children = Array.from(upcomingSection.children);
+    children.forEach((child) => {
+      if (child.tagName.toLowerCase() === "div") {
+        upcomingSection.removeChild(child);
+      }
+    });
+
+    loadTasks()
+
+  } catch (error) {
+
+  }
+}
 
 async function backToAllTasks() {
   console.log("backToAllTasks");
