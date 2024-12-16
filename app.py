@@ -19,15 +19,16 @@ from datetime import datetime
 # local imports
 from hashing_examples import UpdatedHasher
 from loginforms import RegisterForm, LoginForm
+
 # no need to import since we moved the forms to app.py
-#from taskandtasklistforms import (
-    #TaskCreationForm,
-    #TaskListCreationForm,
-    #SubtaskCreationForm,
-    #TaskDeletionForm,
-    #TaskListDeletionForm,
-    #SubtaskDeletionForm,
-#)
+# from taskandtasklistforms import (
+# TaskCreationForm,
+# TaskListCreationForm,
+# SubtaskCreationForm,
+# TaskDeletionForm,
+# TaskListDeletionForm,
+# SubtaskDeletionForm,
+# )
 
 # =================================================================================
 # Identify necessary files
@@ -200,6 +201,7 @@ class Task(db.Model):
             "complete": self.complete,
             "starred": self.starred,
             "notes": self.notes,
+            "tasklists": [tasklist.to_json() for tasklist in self.tasklists],
         }
 
     def from_json(json):
@@ -209,6 +211,7 @@ class Task(db.Model):
             complete=json["complete"],
             starred=json["starred"],
             userid=current_user.id,
+            # tasklists=json["tasklists"]
         )
 
 
@@ -316,6 +319,7 @@ with app.app_context():
     db.session.add_all((natewebtl, nateothertl))
 
     natewebtl.appendtask(nktask1)
+    nateothertl.appendtask(nktask1)
 
     db.session.commit()
 
@@ -325,8 +329,24 @@ with app.app_context():
 # SERVER SIDE VALIDATION FORMS FOR TASK, TASK LIST, AND SUBTASK CREATION AND DELETION
 # =================================================================================
 from flask_wtf import FlaskForm
-from wtforms.fields import SubmitField,StringField,SelectMultipleField,BooleanField,TextAreaField,DateField,TimeField,IntegerField
-from wtforms.validators import InputRequired,Length,Optional,NumberRange,ValidationError
+from wtforms.fields import (
+    SubmitField,
+    StringField,
+    SelectMultipleField,
+    BooleanField,
+    TextAreaField,
+    DateField,
+    TimeField,
+    IntegerField,
+)
+from wtforms.validators import (
+    InputRequired,
+    Length,
+    Optional,
+    NumberRange,
+    ValidationError,
+)
+
 
 # =================================================================================
 # Creation Forms
@@ -336,23 +356,31 @@ class TaskListCreationForm(FlaskForm):
     title = "Task List Creation Form"
 
     # user will not be an option in forms (user will be current_user from flask_login)
-    name = StringField(label="Task List Name", validators=[InputRequired(),Length(min=1,max=80)])
-    
+    name = StringField(
+        label="Task List Name", validators=[InputRequired(), Length(min=1, max=80)]
+    )
+
     # our choices are not predefined here for tasks, so we'll have a method to populate
     # choices in the routes
-    taskids = SelectMultipleField(label="Tasks",choices=[],validators=[Optional()],validate_choice=False)
+    taskids = SelectMultipleField(
+        label="Tasks", choices=[], validators=[Optional()], validate_choice=False
+    )
 
     # currently these forms have submit fields. we may be able to remove the submit fields
     createtasklist = SubmitField(label="Create Task List")
 
     # tasks, subtasks, and task lists should be uniquely named
-    def validate_name(form,field):
+    def validate_name(form, field):
         tasklists = TaskList.query.filter_by(user=current_user).all()
         for tl in tasklists:
             if tl.name == form.name.data:
-                raise ValidationError(f"Cannot have multiple task lists with the same name. There is already a task list named {tl.name}.")
+                raise ValidationError(
+                    f"Cannot have multiple task lists with the same name. There is already a task list named {tl.name}."
+                )
+
 
 # =================================================================================
+
 
 class TaskCreationForm(FlaskForm):
 
@@ -360,45 +388,60 @@ class TaskCreationForm(FlaskForm):
 
     # no option for id (id is autoincrementing)
 
-    name = StringField(label="Task Name", validators=[InputRequired(),Length(min=1,max=80)])
-    
+    name = StringField(
+        label="Task Name", validators=[InputRequired(), Length(min=1, max=80)]
+    )
+
     # don't have to check complete or starred
-    complete = BooleanField(label="Complete",validators=[Optional()])
+    complete = BooleanField(label="Complete", validators=[Optional()])
 
-    starred = BooleanField(label="Starred",validators=[Optional()])
+    starred = BooleanField(label="Starred", validators=[Optional()])
 
-    progressnotes = TextAreaField("Progress Notes",validators=[Optional(),Length(max=400)])
+    progressnotes = TextAreaField(
+        "Progress Notes", validators=[Optional(), Length(max=400)]
+    )
 
-    duedate = IntegerField("Due Date",validators=[Optional()])
-    #duedate = DateField("Due Date",validators=[Optional()])
+    duedate = IntegerField("Due Date", validators=[Optional()])
+    # duedate = DateField("Due Date",validators=[Optional()])
 
-    duetime = TimeField("Due Time",validators=[Optional()])
+    duetime = TimeField("Due Time", validators=[Optional()])
 
-    priority = IntegerField("Priority",validators=[Optional(),NumberRange(min=1,max=10)])
+    priority = IntegerField(
+        "Priority", validators=[Optional(), NumberRange(min=1, max=10)]
+    )
 
-    generalnotes = TextAreaField("General Notes",validators=[Optional(),Length(max=400)])
+    generalnotes = TextAreaField(
+        "General Notes", validators=[Optional(), Length(max=400)]
+    )
 
     # userid will not be in the form -> userid will be the id of flask_login current_user
 
     # subtasks have a separate form
 
     # once again these choices will be populated in the routes
-    tasklistids = SelectMultipleField("Task Lists",choices=[],validators=[Optional()],validate_choice=False)
+    tasklistids = SelectMultipleField(
+        "Task Lists", choices=[], validators=[Optional()], validate_choice=False
+    )
 
     createtask = SubmitField(label="Create Task")
 
     # ensure that duetime is not set if duedate is not set
-    def validate_duetime(form,field):
-        if not form.duedate.data: raise ValidationError("A due time cannot be set for a task with no due date.")
+    def validate_duetime(form, field):
+        if not form.duedate.data:
+            raise ValidationError(
+                "A due time cannot be set for a task with no due date."
+            )
 
     # don't need this
-    #def validate_name(form,field):
-        #tasks = Task.query.filter_by(user=current_user).all()
-        #for t in tasks:
-            #if t.name == form.name.data:
-                #raise ValidationError(f"Cannot have multiple tasks with the same name. There is already a task named {t.name}.")
+    # def validate_name(form,field):
+    # tasks = Task.query.filter_by(user=current_user).all()
+    # for t in tasks:
+    # if t.name == form.name.data:
+    # raise ValidationError(f"Cannot have multiple tasks with the same name. There is already a task named {t.name}.")
+
 
 # =================================================================================
+
 
 class SubtaskCreationForm(FlaskForm):
 
@@ -406,18 +449,25 @@ class SubtaskCreationForm(FlaskForm):
 
     # have to have some way to designate the taskid -> I think we can get it through the routes
 
-    name = StringField(label="Subtask Name", validators=[InputRequired(),Length(min=1,max=80)])
-    complete = BooleanField(label="Complete",validators=[Optional()])
-    priority = IntegerField("Priority",validators=[Optional(),NumberRange(min=1,max=10)])
+    name = StringField(
+        label="Subtask Name", validators=[InputRequired(), Length(min=1, max=80)]
+    )
+    complete = BooleanField(label="Complete", validators=[Optional()])
+    priority = IntegerField(
+        "Priority", validators=[Optional(), NumberRange(min=1, max=10)]
+    )
 
     createsubtask = SubmitField(label="Create Subtask")
 
-    def validate_name(form,field):
+    def validate_name(form, field):
         # TODO: NEED TO SET currenttaskid IN THE session WHEN WE GO TO ADD SUBTASKS TO A CERTAIN TASK
         subtasks = Subtask.query.filter_by(taskid=session.get("currenttaskid")).all()
         for st in subtasks:
             if st.name == form.name.data:
-                raise ValidationError(f"Error, cannot have multiple subtasks with the same name for a given task. There's already a {st.name} subtask for this task.")
+                raise ValidationError(
+                    f"Error, cannot have multiple subtasks with the same name for a given task. There's already a {st.name} subtask for this task."
+                )
+
 
 # =================================================================================
 # Deletion Forms
@@ -426,27 +476,37 @@ class TaskDeletionForm(FlaskForm):
 
     title = "Task Deletion Form"
 
-    taskids = SelectMultipleField("Tasks",choices=[],validate_choice=False,validators=[InputRequired()])
+    taskids = SelectMultipleField(
+        "Tasks", choices=[], validate_choice=False, validators=[InputRequired()]
+    )
 
     submit = SubmitField("Delete Task(s)")
 
+
 # =================================================================================
+
 
 class SubtaskDeletionForm(FlaskForm):
 
     title = "Subtask Deletion Form"
 
-    subtaskids = SelectMultipleField("Subtasks",choices=[],validate_choice=False,validators=[InputRequired()])
+    subtaskids = SelectMultipleField(
+        "Subtasks", choices=[], validate_choice=False, validators=[InputRequired()]
+    )
 
     submit = SubmitField("Delete Subtask(s)")
 
+
 # =================================================================================
+
 
 class TaskListDeletionForm(FlaskForm):
 
     title = "Task List Deletion Form"
 
-    tasklistids = SelectMultipleField("Task Lists",choices=[],validate_choice=False,validators=[InputRequired()])
+    tasklistids = SelectMultipleField(
+        "Task Lists", choices=[], validate_choice=False, validators=[InputRequired()]
+    )
 
     submit = SubmitField("Delete Task List(s)")
 
@@ -571,6 +631,7 @@ def index():
         flash("Please login")
         return redirect(url_for("get_login"))
 
+
 @login_required
 @app.get("/viewalltasks/")
 def viewalltasks():
@@ -591,7 +652,7 @@ def alltlchoices():
 
 
 @app.get("/api/v0/getcsrftok/<string:mode>/<string:formtype>")
-def getcsrftok(mode:str,formtype:str):
+def getcsrftok(mode: str, formtype: str):
     # taskform will last outside of if scope
     if mode == "create" and formtype == "task":
         form = TaskCreationForm()
@@ -607,12 +668,14 @@ def getcsrftok(mode:str,formtype:str):
         form = TaskListDeletionForm()
         form.tasklistids.choices = alltlchoices
 
-    elif mode == "create" and formtype == "subtask": form = SubtaskCreationForm()
+    elif mode == "create" and formtype == "subtask":
+        form = SubtaskCreationForm()
     elif mode == "delete" and formtype == "subtask":
         form = SubtaskDeletionForm()
         form.subtaskids.choices = subtaskdeletionchoices()
     # return csrf token html element
     return form.csrf_token()
+
 
 @app.get("/api/v0/getflashedmessages/")
 def getflashedmessages():
@@ -623,7 +686,8 @@ def getflashedmessages():
 def gettaskform():
     form = TaskCreationForm()
     form.tasklistids = alltlchoices()
-    return render_template("genericform.html",form=form)
+    return render_template("genericform.html", form=form)
+
 
 @app.post("/taskform/")
 def posttaskform():
@@ -679,13 +743,13 @@ def postsubtaskform():
             )
 
         # check to make sure there are no subtasks for this task that have the same name
-        #subtasks = Subtask.query.filter_by(taskid=session.get("currenttaskid")).all()
-        #for st in subtasks:
-            #if st.name == form.name.data:
-                #flash(
-                    #f"Error, cannot have multiple subtasks with the same name for a given task. There's already a {st.name} subtask for this task."
-                #)
-                #return redirect(url_for("getsubtaskform"))
+        # subtasks = Subtask.query.filter_by(taskid=session.get("currenttaskid")).all()
+        # for st in subtasks:
+        # if st.name == form.name.data:
+        # flash(
+        # f"Error, cannot have multiple subtasks with the same name for a given task. There's already a {st.name} subtask for this task."
+        # )
+        # return redirect(url_for("getsubtaskform"))
 
         newst = Subtask(
             name=form.name.data,
@@ -731,13 +795,16 @@ def posttasklistform():
         # each task added must belong to the current user
         for taskid in form.taskids.data:
             # print(f"attempting to add {Task.query.filter_by(user=current_user,id=taskid).first()} (filter by current user and task list id)")
-            newtl.appendtask(Task.query.filter_by(userid=current_user.id, id=taskid).first())
+            newtl.appendtask(
+                Task.query.filter_by(userid=current_user.id, id=taskid).first()
+            )
         db.session.add(newtl)
         db.session.commit()
         return redirect(url_for("index"))
     for field, em in form.errors.items():
         flash(f"Error in {field}: {em}")
     return redirect(url_for("gettasklistform"))
+
 
 # =================================================================================
 # AI
@@ -746,6 +813,7 @@ def posttasklistform():
 import chat_gpt
 import assemblyai as aai
 from config import assemblyAIKey
+
 
 @login_required
 @app.post("/speech_for_gpt/")
@@ -762,14 +830,18 @@ def talkToGPT():
     question = transcript.text
 
     print(question)
-    
-    allTaskLists: list[TaskList] = TaskList.query.filter_by(userid=current_user.id).all()
+
+    allTaskLists: list[TaskList] = TaskList.query.filter_by(
+        userid=current_user.id
+    ).all()
     allTaskListNames: list[str] = [taskList.name for taskList in allTaskLists]
-    allTasks: list[Task] = Task.query.filter_by(userid = current_user.id).all()
+    allTasks: list[Task] = Task.query.filter_by(userid=current_user.id).all()
     allTaskNames: list[str] = [task.name for task in allTasks]
-    
+
     chatGpt = chat_gpt.Chat_GPT()
-    response: chat_gpt.Chat_GPT_Response = chatGpt.newAsk(question, allTaskListNames, allTaskNames)
+    response: chat_gpt.Chat_GPT_Response = chatGpt.newAsk(
+        question, allTaskListNames, allTaskNames
+    )
     if response.error_message == "None":
         addGPTResponse(response)
 
@@ -804,14 +876,18 @@ def talkToGPT():
 @app.get("/askChatGPT/")
 def askGPT():
     question: str = request.args.get("question")
-        
-    allTaskLists: list[TaskList] = TaskList.query.filter_by(userid=current_user.id).all()
+
+    allTaskLists: list[TaskList] = TaskList.query.filter_by(
+        userid=current_user.id
+    ).all()
     allTaskListNames: list[str] = [taskList.name for taskList in allTaskLists]
-    allTasks: list[Task] = Task.query.filter_by(userid = current_user.id).all()
+    allTasks: list[Task] = Task.query.filter_by(userid=current_user.id).all()
     allTaskNames: list[str] = [task.name for task in allTasks]
 
     chatGpt = chat_gpt.Chat_GPT()
-    response: chat_gpt.Chat_GPT_Response = chatGpt.newAsk(question, allTaskListNames, allTaskNames)
+    response: chat_gpt.Chat_GPT_Response = chatGpt.newAsk(
+        question, allTaskListNames, allTaskNames
+    )
 
     if response.error_message == "None":
 
@@ -839,14 +915,14 @@ def askGPT():
             task.id = dbTask.id
             # task.duedate = dbTask.duedate
 
-        return jsonify({"status": "success", "GPTResponse": response.toDict()}) 
+        return jsonify({"status": "success", "GPTResponse": response.toDict()})
     else:
         flash(f"ChatGPT Error: {response.error_message}")
         return jsonify({"status": "error", "GPTResponse": response.toDict()})
 
 
 def addGPTResponse(response: chat_gpt.Chat_GPT_Response):
-    
+
     for tasklist in response.tasklists:
         t: TaskList = TaskList(name=tasklist.name, userid=current_user.id)
         db.session.add(t)
@@ -854,9 +930,8 @@ def addGPTResponse(response: chat_gpt.Chat_GPT_Response):
 
     for task in response.tasks:
         taskLists: list[TaskList] = TaskList.query.filter(
-                                        TaskList.name.in_(task.tasklistnames), 
-                                        TaskList.userid == current_user.id
-                                    ).all()
+            TaskList.name.in_(task.tasklistnames), TaskList.userid == current_user.id
+        ).all()
         db.session.add(
             Task(
                 name=task.name,
@@ -864,7 +939,7 @@ def addGPTResponse(response: chat_gpt.Chat_GPT_Response):
                 duedate=task.duedate,
                 priority=task.priority,
                 userid=current_user.id,
-                tasklists=taskLists
+                tasklists=taskLists,
             )
         )
     db.session.commit()
@@ -931,6 +1006,7 @@ def posttasksforsubtaskdeletion():
         flash(f"Error in {field}: {em}")
     return redirect(url_for("gettasksforsubtaskdeletion"))
 
+
 def subtaskdeletionchoices():
     if not session.get("deletesubtasksfor"):
         raise ValueError(
@@ -945,6 +1021,7 @@ def subtaskdeletionchoices():
             for subtask in task.subtasks
         ]
     return choices
+
 
 @app.get("/subtaskdeleteform/")
 def getsubtaskdeletion():
@@ -1018,17 +1095,18 @@ def deletetasklist(tlid):
     db.session.delete(tl)
     db.session.commit()
 
+
 @app.get("/getListTasks/<int:listId>/")
 def getTasksFromList(listId):
     tasks: list[Task] = (
-        Task.query.join(TasksToTaskLists).filter(TasksToTaskLists.c.tlid == listId).filter(Task.userid == current_user.id).all()
+        Task.query.join(TasksToTaskLists)
+        .filter(TasksToTaskLists.c.tlid == listId)
+        .filter(Task.userid == current_user.id)
+        .all()
     )
-    
-    return jsonify(
-        {
-            "tasks": [task.to_json() for task in tasks]
-        }
-    )
+
+    return jsonify({"tasks": [task.to_json() for task in tasks]})
+
 
 @app.get("/getUserTaskLists/")
 def getUserTaskLists():
@@ -1062,12 +1140,13 @@ def getTasks():
         }
     )
 
+
 @app.post("/postUserTask/")
 def postTask():
     if (form := TaskCreationForm()).validate():
         # instead of getting the object from json, we can do what we
         # normally would do with wtforms because we're using URLSearchParams
-        #newTask = Task.from_json(request.json)
+        # newTask = Task.from_json(request.json)
 
         newtask = Task(
             name=form.name.data,
@@ -1089,8 +1168,8 @@ def postTask():
                 TaskList.query.filter_by(user=current_user, id=tasklistid).first()
             )
         # add and commit to the database, then we ask if the user would like to add subtasks
-        db.session.add(newtask) # like before
-        db.session.commit() # like before
+        db.session.add(newtask)  # like before
+        db.session.commit()  # like before
 
         print("added task: " + newtask.name)
         # is it incorrect to return json here because application/x-www-form-urlencoded is
@@ -1101,7 +1180,12 @@ def postTask():
         flash(f"Error in {field}: {em}")
         print(f"flashed 'Error in {field}: {em}'")
 
-    return jsonify({"message":"Requested creation of an invalid task: task creation failed"}),400
+    return (
+        jsonify(
+            {"message": "Requested creation of an invalid task: task creation failed"}
+        ),
+        400,
+    )
 
 
 @app.post("/updateUserTask/")

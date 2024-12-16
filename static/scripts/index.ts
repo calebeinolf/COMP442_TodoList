@@ -48,6 +48,7 @@ interface Task {
   duedate: number;
   starred: boolean;
   notes: string;
+  tasklists?: [TaskList];
 }
 
 interface TaskList {
@@ -72,8 +73,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   );
   taskListElement.style.height = "500px";
 
-  const allTasksButton = <HTMLDivElement> document.getElementById("all-tasks-btn");
-  allTasksButton.addEventListener("click", () => {backToAllTasks()});
+  const allTasksButton = <HTMLDivElement>(
+    document.getElementById("all-tasks-btn")
+  );
+  allTasksButton.addEventListener("click", () => {
+    backToAllTasks();
+  });
 
   const aiAddTaskInput = <HTMLInputElement>(
     document.getElementById("aiPromptTextField")
@@ -84,7 +89,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       askChatGPT();
     }
   });
-
 
   const addTaskButton = <HTMLButtonElement>(
     document.getElementById("add-task-btn")
@@ -260,13 +264,18 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 });
 
-async function backToAllTasks(){
+async function backToAllTasks() {
+  console.log("backToAllTasks");
 
-  console.log("backToAllTasks")
-
-  const overdueSection = <HTMLDivElement> document.getElementById("overdue-list");
-  const dueTodaySection = <HTMLDivElement> document.getElementById("due-today-list");
-  const upcomingSection = <HTMLDivElement> document.getElementById("upcoming-list");
+  const overdueSection = <HTMLDivElement>(
+    document.getElementById("overdue-list")
+  );
+  const dueTodaySection = <HTMLDivElement>(
+    document.getElementById("due-today-list")
+  );
+  const upcomingSection = <HTMLDivElement>(
+    document.getElementById("upcoming-list")
+  );
 
   let children = Array.from(overdueSection.children);
   children.forEach((child) => {
@@ -306,24 +315,27 @@ const handleOutsidePaletteClick = (event: MouseEvent) => {
 
 // should be called on creation of tasks, task lists, and subtasks
 async function reloadflashedmessages() {
-    const fmcontainer = document.getElementById("error-messages");
-    fmcontainer.innerHTML = "";
-    fmcontainer.innerText = "";
-    const response = await fetch("/api/v0/getflashedmessages/");
-    const flashedmessages = <string[]> await validatejson(response);
-    for(const fm of flashedmessages) {
-      const div = document.createElement("div");
-      div.setAttribute("class","alert alert-warning alert-dismissible fade show");
-      div.setAttribute("role","alert");
-      const btn = document.createElement("button");
-      btn.setAttribute("type","button");
-      btn.setAttribute("class","btn-close");
-      btn.setAttribute("data-bd-dismiss","alert");
-      btn.setAttribute("aria-label","Close");
-      div.innerText = fm;
-      div.appendChild(btn);
-      fmcontainer.appendChild(div);
-      /*
+  const fmcontainer = document.getElementById("error-messages");
+  fmcontainer.innerHTML = "";
+  fmcontainer.innerText = "";
+  const response = await fetch("/api/v0/getflashedmessages/");
+  const flashedmessages = <string[]>await validatejson(response);
+  for (const fm of flashedmessages) {
+    const div = document.createElement("div");
+    div.setAttribute(
+      "class",
+      "alert alert-warning alert-dismissible fade show"
+    );
+    div.setAttribute("role", "alert");
+    const btn = document.createElement("button");
+    btn.setAttribute("type", "button");
+    btn.setAttribute("class", "btn-close");
+    btn.setAttribute("data-bd-dismiss", "alert");
+    btn.setAttribute("aria-label", "Close");
+    div.innerText = fm;
+    div.appendChild(btn);
+    fmcontainer.appendChild(div);
+    /*
       <div id="error-messages">
         {% for errormessage in get_flashed_messages() %}
         <div class="alert alert-warning alert-dismissible fade show" role="alert">
@@ -333,11 +345,11 @@ async function reloadflashedmessages() {
         {% endfor %}
       </div>
       */
-      //<div class="alert alert-warning alert-dismissible fade show" role="alert">
-          //<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">&times;</button>
-          //{{ message }}
-      //</div>
-    }
+    //<div class="alert alert-warning alert-dismissible fade show" role="alert">
+    //<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">&times;</button>
+    //{{ message }}
+    //</div>
+  }
 }
 
 async function getPrimaryColor() {
@@ -494,7 +506,7 @@ async function sendAudioToFlask(audioBlob: Blob) {
     });
     const data = <gpt.ServerResponse>await validatejson(response);
 
-    if (data.status === "error"){
+    if (data.status === "error") {
       reloadflashedmessages();
     } else {
       for (const tasklist of data.GPTResponse.tasklists) {
@@ -667,18 +679,17 @@ async function postTask() {
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
           // want to get form.hidden_tag() in here
-          "X-CSRFToken": urlsps.get("csrf_token")
+          "X-CSRFToken": urlsps.get("csrf_token"),
         },
-        body: urlsps.toString()
-      })
-      
+        body: urlsps.toString(),
+      });
+
       const servertask = await validatejson(response);
       console.log("task created: " + JSON.stringify(response));
       appendTask(servertask);
-    }
-    catch(error) {
-        reloadflashedmessages();
-        console.error(error);
+    } catch (error) {
+      reloadflashedmessages();
+      console.error(error);
     }
   }
 }
@@ -724,31 +735,39 @@ async function appendTaskList(taskList: TaskList) {
   const aElement: HTMLAnchorElement = document.createElement("a");
   aElement.style.cursor = "pointer";
   // aElement.href = "#";
-  aElement.addEventListener("click", () => loadTasksFromList(taskList.id, aElement));
+  aElement.addEventListener("click", () =>
+    loadTasksFromList(taskList.id, aElement)
+  );
   aElement.innerText = taskList.name;
   listItem.appendChild(svgElement);
   listItem.appendChild(aElement);
   taskListElement.appendChild(listItem);
 }
 
-async function loadTasksFromList(taskId: number, aElement: HTMLAnchorElement){
-
-  try{
-
-    console.log("Loading Tasks from List")
+async function loadTasksFromList(taskId: number, aElement: HTMLAnchorElement) {
+  try {
+    console.log("Loading Tasks from List");
     const response = await fetch(`/getListTasks/${taskId}/`, {
       method: "GET",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
-      credentials: "include"
+      credentials: "include",
     });
     const tasks = await validatejson(response);
 
-    const taskListElement = <HTMLUListElement> document.getElementById("task_lists");
-    const overdueSection = <HTMLDivElement> document.getElementById("overdue-list");
-    const dueTodaySection = <HTMLDivElement> document.getElementById("due-today-list");
-    const upcomingSection = <HTMLDivElement> document.getElementById("upcoming-list");
+    const taskListElement = <HTMLUListElement>(
+      document.getElementById("task_lists")
+    );
+    const overdueSection = <HTMLDivElement>(
+      document.getElementById("overdue-list")
+    );
+    const dueTodaySection = <HTMLDivElement>(
+      document.getElementById("due-today-list")
+    );
+    const upcomingSection = <HTMLDivElement>(
+      document.getElementById("upcoming-list")
+    );
 
     let children = Array.from(overdueSection.children);
     children.forEach((child) => {
@@ -777,7 +796,6 @@ async function loadTasksFromList(taskId: number, aElement: HTMLAnchorElement){
   } catch (error) {
     console.error("Error fetching tasks:", error);
   }
-
 }
 
 async function appendTask(task: Task) {
@@ -876,11 +894,26 @@ function createTaskCard(
   taskContent.appendChild(taskInfo);
 
   // List text
-  const listText = document.createElement("p");
-  listText.textContent = `List${
-    task.duedate !== null ? " \u00a0•\u00a0 " : ""
-  }`;
-  taskInfo.appendChild(listText);
+  if (task.tasklists.length > 0) {
+    const listText = document.createElement("p");
+    for (let i = 0; i < task.tasklists.length; i++) {
+      const list = task.tasklists[i];
+
+      // Check if the current list is not the last one
+      if (i < task.tasklists.length - 1) {
+        listText.innerText += `${list.name}, `;
+      } else {
+        listText.innerText += `${list.name}`;
+      }
+    }
+    taskInfo.appendChild(listText);
+  }
+
+  if (task.duedate !== null && task.tasklists.length > 0) {
+    const dotText = document.createElement("p");
+    dotText.textContent = `${task.duedate !== null ? " \u00a0•\u00a0 " : ""}`;
+    taskInfo.appendChild(dotText);
+  }
 
   if (task.duedate !== null) {
     // Calendar SVG
@@ -1184,8 +1217,8 @@ async function askChatGPT() {
 
     spinner.style.display = "none";
 
-    if (response.status === "error"){
-      reloadflashedmessages()
+    if (response.status === "error") {
+      reloadflashedmessages();
     } else {
       for (const tasklist of response.GPTResponse.tasklists) {
         appendTaskList(tasklist);
@@ -1214,7 +1247,7 @@ async function getChatGPTResponse(question: string) {
   console.log("Trying ChatGPT");
 
   const params = new URLSearchParams({
-    question: question
+    question: question,
   });
 
   try {
