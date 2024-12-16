@@ -366,7 +366,13 @@ async function startRecording() {
 
     mediaRecorder.onstop = async () => {
       const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
-      sendAudioToFlask(audioBlob);
+      const spinner = document.getElementById("loading-spinner");
+      spinner.style.display = "block";
+      console.log("HELLLOOOO");
+
+      await sendAudioToFlask(audioBlob);
+
+      spinner.style.display = "none";
     };
 
     mediaRecorder.start();
@@ -398,8 +404,8 @@ async function sendAudioToFlask(audioBlob: Blob) {
       method: "POST",
       body: formData,
     });
-
     const data = <gpt.ServerResponse>await validatejson(response);
+
     for (const tasklist of data.GPTResponse.tasklists) {
       // append Tasklists
     }
@@ -907,7 +913,15 @@ async function askChatGPT() {
     textField.value = "";
     console.log(`input before chatGPT: ${input}`);
     const types: string[] = ["Family", "Work", "Personal"];
+
+    const spinner = document.getElementById("loading-spinner");
+    spinner.style.display = "block";
+    console.log("HELLLOOOO");
+
     const response = <gpt.ServerResponse>await getChatGPTResponse(input, types);
+    
+    spinner.style.display = "none";
+
     for (const tasklist of response.GPTResponse.tasklists) {
       // append Tasklists
     }
