@@ -166,6 +166,26 @@ const handleOutsidePaletteClick = (event) => {
         document.getElementById("colors-close-icon").style.display = "none";
     }
 };
+async function reloadflashedmessages() {
+    const fmcontainer = document.getElementById("error-messages");
+    fmcontainer.innerHTML = "";
+    fmcontainer.innerText = "";
+    const response = await fetch("/api/v0/getflashedmessages/");
+    const flashedmessages = await validatejson(response);
+    for (const fm of flashedmessages) {
+        const div = document.createElement("div");
+        div.setAttribute("class", "alert alert-warning alert-dismissible fade show");
+        div.setAttribute("role", "alert");
+        const btn = document.createElement("button");
+        btn.setAttribute("type", "button");
+        btn.setAttribute("class", "btn-close");
+        btn.setAttribute("data-bd-dismiss", "alert");
+        btn.setAttribute("aria-label", "Close");
+        div.innerText = fm;
+        div.appendChild(btn);
+        fmcontainer.appendChild(div);
+    }
+}
 async function getPrimaryColor() {
     const response = await fetch(`/getUserColor/`, {
         method: "GET",
@@ -399,17 +419,23 @@ async function postTask() {
         taskTitleInput.value = "";
         taskDuedateInput.value = "";
         const taskPostURL = "/postUserTask/";
-        const response = await fetch(taskPostURL, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-                "X-CSRFToken": urlsps.get("csrf_token"),
-            },
-            body: urlsps.toString(),
-        });
-        const serverTask = await validatejson(response);
-        console.log("task created: " + JSON.stringify(serverTask));
-        appendTask(serverTask);
+        try {
+            const response = await fetch(taskPostURL, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "X-CSRFToken": urlsps.get("csrf_token")
+                },
+                body: urlsps.toString()
+            });
+            const servertask = await validatejson(response);
+            console.log("task created: " + JSON.stringify(response));
+            appendTask(servertask);
+        }
+        catch (error) {
+            reloadflashedmessages();
+            console.error(error);
+        }
     }
 }
 function createLine(x1, y1, x2, y2) {

@@ -40,11 +40,11 @@ namespace gpt {
 }
 
 interface Task {
-  id?: number;
+  id: number;
   name: string;
   complete: boolean;
   // lists: [string];
-  duedate?: number;
+  duedate: number;
   starred: boolean;
   notes: string;
 }
@@ -297,6 +297,42 @@ const handleOutsidePaletteClick = (event: MouseEvent) => {
     document.getElementById("colors-close-icon").style.display = "none";
   }
 };
+
+// should be called on creation of tasks, task lists, and subtasks
+async function reloadflashedmessages() {
+    const fmcontainer = document.getElementById("error-messages");
+    fmcontainer.innerHTML = "";
+    fmcontainer.innerText = "";
+    const response = await fetch("/api/v0/getflashedmessages/");
+    const flashedmessages = <string[]> await validatejson(response);
+    for(const fm of flashedmessages) {
+      const div = document.createElement("div");
+      div.setAttribute("class","alert alert-warning alert-dismissible fade show");
+      div.setAttribute("role","alert");
+      const btn = document.createElement("button");
+      btn.setAttribute("type","button");
+      btn.setAttribute("class","btn-close");
+      btn.setAttribute("data-bd-dismiss","alert");
+      btn.setAttribute("aria-label","Close");
+      div.innerText = fm;
+      div.appendChild(btn);
+      fmcontainer.appendChild(div);
+      /*
+      <div id="error-messages">
+        {% for errormessage in get_flashed_messages() %}
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            {{errormessage}}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+      </div>
+      */
+      //<div class="alert alert-warning alert-dismissible fade show" role="alert">
+          //<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">&times;</button>
+          //{{ message }}
+      //</div>
+    }
+}
 
 async function getPrimaryColor() {
   const response = await fetch(`/getUserColor/`, {
@@ -615,18 +651,25 @@ async function postTask() {
     taskDuedateInput.value = "";
 
     const taskPostURL = "/postUserTask/";
-    const response = await fetch(taskPostURL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        // want to get form.hidden_tag() in here
-        "X-CSRFToken": urlsps.get("csrf_token"),
-      },
-      body: urlsps.toString(),
-    });
-    const serverTask = <Task>await validatejson(response);
-    console.log("task created: " + JSON.stringify(serverTask));
-    appendTask(serverTask);
+    try {
+      const response = await fetch(taskPostURL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          // want to get form.hidden_tag() in here
+          "X-CSRFToken": urlsps.get("csrf_token")
+        },
+        body: urlsps.toString()
+      })
+      
+      const servertask = await validatejson(response);
+      console.log("task created: " + JSON.stringify(response));
+      appendTask(servertask);
+    }
+    catch(error) {
+        reloadflashedmessages();
+        console.error(error);
+    }
   }
 }
 
@@ -1136,6 +1179,7 @@ async function askChatGPT() {
       appendTaskList(tasklist);
     }
     for (const task of response.GPTResponse.tasks) {
+      // use url search params to perform server side validation
       const dbTask: Task = {
         id: task.id,
         name: task.name,

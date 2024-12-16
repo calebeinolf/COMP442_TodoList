@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 import json
 from flask import Flask, render_template, url_for, redirect
-from flask import request, session, flash, jsonify
+from flask import request, session, flash, jsonify, get_flashed_messages
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin, LoginManager, login_required
 from flask_login import login_user, logout_user, current_user
@@ -391,11 +391,12 @@ class TaskCreationForm(FlaskForm):
     def validate_duetime(form,field):
         if not form.duedate.data: raise ValidationError("A due time cannot be set for a task with no due date.")
 
-    def validate_name(form,field):
-        tasks = Task.query.filter_by(user=current_user).all()
-        for t in tasks:
-            if t.name == form.name.data:
-                raise ValidationError(f"Cannot have multiple tasks with the same name. There is already a task named {t.name}.")
+    # don't need this
+    #def validate_name(form,field):
+        #tasks = Task.query.filter_by(user=current_user).all()
+        #for t in tasks:
+            #if t.name == form.name.data:
+                #raise ValidationError(f"Cannot have multiple tasks with the same name. There is already a task named {t.name}.")
 
 # =================================================================================
 
@@ -612,6 +613,11 @@ def getcsrftok(mode:str,formtype:str):
         form.subtaskids.choices = subtaskdeletionchoices()
     # return csrf token html element
     return form.csrf_token()
+
+@app.get("/api/v0/getflashedmessages/")
+def getflashedmessages():
+    return jsonify(get_flashed_messages())
+
 
 @app.get("/taskform/")
 def gettaskform():
