@@ -336,7 +336,7 @@ class TaskListCreationForm(FlaskForm):
     title = "Task List Creation Form"
 
     # user will not be an option in forms (user will be current_user from flask_login)
-    name = StringField(label="Task List Name", validators=[InputRequired(),Length(max=80)])
+    name = StringField(label="Task List Name", validators=[InputRequired(),Length(min=1,max=80)])
     
     # our choices are not predefined here for tasks, so we'll have a method to populate
     # choices in the routes
@@ -360,7 +360,7 @@ class TaskCreationForm(FlaskForm):
 
     # no option for id (id is autoincrementing)
 
-    name = StringField(label="Task Name", validators=[InputRequired(),Length(max=80)])
+    name = StringField(label="Task Name", validators=[InputRequired(),Length(min=1,max=80)])
     
     # don't have to check complete or starred
     complete = BooleanField(label="Complete",validators=[Optional()])
@@ -406,7 +406,7 @@ class SubtaskCreationForm(FlaskForm):
 
     # have to have some way to designate the taskid -> I think we can get it through the routes
 
-    name = StringField(label="Subtask Name", validators=[InputRequired(),Length(max=80)])
+    name = StringField(label="Subtask Name", validators=[InputRequired(),Length(min=1,max=80)])
     complete = BooleanField(label="Complete",validators=[Optional()])
     priority = IntegerField("Priority",validators=[Optional(),NumberRange(min=1,max=10)])
 
