@@ -74,31 +74,31 @@
           <!-- adding a wrapper around these button to open the their forms -->
           <p>forms:</p>
           <!-- button to view tasks -->
-          <form action="http://127.0.0.1:5000/viewalltasks/" method="get">
+          <form action="http://127.0.0.1:5000/{{ url_for('viewalltasks') }}/" method="get">
             <button class="view-all-tasks" id="view_all_tasks_button">
               <h3>View All Tasks</h3>
             </button>
           </form>
-          <form action="http://127.0.0.1:5000/task/" method="get">
+          <form action="http://127.0.0.1:5000/{{ url_for('gettaskform') }}/" method="get">
             <button class="add-task">Add Task</button>
           </form>
-          <form action="http://127.0.0.1:5000/taskdelete/" method="get">
+          <form action="http://127.0.0.1:5000/{{ url_for('gettaskdeletion') }}/" method="get">
             <button class="delete-task">Delete Task(s)</button>
           </form>
           <form
-            action="http://127.0.0.1:5000/tasksforsubtaskdelete/"
+            action="http://127.0.0.1:5000/{{ url_for('gettasksforsubtaskdeletion') }}/"
             method="get"
           >
             <button class="delete-subtask">Delete Subtask(s)</button>
           </form>
 
           <!-- button to add a task list -->
-          <form action="http://127.0.0.1:5000/tasklist/" method="get">
+          <form action="http://127.0.0.1:5000/{{ url_for('gettasklistform') }}/" method="get">
             <button class="add-task-list">Add Task List</button>
           </form>
 
           <!-- button to delete task lists -->
-          <form action="http://127.0.0.1:5000/tasklistdelete/" method="get">
+          <form action="http://127.0.0.1:5000/{{ url_for('gettasklistdeletion') }}/" method="get">
             <button class="add-task-list">Delete Task List(s)</button>
           </form>
         </div>

@@ -535,17 +535,15 @@ async function postTask() {
     );
     const taskDuedate = taskDuedateDateObj.getTime();
 
-    const urlsps = await get_params_for_task_to_post(taskTitle,taskDuedate);
-    
-    /*
-    old method that does not include server side validation:
-    const task: Task = {
-      name: taskTitle,
-      duedate: taskDuedate ? taskDuedate : new Date().getTime(),
-      complete: false,
-      starred: false,
-    };
-    */
+    const urlsps = new URLSearchParams();
+    urlsps.append("name",taskTitle);
+    urlsps.append("duedate",`${taskDuedate ? taskDuedate : new Date().getTime()}`);
+    urlsps.append("complete","false");
+    urlsps.append("starred","false");
+    const csrfinpele:HTMLDivElement = document.createElement("div");
+    csrfinpele.innerHTML = await (await fetch("/api/v0/getcsrftok/create/task")).text();
+    console.log(csrfinpele.innerHTML);
+    urlsps.append("csrf_token",csrfinpele.firstElementChild.getAttribute("value"));
 
     taskTitleInput.value = "";
     taskDuedateInput.value = "";
@@ -558,12 +556,10 @@ async function postTask() {
         // want to get form.hidden_tag() in here
         "X-CSRFToken": urlsps.get("csrf_token")
       },
-      //body: JSON.stringify(task), -> replaced by url search parameters
       body: urlsps.toString()
     });
-    console.log("response: " + JSON.stringify(response));
     const serverTask = <Task> await validatejson(response);
-    console.log("task created: " + serverTask);
+    console.log("task created: " + JSON.stringify(serverTask));
     appendTask(serverTask);
   }
 }
@@ -604,55 +600,6 @@ async function appendTaskList(taskList: TaskList) {
   listItem.appendChild(svgElement);
   listItem.appendChild(aElement);
   taskListElement.appendChild(listItem);
-}
-
-// returns url search parameters including the csrf token, allows for server side validation
-// needs: taskTitle, taskDuedate
-async function get_params_for_task_to_post(taskTitle:string,taskDuedate:number) : Promise<URLSearchParams> {
-  // get the form with the hidden_tag() inserted from flask route
-  const formresponse = await fetch("/task/", {
-    method: "GET",
-    headers: {
-      "Accept": "text/html",
-    },
-  });
-
-  const formtext = await formresponse.text();
-
-  console.log("form text received:\n\n" + formtext);
-
-  //console.log(formdoc.getElementById("csrf_token").getAttribute("value"));
-
-  //return {"urlsps": urlsps,"csrftok":csrftok}; -> csrftok is accessible through urlsps
-
-  // return a promise to url search parameters
-  return formtexttourlsps(formtext,taskTitle,taskDuedate);
-}
-
-async function formtexttourlsps(formtext:string,taskTitle:string,taskDuedate:number) : Promise<URLSearchParams> {
-
-  // TODO: DON'T NEED THE WHOLE FORM, JUST GET THE hidden_tag ALONE -> JUST FETCH STRING
-  // RATHER THAN DOCUMENT
-  // create a document with that text
-  const formdoc = new DOMParser().parseFromString(formtext,"text/html");
-
-  const urlsps = new URLSearchParams();
-  urlsps.append("name",taskTitle);
-  urlsps.append("duedate",`${taskDuedate ? taskDuedate : new Date().getTime()}`);
-  urlsps.append("complete","false");
-  urlsps.append("starred","false");
-
-  const csrftok = formdoc.getElementById("csrf_token").getAttribute("value");
-
-  console.log("csrf_token extracted: " + csrftok);
-
-  // insert the csrf token for form validity -> use inspect to see what the
-  // form.hidden_tag() is translated to -> get the input attribute with id csrf_token
-  urlsps.append("csrf_token", csrftok);
-
-  console.log("urlsps returned by formtexttourlsps(): " + urlsps.toString());
-
-  return urlsps;
 }
 
 async function appendTask(task: Task) {

@@ -349,7 +349,15 @@ async function postTask() {
         const taskDuedateParts = taskDuedateValue.split("-");
         const taskDuedateDateObj = new Date(parseInt(taskDuedateParts[0], 10), parseInt(taskDuedateParts[1], 10) - 1, parseInt(taskDuedateParts[2], 10));
         const taskDuedate = taskDuedateDateObj.getTime();
-        const urlsps = await get_params_for_task_to_post(taskTitle, taskDuedate);
+        const urlsps = new URLSearchParams();
+        urlsps.append("name", taskTitle);
+        urlsps.append("duedate", `${taskDuedate ? taskDuedate : new Date().getTime()}`);
+        urlsps.append("complete", "false");
+        urlsps.append("starred", "false");
+        const csrfinpele = document.createElement("div");
+        csrfinpele.innerHTML = await (await fetch("/api/v0/getcsrftok/create/task")).text();
+        console.log(csrfinpele.innerHTML);
+        urlsps.append("csrf_token", csrfinpele.firstElementChild.getAttribute("value"));
         taskTitleInput.value = "";
         taskDuedateInput.value = "";
         const taskPostURL = "/postUserTask/";
@@ -361,9 +369,8 @@ async function postTask() {
             },
             body: urlsps.toString()
         });
-        console.log("response: " + JSON.stringify(response));
         const serverTask = await validatejson(response);
-        console.log("task created: " + serverTask);
+        console.log("task created: " + JSON.stringify(serverTask));
         appendTask(serverTask);
     }
 }
@@ -399,6 +406,30 @@ async function appendTaskList(taskList) {
     listItem.appendChild(svgElement);
     listItem.appendChild(aElement);
     taskListElement.appendChild(listItem);
+}
+async function get_params_for_task_to_post(taskTitle, taskDuedate) {
+    const formresponse = await fetch("/task/", {
+        method: "GET",
+        headers: {
+            "Accept": "text/html",
+        },
+    });
+    const formtext = await formresponse.text();
+    console.log("form text received:\n\n" + formtext);
+    return formtexttourlsps(formtext, taskTitle, taskDuedate);
+}
+async function formtexttourlsps(formtext, taskTitle, taskDuedate) {
+    const formdoc = new DOMParser().parseFromString(formtext, "text/html");
+    const urlsps = new URLSearchParams();
+    urlsps.append("name", taskTitle);
+    urlsps.append("duedate", `${taskDuedate ? taskDuedate : new Date().getTime()}`);
+    urlsps.append("complete", "false");
+    urlsps.append("starred", "false");
+    const csrftok = formdoc.getElementById("csrf_token").getAttribute("value");
+    console.log("csrf_token extracted: " + csrftok);
+    urlsps.append("csrf_token", csrftok);
+    console.log("urlsps returned by formtexttourlsps(): " + urlsps.toString());
+    return urlsps;
 }
 async function appendTask(task) {
     const today = new Date();

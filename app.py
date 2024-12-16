@@ -585,7 +585,7 @@ def index():
 
 
 @app.get("/viewalltasks/")
-def view():
+def viewalltasks():
     return render_template(
         "view.html",
         alltasklists=TaskList.query.filter_by(userid=current_user.id).all(),
@@ -602,14 +602,37 @@ def alltlchoices():
     return [(tl.id, tl.name) for tl in tasklists]
 
 
-@app.get("/task/")
+@app.get("/api/v0/getcsrftok/<string:mode>/<string:formtype>")
+def getcsrftok(mode:str,formtype:str):
+    # taskform will last outside of if scope
+    if mode == "create" and formtype == "task":
+        form = TaskCreationForm()
+        form.tasklistids.choices = alltlchoices()
+    elif mode == "delete" and formtype == "task":
+        form = TaskDeletionForm()
+        form.taskids.choices = alltaskchoices()
+
+    elif mode == "create" and formtype == "tasklist":
+        form = TaskListCreationForm()
+        form.taskids.choices = alltaskchoices()
+    elif mode == "delete" and formtype == "tasklist":
+        form = TaskListDeletionForm()
+        form.tasklistids.choices = alltlchoices
+
+    elif mode == "create" and formtype == "subtask": form = SubtaskCreationForm()
+    elif mode == "delete" and formtype == "subtask":
+        form = SubtaskDeletionForm()
+        form.subtaskids.choices = subtaskdeletionchoices()
+    # return csrf token html element
+    return form.csrf_token()
+
+@app.get("/taskform/")
 def gettaskform():
-    taskform = TaskCreationForm()
-    taskform.tasklistids.choices = alltlchoices()
-    return render_template("genericform.html", form=taskform)
+    form = TaskCreationForm()
+    form.tasklistids = alltlchoices()
+    return render_template("genericform.html",form=form)
 
-
-@app.post("/task/")
+@app.post("/taskform/")
 def posttaskform():
     if (form := TaskCreationForm()).validate():
 
@@ -648,13 +671,13 @@ def posttaskform():
 # Create Subtask Via Form
 
 
-@app.get("/subtask/")
+@app.get("/subtaskform/")
 def getsubtaskform():
     form = SubtaskCreationForm()
     return render_template("genericform.html", form=form)
 
 
-@app.post("/subtask/")
+@app.post("/subtaskform/")
 def postsubtaskform():
     if (form := SubtaskCreationForm()).validate():
         if not session.get("currenttaskid"):
@@ -697,14 +720,14 @@ def alltaskchoices():
 
 # when the user clicks the button to add task list, a post request will be sent to
 # the server
-@app.get("/tasklist/")
+@app.get("/tasklistform/")
 def gettasklistform():
     tlform = TaskListCreationForm()
     tlform.taskids.choices = alltaskchoices()
     return render_template("genericform.html", form=tlform)
 
 
-@app.post("/tasklist/")
+@app.post("/tasklistform/")
 def posttasklistform():
     if (form := TaskListCreationForm()).validate():
         # input(f"taskids.data: {form.taskids.data}. Hit Ctrl-C")
@@ -730,7 +753,6 @@ def posttasklistform():
 import chat_gpt
 import assemblyai as aai
 from config import assemblyAIKey
-
 
 @login_required
 @app.post("/speech_for_gpt/")
@@ -847,14 +869,14 @@ def addGPTResponse(response: chat_gpt.Chat_GPT_Response):
 # Task Deletion Via Form
 
 
-@app.get("/taskdelete/")
+@app.get("/taskdeleteform/")
 def gettaskdeletion():
     form = TaskDeletionForm()
     form.taskids.choices = alltaskchoices()
     return render_template("genericform.html", form=form)
 
 
-@app.post("/taskdelete/")
+@app.post("/taskdeleteform/")
 def posttaskdeletion():
     if (form := TaskDeletionForm()).validate():
 
@@ -869,7 +891,7 @@ def posttaskdeletion():
 
 # =================================================================================
 # Subtask Deletion Via Form
-@app.get("/tasksforsubtaskdelete/")
+@app.get("/tasksforsubtaskdeleteform/")
 def gettasksforsubtaskdeletion():
     # can reuse the TaskDeletion form with a different title here
     form = TaskDeletionForm()
@@ -879,7 +901,7 @@ def gettasksforsubtaskdeletion():
     return render_template("genericform.html", form=form)
 
 
-@app.post("/tasksforsubtaskdelete/")
+@app.post("/tasksforsubtaskdeleteform/")
 def posttasksforsubtaskdeletion():
     if (form := TaskDeletionForm()).validate():
 
@@ -892,7 +914,6 @@ def posttasksforsubtaskdeletion():
     for field, em in form.errors.items():
         flash(f"Error in {field}: {em}")
     return redirect(url_for("gettasksforsubtaskdeletion"))
-
 
 def subtaskdeletionchoices():
     if not session.get("deletesubtasksfor"):
@@ -909,15 +930,14 @@ def subtaskdeletionchoices():
         ]
     return choices
 
-
-@app.get("/subtaskdelete/")
+@app.get("/subtaskdeleteform/")
 def getsubtaskdeletion():
     form = SubtaskDeletionForm()
     form.subtaskids.choices = subtaskdeletionchoices()
     return render_template("genericform.html", form=form)
 
 
-@app.post("/subtaskdelete/")
+@app.post("/subtaskdeleteform/")
 def postsubtaskdeletion():
     if (form := SubtaskDeletionForm()).validate():
         for subtaskid in form.subtaskids.data:
@@ -930,14 +950,14 @@ def postsubtaskdeletion():
 
 # =================================================================================
 # Task List Deletion Via Form
-@app.get("/tasklistdelete/")
+@app.get("/tasklistdeleteform/")
 def gettasklistdeletion():
     form = TaskListDeletionForm()
     form.tasklistids.choices = alltlchoices()
     return render_template("genericform.html", form=form)
 
 
-@app.post("/tasklistdelete/")
+@app.post("/tasklistdeleteform/")
 def posttasklistdeletion():
     if (form := TaskListDeletionForm()).validate():
 
