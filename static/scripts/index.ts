@@ -48,6 +48,11 @@ interface Task {
   starred: boolean;
 }
 
+interface TaskList {
+  id: number;
+  name: string
+}
+
 interface TaskStub {
   id: number;
   name?: string;
@@ -55,6 +60,8 @@ interface TaskStub {
 
 document.addEventListener("DOMContentLoaded", async () => {
   loadTasks();
+
+  loadTaskLists();
 
   const aiAddTaskInput = <HTMLInputElement>(
     document.getElementById("aiPromptTextField")
@@ -407,7 +414,7 @@ async function sendAudioToFlask(audioBlob: Blob) {
     const data = <gpt.ServerResponse>await validatejson(response);
 
     for (const tasklist of data.GPTResponse.tasklists) {
-      // append Tasklists
+      appendTaskList(tasklist);
     }
     for (const task of data.GPTResponse.tasks) {
       const dbTask: Task = {
@@ -425,6 +432,26 @@ async function sendAudioToFlask(audioBlob: Blob) {
     console.log(data);
   } catch (e) {
     console.log("Error sending audio");
+  }
+}
+
+async function loadTaskLists() {
+  try{
+    const response = await fetch("/getUserTaskLists/", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      credentials: "include"
+    });
+    const taskLists = await validatejson(response);
+
+    for (const taskList of taskLists.tasklists) {
+      appendTaskList(taskList);
+    }
+
+  } catch (error) {
+    console.error("Error fetching task lists:", error);
   }
 }
 
@@ -529,6 +556,44 @@ async function postTask() {
     console.log(serverTask);
     appendTask(serverTask);
   }
+}
+
+function createLine(x1: number, y1: number, x2: number, y2: number) {
+  const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+  line.setAttribute("x1", x1.toString());
+  line.setAttribute("y1", y1.toString());
+  line.setAttribute("x2", x2.toString());
+  line.setAttribute("y2", y2.toString());
+  return line;
+}
+
+async function appendTaskList(taskList: TaskList) {
+  const taskListElement = <HTMLUListElement> document.getElementById("task_lists");
+  const listItem: HTMLLIElement = document.createElement("li");
+
+  const svgElement: SVGSVGElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svgElement.classList.add("list-icon");
+  svgElement.setAttribute("viewBox", "0 0 14 14");
+  svgElement.setAttribute("fill", "none");
+  const gElement: SVGGElement = document.createElementNS("http://www.w3.org/2000/svg", "g");
+  gElement.setAttribute("stroke", "var(--primary-color)");
+  gElement.setAttribute("stroke-width", "1.4");
+  gElement.setAttribute("stroke-linecap", "round");
+
+  gElement.appendChild(createLine(4.65, 11.35, 13.35, 11.35));
+  gElement.appendChild(createLine(4.65, 6.35, 13.35, 6.35));
+  gElement.appendChild(createLine(4.65, 1.35, 13.35, 1.35));
+  gElement.appendChild(createLine(1.65, 11.35, 1.35, 11.35));
+  gElement.appendChild(createLine(1.65, 6.35, 1.35, 6.35));
+  gElement.appendChild(createLine(1.65, 1.35, 1.35, 1.35));
+
+  svgElement.appendChild(gElement);
+  const aElement: HTMLAnchorElement = document.createElement("a");
+  aElement.href = "#";
+  aElement.innerText = taskList.name;
+  listItem.appendChild(svgElement);
+  listItem.appendChild(aElement);
+  taskListElement.appendChild(listItem);
 }
 
 async function appendTask(task: Task) {
@@ -923,7 +988,7 @@ async function askChatGPT() {
     spinner.style.display = "none";
 
     for (const tasklist of response.GPTResponse.tasklists) {
-      // append Tasklists
+      appendTaskList(tasklist);
     }
     for (const task of response.GPTResponse.tasks) {
       const dbTask: Task = {

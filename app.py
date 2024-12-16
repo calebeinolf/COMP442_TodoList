@@ -267,7 +267,12 @@ class TaskList(db.Model):
     # method which is being used with Task.tasklists)
     def __eq__(self, othertl):
         return isinstance(othertl, TaskList) and self.id == othertl.id
-
+    
+    def to_json(self):
+        return{
+            "id": self.id,
+            "name": self.name
+        }
     # def __init__(self,name,userid=None,user=None):
     # self.name=name
     # self.userid=userid
@@ -862,6 +867,17 @@ def deletetasklist(tlid):
     db.session.delete(tl)
     db.session.commit()
 
+@app.get("/getUserTaskLists/")
+def getUserTaskLists():
+    tasklists: list[TaskList] = TaskList.query.filter_by(userid=current_user.id).all()
+    
+    print(f"Task Lists: {tasklists}")
+    
+    return jsonify(
+        {
+            "tasklists": [taskList.to_json() for taskList in tasklists]
+        }
+    )
 
 # @cross_origin(supports_credentials=True)
 @app.get("/getUserTasks/")
@@ -956,7 +972,6 @@ def markStarred(taskId, starred):
                 "starred": task.starred,
             }
         )
-
 
 @app.get("/getUserColor/")
 def getColor():
