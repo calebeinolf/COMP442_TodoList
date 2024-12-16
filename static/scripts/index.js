@@ -170,22 +170,29 @@ const handleOutsidePaletteClick = (event) => {
         document.getElementById("colors-close-icon").style.display = "none";
     }
 };
+async function clearFlashedMessage(childDiv) {
+    const fmcontainer = document.getElementById("error-messages");
+    fmcontainer.removeChild(childDiv);
+}
 async function reloadflashedmessages() {
     const fmcontainer = document.getElementById("error-messages");
-    fmcontainer.innerHTML = "";
-    fmcontainer.innerText = "";
+    fmcontainer.replaceChildren();
+    fmcontainer.style.alignContent = "center";
     const response = await fetch("/api/v0/getflashedmessages/");
     const flashedmessages = await validatejson(response);
     for (const fm of flashedmessages) {
         const div = document.createElement("div");
-        div.setAttribute("class", "alert alert-warning alert-dismissible fade show");
-        div.setAttribute("role", "alert");
+        div.classList.add("flashMessage");
+        const spacer = document.createElement("div");
+        spacer.classList.add("flashMessageSpace");
         const btn = document.createElement("button");
-        btn.setAttribute("type", "button");
-        btn.setAttribute("class", "btn-close");
-        btn.setAttribute("data-bd-dismiss", "alert");
-        btn.setAttribute("aria-label", "Close");
+        btn.classList.add("flashMessageBtn");
+        btn.innerHTML = "&times;";
+        btn.addEventListener("click", () => {
+            clearFlashedMessage(div);
+        });
         div.innerText = fm;
+        div.appendChild(spacer);
         div.appendChild(btn);
         fmcontainer.appendChild(div);
     }

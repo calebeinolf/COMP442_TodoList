@@ -313,29 +313,40 @@ const handleOutsidePaletteClick = (event: MouseEvent) => {
   }
 };
 
+async function clearFlashedMessage(childDiv: HTMLDivElement){
+  const fmcontainer = document.getElementById("error-messages");
+  fmcontainer.removeChild(childDiv);
+}
+
 // should be called on creation of tasks, task lists, and subtasks
 async function reloadflashedmessages() {
-  const fmcontainer = document.getElementById("error-messages");
-  fmcontainer.innerHTML = "";
-  fmcontainer.innerText = "";
-  const response = await fetch("/api/v0/getflashedmessages/");
-  const flashedmessages = <string[]>await validatejson(response);
-  for (const fm of flashedmessages) {
-    const div = document.createElement("div");
-    div.setAttribute(
-      "class",
-      "alert alert-warning alert-dismissible fade show"
-    );
-    div.setAttribute("role", "alert");
-    const btn = document.createElement("button");
-    btn.setAttribute("type", "button");
-    btn.setAttribute("class", "btn-close");
-    btn.setAttribute("data-bd-dismiss", "alert");
-    btn.setAttribute("aria-label", "Close");
-    div.innerText = fm;
-    div.appendChild(btn);
-    fmcontainer.appendChild(div);
-    /*
+    const fmcontainer = document.getElementById("error-messages");
+    fmcontainer.replaceChildren()
+
+    fmcontainer.style.alignContent = "center"
+
+    const response = await fetch("/api/v0/getflashedmessages/");
+    const flashedmessages = <string[]> await validatejson(response);
+
+    for(const fm of flashedmessages) {
+      const div = document.createElement("div");
+      div.classList.add("flashMessage")
+      
+      const spacer = document.createElement("div");
+      spacer.classList.add("flashMessageSpace")
+
+      const btn = document.createElement("button");
+      btn.classList.add("flashMessageBtn")
+      btn.innerHTML = "&times;"
+      
+      btn.addEventListener("click", () => {
+        clearFlashedMessage(div);
+      });
+      div.innerText = fm;
+      div.appendChild(spacer);
+      div.appendChild(btn);
+      fmcontainer.appendChild(div);
+      /*
       <div id="error-messages">
         {% for errormessage in get_flashed_messages() %}
         <div class="alert alert-warning alert-dismissible fade show" role="alert">
