@@ -133,7 +133,7 @@
         </div>
       </div>
 
-      <div id="loading-spinner" style="display: none;">
+      <div id="loading-spinner" style="display: none">
         <div class="spinner"></div>
       </div>
 
@@ -384,7 +384,12 @@
               </svg>
 
               <div class="details-task-content">
-                <p id="details-task-duedate">Due Sun, November 10</p>
+                <!-- <p id="details-task-duedate">Due Sun, November 10</p> -->
+                <input
+                  id="details-task-duedate-input"
+                  type="date"
+                  class="date-input"
+                />
               </div>
               <svg width="13px" viewBox="0 0 329.26933 329" class="right-icon">
                 <path
@@ -430,7 +435,12 @@
                 />
               </svg>
               <div class="details-task-content">
-                <p>Add note</p>
+                <!-- <p>Add note</p> -->
+                <input
+                  id="details-task-notes-input"
+                  class="blank-input"
+                  placeholder="Add note..."
+                />
               </div>
             </div>
           </div>

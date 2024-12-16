@@ -292,8 +292,9 @@ async function sendAudioToFlask(audioBlob) {
                 id: task.id,
                 name: task.name,
                 complete: false,
-                duedate: (task.duedate * 1000),
+                duedate: task.duedate * 1000,
                 starred: task.starred,
+                notes: "",
             };
             appendTask(dbTask);
         }
@@ -310,9 +311,9 @@ async function loadTaskLists() {
         const response = await fetch("/getUserTaskLists/", {
             method: "GET",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
             },
-            credentials: "include"
+            credentials: "include",
         });
         const taskLists = await validatejson(response);
         for (const taskList of taskLists.tasklists) {
@@ -340,6 +341,7 @@ async function loadTasks() {
                 task.duedate = new Date(task.duedate);
             }
             appendTask(task);
+            openDetails(task);
         }
     }
     catch (error) {
@@ -349,10 +351,18 @@ async function loadTasks() {
 async function saveTaskFromDetailsPanel() {
     const titleInput = (document.getElementById("details-task-name-input"));
     const newTitle = titleInput.value;
+    const duedateInput = (document.getElementById("details-task-duedate-input"));
+    const inputValue = duedateInput.value;
+    const [year, month, day] = inputValue.split("-");
+    const newDuedate = new Date(`${year}-${month}-${day}T00:00:00`);
+    const notesInput = (document.getElementById("details-task-notes-input"));
+    const newNotes = notesInput.value;
     const detailsPanel = (document.getElementById("task-details-container"));
     const taskStub = {
         id: Number(detailsPanel.dataset.taskId),
         name: newTitle,
+        duedate: newDuedate.getTime(),
+        notes: newNotes,
     };
     const taskPostURL = "/updateUserTask/";
     const response = await fetch(taskPostURL, {
@@ -363,6 +373,7 @@ async function saveTaskFromDetailsPanel() {
         body: JSON.stringify(taskStub),
     });
     const updatedTask = await validatejson(response);
+    console.log(updatedTask);
     const oldTaskCard = document.getElementById(`task-${updatedTask.id}`);
     oldTaskCard.parentNode.removeChild(oldTaskCard);
     appendTask(updatedTask);
@@ -392,9 +403,9 @@ async function postTask() {
             method: "POST",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
-                "X-CSRFToken": urlsps.get("csrf_token")
+                "X-CSRFToken": urlsps.get("csrf_token"),
             },
-            body: urlsps.toString()
+            body: urlsps.toString(),
         });
         const serverTask = await validatejson(response);
         console.log("task created: " + JSON.stringify(serverTask));
@@ -410,7 +421,7 @@ function createLine(x1, y1, x2, y2) {
     return line;
 }
 async function appendTaskList(taskList) {
-    const taskListElement = document.getElementById("task_lists");
+    const taskListElement = (document.getElementById("task_lists"));
     const listItem = document.createElement("li");
     const svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svgElement.classList.add("list-icon");
@@ -620,12 +631,15 @@ function openDetails(task) {
     detailsPanel.setAttribute("data-task-id", String(task.id));
     const nameInput = (document.getElementById("details-task-name-input"));
     nameInput.value = task.name;
+    const dateInput = (document.getElementById("details-task-duedate-input"));
     if (task.duedate !== null) {
-        document.getElementById("details-task-duedate").innerText = formatDate(new Date(task.duedate));
+        dateInput.value = formatDateForInputField(new Date(task.duedate));
     }
     else {
-        document.getElementById("details-task-duedate").innerText = "";
+        dateInput.value = "";
     }
+    const notesIput = (document.getElementById("details-task-notes-input"));
+    notesIput.value = task.notes;
     const checkIcon = document.getElementById("details-checkIcon");
     const starIcon = document.getElementById("details-starIcon");
     const newCheckIcon = checkIcon.cloneNode(true);
@@ -754,6 +768,12 @@ function formatDate(date) {
     const dayOfMonth = date.getDate();
     return `${dayOfWeek}, ${month} ${dayOfMonth}`;
 }
+function formatDateForInputField(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+}
 async function askChatGPT() {
     const textField = (document.getElementById("aiPromptTextField"));
     if (textField.value != "") {
@@ -774,8 +794,9 @@ async function askChatGPT() {
                 id: task.id,
                 name: task.name,
                 complete: false,
-                duedate: (task.duedate * 1000),
+                duedate: task.duedate * 1000,
                 starred: task.starred,
+                notes: "",
             };
             appendTask(dbTask);
         }
