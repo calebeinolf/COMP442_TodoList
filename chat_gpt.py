@@ -55,13 +55,17 @@ class Task:
     
     def toDict(self) -> dict:
         print(f"Due Date: {self.duedate}")
+        newTaskListNames: str = ""
+        if "none" not in self.tasklistnames:
+            newTaskListNames = ','.join(self.tasklistnames)
+                
         return{
             "id": self.id,
             "name": self.name,
             "starred": self.starred,
             "duedate": self.duedate.timestamp(),
             "priority": self.priority,
-            "tasklistnames": ','.join(self.tasklistnames)
+            "tasklistnames": newTaskListNames
         }
         
     @staticmethod
