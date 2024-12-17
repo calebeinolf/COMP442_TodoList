@@ -79,12 +79,12 @@
           <div class="forms-btns">
             <!-- button to add a task list -->
             <form action="{{ url_for('gettasklistform') }}/" method="get">
-              <div class="add-task-list">+ Add Task List</div>
+              <button class="add-task-list">+ Add Task List</button>
             </form>
 
             <!-- button to delete task lists -->
             <form action="{{ url_for('gettasklistdeletion') }}/" method="get">
-              <div class="add-task-list">&times; Delete Task List(s)</div>
+              <button class="add-task-list">&times; Delete Task List(s)</button>
             </form>
           </div>
           <ul class="lists" id="task_lists">
