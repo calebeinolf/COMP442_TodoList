@@ -5,7 +5,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     loadTasks();
     loadTaskLists();
     const deleteBtn = document.getElementById("DeleteBtn");
-    deleteBtn.addEventListener("click", () => { deleteCurrentTask(); });
+    deleteBtn.addEventListener("click", () => {
+        deleteCurrentTask();
+    });
     const taskListElement = (document.getElementById("task_lists"));
     taskListElement.style.height = "500px";
     const allTasksButton = (document.getElementById("all-tasks-btn"));
@@ -137,10 +139,45 @@ document.addEventListener("DOMContentLoaded", async () => {
             saveTaskFromDetailsPanel();
         }
     });
+    const menuToggleBtn1 = document.getElementById("menu-toggle-btn-1");
+    menuToggleBtn1.addEventListener("click", toggleSidebar);
+    const menuToggleBtn2 = document.getElementById("menu-toggle-btn-2");
+    menuToggleBtn2.addEventListener("click", toggleSidebar);
+    const sidebar = document.getElementById("sidebar");
+    if (window.innerWidth < 1000) {
+        sidebar.classList.add("open");
+        menuToggleBtn1.classList.add("open");
+        menuToggleBtn2.classList.add("open");
+    }
+    else {
+        sidebar.classList.remove("open");
+        menuToggleBtn1.classList.remove("open");
+        menuToggleBtn2.classList.remove("open");
+    }
+    window.addEventListener("resize", () => {
+        if (window.innerWidth < 1000) {
+            sidebar.classList.add("open");
+            menuToggleBtn1.classList.add("open");
+            menuToggleBtn2.classList.add("open");
+        }
+        else {
+            sidebar.classList.remove("open");
+            menuToggleBtn1.classList.remove("open");
+            menuToggleBtn2.classList.remove("open");
+        }
+    });
 });
+function toggleSidebar() {
+    const sidebar = document.getElementById("sidebar");
+    sidebar.classList.toggle("open");
+    const menuToggleBtn1 = document.getElementById("menu-toggle-btn-1");
+    const menuToggleBtn2 = document.getElementById("menu-toggle-btn-2");
+    menuToggleBtn1.classList.toggle("open");
+    menuToggleBtn2.classList.toggle("open");
+}
 async function deleteCurrentTask() {
     try {
-        const detailsContainer = document.getElementById("task-details-container");
+        const detailsContainer = (document.getElementById("task-details-container"));
         const taskId = detailsContainer.dataset.taskId;
         const params = new URLSearchParams({
             taskid: taskId,
@@ -152,31 +189,10 @@ async function deleteCurrentTask() {
             },
         });
         detailsContainer.classList.remove("open");
-        const overdueSection = (document.getElementById("overdue-list"));
-        const dueTodaySection = (document.getElementById("due-today-list"));
-        const upcomingSection = (document.getElementById("upcoming-list"));
-        let children = Array.from(overdueSection.children);
-        children.forEach((child) => {
-            if (child.tagName.toLowerCase() === "div") {
-                overdueSection.removeChild(child);
-            }
-        });
-        children = Array.from(dueTodaySection.children);
-        children.forEach((child) => {
-            if (child.tagName.toLowerCase() === "div") {
-                dueTodaySection.removeChild(child);
-            }
-        });
-        children = Array.from(upcomingSection.children);
-        children.forEach((child) => {
-            if (child.tagName.toLowerCase() === "div") {
-                upcomingSection.removeChild(child);
-            }
-        });
-        loadTasks();
+        const cardToDelete = document.getElementById(`task-${detailsContainer.dataset.taskId}`);
+        cardToDelete.parentNode.removeChild(cardToDelete);
     }
-    catch (error) {
-    }
+    catch (error) { }
 }
 async function backToAllTasks() {
     console.log("backToAllTasks");

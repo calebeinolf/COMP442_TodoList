@@ -67,8 +67,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   loadTaskLists();
 
-  const deleteBtn = <HTMLButtonElement> document.getElementById("DeleteBtn");
-  deleteBtn.addEventListener("click", () => {deleteCurrentTask()})
+  const deleteBtn = <HTMLButtonElement>document.getElementById("DeleteBtn");
+  deleteBtn.addEventListener("click", () => {
+    deleteCurrentTask();
+  });
 
   const taskListElement = <HTMLUListElement>(
     document.getElementById("task_lists")
@@ -264,12 +266,49 @@ document.addEventListener("DOMContentLoaded", async () => {
       saveTaskFromDetailsPanel();
     }
   });
+
+  const menuToggleBtn1 = document.getElementById("menu-toggle-btn-1");
+  menuToggleBtn1.addEventListener("click", toggleSidebar);
+  const menuToggleBtn2 = document.getElementById("menu-toggle-btn-2");
+  menuToggleBtn2.addEventListener("click", toggleSidebar);
+
+  const sidebar = document.getElementById("sidebar");
+  if (window.innerWidth < 1000) {
+    sidebar.classList.add("open");
+    menuToggleBtn1.classList.add("open");
+    menuToggleBtn2.classList.add("open");
+  } else {
+    sidebar.classList.remove("open");
+    menuToggleBtn1.classList.remove("open");
+    menuToggleBtn2.classList.remove("open");
+  }
+  window.addEventListener("resize", () => {
+    if (window.innerWidth < 1000) {
+      sidebar.classList.add("open");
+      menuToggleBtn1.classList.add("open");
+      menuToggleBtn2.classList.add("open");
+    } else {
+      sidebar.classList.remove("open");
+      menuToggleBtn1.classList.remove("open");
+      menuToggleBtn2.classList.remove("open");
+    }
+  });
 });
 
-async function deleteCurrentTask(){
-  
-  try{
-    const detailsContainer = <HTMLDivElement> document.getElementById("task-details-container");
+function toggleSidebar() {
+  const sidebar = document.getElementById("sidebar");
+  sidebar.classList.toggle("open");
+  const menuToggleBtn1 = document.getElementById("menu-toggle-btn-1");
+  const menuToggleBtn2 = document.getElementById("menu-toggle-btn-2");
+  menuToggleBtn1.classList.toggle("open");
+  menuToggleBtn2.classList.toggle("open");
+}
+
+async function deleteCurrentTask() {
+  try {
+    const detailsContainer = <HTMLDivElement>(
+      document.getElementById("task-details-container")
+    );
     const taskId = detailsContainer.dataset.taskId;
 
     const params = new URLSearchParams({
@@ -285,42 +324,11 @@ async function deleteCurrentTask(){
 
     detailsContainer.classList.remove("open");
 
-    const overdueSection = <HTMLDivElement>(
-      document.getElementById("overdue-list")
+    const cardToDelete = document.getElementById(
+      `task-${detailsContainer.dataset.taskId}`
     );
-    const dueTodaySection = <HTMLDivElement>(
-      document.getElementById("due-today-list")
-    );
-    const upcomingSection = <HTMLDivElement>(
-      document.getElementById("upcoming-list")
-    );
-
-    let children = Array.from(overdueSection.children);
-    children.forEach((child) => {
-      if (child.tagName.toLowerCase() === "div") {
-        overdueSection.removeChild(child);
-      }
-    });
-
-    children = Array.from(dueTodaySection.children);
-    children.forEach((child) => {
-      if (child.tagName.toLowerCase() === "div") {
-        dueTodaySection.removeChild(child);
-      }
-    });
-
-    children = Array.from(upcomingSection.children);
-    children.forEach((child) => {
-      if (child.tagName.toLowerCase() === "div") {
-        upcomingSection.removeChild(child);
-      }
-    });
-
-    loadTasks()
-
-  } catch (error) {
-
-  }
+    cardToDelete.parentNode.removeChild(cardToDelete);
+  } catch (error) {}
 }
 
 async function backToAllTasks() {
@@ -372,40 +380,40 @@ const handleOutsidePaletteClick = (event: MouseEvent) => {
   }
 };
 
-async function clearFlashedMessage(childDiv: HTMLDivElement){
+async function clearFlashedMessage(childDiv: HTMLDivElement) {
   const fmcontainer = document.getElementById("error-messages");
   fmcontainer.removeChild(childDiv);
 }
 
 // should be called on creation of tasks, task lists, and subtasks
 async function reloadflashedmessages() {
-    const fmcontainer = document.getElementById("error-messages");
-    fmcontainer.replaceChildren()
+  const fmcontainer = document.getElementById("error-messages");
+  fmcontainer.replaceChildren();
 
-    fmcontainer.style.alignContent = "center"
+  fmcontainer.style.alignContent = "center";
 
-    const response = await fetch("/api/v0/getflashedmessages/");
-    const flashedmessages = <string[]> await validatejson(response);
+  const response = await fetch("/api/v0/getflashedmessages/");
+  const flashedmessages = <string[]>await validatejson(response);
 
-    for(const fm of flashedmessages) {
-      const div = document.createElement("div");
-      div.classList.add("flashMessage")
-      
-      const spacer = document.createElement("div");
-      spacer.classList.add("flashMessageSpace")
+  for (const fm of flashedmessages) {
+    const div = document.createElement("div");
+    div.classList.add("flashMessage");
 
-      const btn = document.createElement("button");
-      btn.classList.add("flashMessageBtn")
-      btn.innerHTML = "&times;"
-      
-      btn.addEventListener("click", () => {
-        clearFlashedMessage(div);
-      });
-      div.innerText = fm;
-      div.appendChild(spacer);
-      div.appendChild(btn);
-      fmcontainer.appendChild(div);
-      /*
+    const spacer = document.createElement("div");
+    spacer.classList.add("flashMessageSpace");
+
+    const btn = document.createElement("button");
+    btn.classList.add("flashMessageBtn");
+    btn.innerHTML = "&times;";
+
+    btn.addEventListener("click", () => {
+      clearFlashedMessage(div);
+    });
+    div.innerText = fm;
+    div.appendChild(spacer);
+    div.appendChild(btn);
+    fmcontainer.appendChild(div);
+    /*
       <div id="error-messages">
         {% for errormessage in get_flashed_messages() %}
         <div class="alert alert-warning alert-dismissible fade show" role="alert">

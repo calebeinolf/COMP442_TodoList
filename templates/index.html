@@ -12,7 +12,6 @@
     <link rel="icon" href="data:;base64,iVBORw0KGgo=" />
   </head>
   <body>
-    
     <div class="allFlashedMessages" id="error-messages">
       <!--{% for errormessage in get_flashed_messages() %}
       <div class="alert alert-warning alert-dismissible fade show" role="alert">
@@ -21,10 +20,56 @@
       </div>
       {% endfor %}-->
     </div>
-    
+
     <div class="container">
-      <div class="sidebar">
-        <h2>Todo APP</h2>
+      <div id="sidebar" class="sidebar">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          "
+        >
+          <h2>Todo APP</h2>
+          <!-- <button class="menu-toggle-btn-1" id="menu-toggle-btn-1">=</button> -->
+          <svg
+            class="menu-toggle-btn-1"
+            id="menu-toggle-btn-1"
+            width="19"
+            height="16"
+            viewBox="0 0 19 16"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <line
+              x1="0.75"
+              y1="15.25"
+              x2="17.45"
+              y2="15.25"
+              stroke="var(--dark-grey)"
+              stroke-width="1.5"
+              stroke-linecap="round"
+            />
+            <line
+              x1="0.75"
+              y1="8.25"
+              x2="17.45"
+              y2="8.25"
+              stroke="var(--dark-grey)"
+              stroke-width="1.5"
+              stroke-linecap="round"
+            />
+            <line
+              x1="0.75"
+              y1="1.25"
+              x2="17.45"
+              y2="1.25"
+              stroke="var(--dark-grey)"
+              stroke-width="1.5"
+              stroke-linecap="round"
+            />
+          </svg>
+        </div>
         <div class="all-tasks-btn" id="all-tasks-btn">
           <p>All Tasks</p>
         </div>
@@ -140,7 +185,49 @@
       <div class="task-list-container">
         <div class="task-list-header">
           <div class="task-list-header-title">
-            <h2>All Tasks</h2>
+            <div style="display: flex; gap: 10px; align-items: center">
+              <!-- <button class="menu-toggle-btn-2" id="menu-toggle-btn-2">
+                =
+              </button> -->
+              <svg
+                class="menu-toggle-btn-2"
+                id="menu-toggle-btn-2"
+                width="19"
+                height="16"
+                viewBox="0 0 19 16"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <line
+                  x1="0.75"
+                  y1="15.25"
+                  x2="17.45"
+                  y2="15.25"
+                  stroke="var(--dark-grey)"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                />
+                <line
+                  x1="0.75"
+                  y1="8.25"
+                  x2="17.45"
+                  y2="8.25"
+                  stroke="var(--dark-grey)"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                />
+                <line
+                  x1="0.75"
+                  y1="1.25"
+                  x2="17.45"
+                  y2="1.25"
+                  stroke="var(--dark-grey)"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                />
+              </svg>
+              <h2>All Tasks</h2>
+            </div>
 
             <div id="palette-container" class="palette-container hoverCard">
               <div id="palette-color-btns" class="palette-color-btns">
