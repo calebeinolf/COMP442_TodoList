@@ -619,8 +619,8 @@ def get_logout():
 
 # =================================================================================
 # Home Page and View
-@login_required
 @app.get("/index/")
+@login_required
 def index():
     # reset current task id and tasks for which subtask deletions are happening
     # in case they have values
@@ -650,8 +650,8 @@ def index():
         return redirect(url_for("get_login"))
 
 
-@login_required
 @app.get("/viewalltasks/")
+@login_required
 def viewalltasks():
     return render_template(
         "view.html",
@@ -707,6 +707,7 @@ def alltlchoices():
 
 
 @app.get("/api/v0/getcsrftok/<string:mode>/<string:formtype>")
+@login_required
 def getcsrftok(mode: str, formtype: str):
     # taskform will last outside of if scope
     if mode == "create" and formtype == "task":
@@ -733,6 +734,7 @@ def getcsrftok(mode: str, formtype: str):
 
 
 @app.get("/api/v0/getflashedmessages/")
+@login_required
 def getflashedmessages():
     return jsonify(get_flashed_messages()), 200
 
@@ -740,6 +742,7 @@ def getflashedmessages():
 def getanonusertasks():
     return jsonify(session.get("anonymoustasks",{})), 200
 
+# for anonymous user tasks
 @app.get("/togglecomplete/<int:id>/")
 def togglecomplete(id:int):
     #print(f"session['anonymoustasks'][str(id)][2] which is {session["anonymoustasks"][str(id)][2]} set to {not session["anonymoustasks"][str(id)][2]}")
@@ -757,6 +760,7 @@ def deleteaut(id:int):
 
 
 @app.get("/taskform/")
+@login_required
 def gettaskform():
     form = TaskCreationForm()
     form.tasklistids = alltlchoices()
@@ -764,6 +768,7 @@ def gettaskform():
 
 
 @app.post("/taskform/")
+@login_required
 def posttaskform():
     if (form := TaskCreationForm()).validate():
 
@@ -803,12 +808,14 @@ def posttaskform():
 
 
 @app.get("/subtaskform/")
+@login_required
 def getsubtaskform():
     form = SubtaskCreationForm()
     return render_template("genericform.html", form=form)
 
 
 @app.post("/subtaskform/")
+@login_required
 def postsubtaskform():
     if (form := SubtaskCreationForm()).validate():
         if not session.get("currenttaskid"):
@@ -852,6 +859,7 @@ def alltaskchoices():
 # when the user clicks the button to add task list, a post request will be sent to
 # the server
 @app.get("/tasklistform/")
+@login_required
 def gettasklistform():
     tlform = TaskListCreationForm()
     tlform.taskids.choices = alltaskchoices()
@@ -859,6 +867,7 @@ def gettasklistform():
 
 
 @app.post("/tasklistform/")
+@login_required
 def posttasklistform():
     if (form := TaskListCreationForm()).validate():
         # input(f"taskids.data: {form.taskids.data}. Hit Ctrl-C")
@@ -889,8 +898,8 @@ import assemblyai as aai
 from config import assemblyAIKey
 
 
-@login_required
 @app.post("/speech_for_gpt/")
+@login_required
 def talkToGPT():
     file = request.files["file"]
     file.save("client_side_audio.webm")
@@ -945,9 +954,8 @@ def talkToGPT():
         flash(f"ChatGPT Error: {response.error_message}")
         return jsonify({"status": "error", "GPTResponse": response.toDict()})
 
-
-@login_required
 @app.get("/askChatGPT/")
+@login_required
 def askGPT():
     question: str = request.args.get("question")
 
@@ -1035,6 +1043,7 @@ def addGPTResponse(response: chat_gpt.Chat_GPT_Response):
 
 
 @app.get("/taskdeleteform/")
+@login_required
 def gettaskdeletion():
     form = TaskDeletionForm()
     form.taskids.choices = alltaskchoices()
@@ -1042,6 +1051,7 @@ def gettaskdeletion():
 
 
 @app.post("/singletaskdelete/")
+@login_required
 def deleteSingleTask():
     try:
         taskid = request.args.get("taskid")
@@ -1053,6 +1063,7 @@ def deleteSingleTask():
         return 400
 
 @app.post("/taskdeleteform/")
+@login_required
 def posttaskdeletion():
     if (form := TaskDeletionForm()).validate():
 
@@ -1068,6 +1079,7 @@ def posttaskdeletion():
 # =================================================================================
 # Subtask Deletion Via Form
 @app.get("/tasksforsubtaskdeleteform/")
+@login_required
 def gettasksforsubtaskdeletion():
     # can reuse the TaskDeletion form with a different title here
     form = TaskDeletionForm()
@@ -1078,6 +1090,7 @@ def gettasksforsubtaskdeletion():
 
 
 @app.post("/tasksforsubtaskdeleteform/")
+@login_required
 def posttasksforsubtaskdeletion():
     if (form := TaskDeletionForm()).validate():
 
@@ -1109,6 +1122,7 @@ def subtaskdeletionchoices():
 
 
 @app.get("/subtaskdeleteform/")
+@login_required
 def getsubtaskdeletion():
     form = SubtaskDeletionForm()
     form.subtaskids.choices = subtaskdeletionchoices()
@@ -1116,6 +1130,7 @@ def getsubtaskdeletion():
 
 
 @app.post("/subtaskdeleteform/")
+@login_required
 def postsubtaskdeletion():
     if (form := SubtaskDeletionForm()).validate():
         for subtaskid in form.subtaskids.data:
@@ -1129,6 +1144,7 @@ def postsubtaskdeletion():
 # =================================================================================
 # Task List Deletion Via Form
 @app.get("/tasklistdeleteform/")
+@login_required
 def gettasklistdeletion():
     form = TaskListDeletionForm()
     form.tasklistids.choices = alltlchoices()
@@ -1136,6 +1152,7 @@ def gettasklistdeletion():
 
 
 @app.post("/tasklistdeleteform/")
+@login_required
 def posttasklistdeletion():
     if (form := TaskListDeletionForm()).validate():
 
@@ -1182,6 +1199,7 @@ def deletetasklist(tlid):
 
 
 @app.get("/getListTasks/<int:listId>/")
+@login_required
 def getTasksFromList(listId):
     tasks: list[Task] = (
         Task.query.join(TasksToTaskLists)
@@ -1194,6 +1212,7 @@ def getTasksFromList(listId):
 
 
 @app.get("/getUserTaskLists/")
+@login_required
 def getUserTaskLists():
     tasklists: list[TaskList] = TaskList.query.filter_by(userid=current_user.id).all()
 
@@ -1204,6 +1223,7 @@ def getUserTaskLists():
 
 # @cross_origin(supports_credentials=True)
 @app.get("/getUserTasks/")
+@login_required
 def getTasks():
     username = session.get("username")
     tasks = (
@@ -1227,6 +1247,7 @@ def getTasks():
 
 
 @app.post("/postUserTask/")
+@login_required
 def postTask():
     if (form := TaskCreationForm()).validate():
         # instead of getting the object from json, we can do what we
@@ -1274,6 +1295,7 @@ def postTask():
 
 
 @app.post("/updateUserTask/")
+@login_required
 def updateTask():
     response = request.json
     print(response)
@@ -1290,6 +1312,7 @@ def updateTask():
 
 
 @app.post("/markComplete/<int:taskId>/<int:complete>/")
+@login_required
 # "copmlete" should be a 0 or 1
 def markComplete(taskId, complete):
     task = Task.query.get_or_404(taskId)
@@ -1314,6 +1337,7 @@ def markComplete(taskId, complete):
 
 
 @app.post("/markStarred/<int:taskId>/<int:starred>/")
+@login_required
 # "starred" should be a 0 or 1
 def markStarred(taskId, starred):
     task = Task.query.get_or_404(taskId)
@@ -1338,6 +1362,7 @@ def markStarred(taskId, starred):
 
 
 @app.get("/getUserColor/")
+@login_required
 def getColor():
     username = session.get("username")
     userColor = User.query.filter_by(username=username).first().themecolor
@@ -1350,6 +1375,7 @@ def getColor():
 
 
 @app.post("/postUserColor/")
+@login_required
 def postColor():
     newColor = request.json
     current_user.themecolor = newColor

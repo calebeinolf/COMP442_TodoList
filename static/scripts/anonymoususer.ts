@@ -17,11 +17,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     // need to make a way to delete tasks
     const deletebtn = document.getElementById(`delete-aut-${id}`);
     deletebtn.addEventListener("click", async () => {
+      //console.log(auts);
+      delete auts[id];
+      //console.log(auts);
+      const replace:boolean = Object.keys(auts).length <= 0;
       const response = await fetch(`/deleteaut/${id}/`);
       const rjson = await validateJson(response);
       console.log(rjson);
       const aut = document.getElementById(`p-aut-${id}`);
-      aut.remove();
+      if(!replace) aut.remove();
+      else aut.replaceWith(document.createElement("br"));
     });
   }
 });
