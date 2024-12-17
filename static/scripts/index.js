@@ -345,7 +345,7 @@ async function startRecording() {
         mediaRecorder.onstop = async () => {
             const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
             const spinner = document.getElementById("loading-spinner");
-            spinner.style.display = "block";
+            spinner.style.display = "flex";
             console.log("HELLLOOOO");
             await sendAudioToFlask(audioBlob);
             spinner.style.display = "none";
@@ -834,17 +834,8 @@ function addDetailPanelLists(task) {
         detailsListText.id = "details-list-text";
         detailsListText.textContent = tasklistname;
         detailsTaskContent.appendChild(detailsListText);
-        const rightIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-        rightIcon.setAttribute("class", "right-icon");
-        rightIcon.setAttribute("width", "13px");
-        rightIcon.setAttribute("viewBox", "0 0 329.26933 329");
-        const rightIconPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        rightIconPath.setAttribute("d", "m194.800781 164.769531 128.210938-128.214843c8.34375-8.339844 8.34375-21.824219 0-30.164063-8.339844-8.339844-21.824219-8.339844-30.164063 0l-128.214844 128.214844-128.210937-128.214844c-8.34375-8.339844-21.824219-8.339844-30.164063 0-8.34375 8.339844-8.34375 21.824219 0 30.164063l128.210938 128.214843-128.210938 128.214844c-8.34375 8.339844-8.34375 21.824219 0 30.164063 4.15625 4.160156 9.621094 6.25 15.082032 6.25 5.460937 0 10.921875-2.089844 15.082031-6.25l128.210937-128.214844 128.214844 128.214844c4.160156 4.160156 9.621094 6.25 15.082032 6.25 5.460937 0 10.921874-2.089844 15.082031-6.25 8.34375-8.339844 8.34375-21.824219 0-30.164063zm0 0");
-        rightIconPath.setAttribute("fill", "var(--primary-color)");
-        rightIcon.appendChild(rightIconPath);
         listDiv.appendChild(leftIcon);
         listDiv.appendChild(detailsTaskContent);
-        listDiv.appendChild(rightIcon);
         detailLists.appendChild(listDiv);
     }
 }
@@ -959,7 +950,7 @@ async function askChatGPT() {
         textField.value = "";
         console.log(`input before chatGPT: ${input}`);
         const spinner = document.getElementById("loading-spinner");
-        spinner.style.display = "block";
+        spinner.style.display = "flex";
         console.log("HELLLOOOO");
         const response = await getChatGPTResponse(input);
         spinner.style.display = "none";

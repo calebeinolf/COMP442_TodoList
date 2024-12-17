@@ -206,7 +206,7 @@ button {
 .add-task-list {
   color: var(--primary-color);
   cursor: pointer;
-  padding: 10px 0 2px 0;
+  padding: 0 0 2px 0;
   font-size: 14px;
   border-bottom: 1px solid var(--primary-color);
   &:hover {
