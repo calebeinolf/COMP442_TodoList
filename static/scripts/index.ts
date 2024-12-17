@@ -75,7 +75,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const taskListElement = <HTMLUListElement>(
     document.getElementById("task_lists")
   );
-  taskListElement.style.height = "500px";
+  // taskListElement.style.height = "500px";
 
   const allTasksButton = <HTMLDivElement>(
     document.getElementById("all-tasks-btn")

@@ -9,7 +9,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         deleteCurrentTask();
     });
     const taskListElement = (document.getElementById("task_lists"));
-    taskListElement.style.height = "500px";
     const allTasksButton = (document.getElementById("all-tasks-btn"));
     allTasksButton.addEventListener("click", () => {
         backToAllTasks();
