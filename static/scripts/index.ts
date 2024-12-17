@@ -734,7 +734,7 @@ async function postTask() {
       document.getElementById("lists-dropdown")
     );
     // HERE is the list id that should be sent:
-    console.log("List Id for new task: ", taskListInput.value);
+    //console.log("List Id for new task: ", taskListInput.value);
 
     const urlsps = new URLSearchParams();
     urlsps.append("name", taskTitle);
@@ -753,6 +753,7 @@ async function postTask() {
       "csrf_token",
       csrfinpele.firstElementChild.getAttribute("value")
     );
+    urlsps.append("tasklistids",taskListInput.value);
 
     taskTitleInput.value = "";
     taskDuedateInput.value = "";
