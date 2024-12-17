@@ -1268,11 +1268,13 @@ def postTask():
 
         # add a db tasklist to the task for each of the names in tasklistids
         # each task added must belong to the current user
+        #print(f"{form.tasklistids.data = }")
         for tasklistid in form.tasklistids.data:
             # print(f"attempting to add {TaskList.query.filter_by(user=current_user,id=tasklistid).first()} (filter by current user and task list name)")
-            newtask.tasklists.append(
-                TaskList.query.filter_by(user=current_user, id=tasklistid).first()
-            )
+            if tasklistid:
+                newtask.tasklists.append(
+                    TaskList.query.filter_by(user=current_user, id=tasklistid).first()
+                )
         # add and commit to the database, then we ask if the user would like to add subtasks
         db.session.add(newtask)  # like before
         db.session.commit()  # like before
