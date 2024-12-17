@@ -391,6 +391,7 @@ async function reloadflashedmessages() {
   fmcontainer.replaceChildren();
 
   fmcontainer.style.alignContent = "center";
+  fmcontainer.classList.add("fmContainer");
 
   const response = await fetch("/api/v0/getflashedmessages/");
   const flashedmessages = <string[]>await validatejson(response);
@@ -554,10 +555,10 @@ async function startRecording() {
     };
 
     mediaRecorder.start();
-    const speechBtn = <HTMLButtonElement>(
-      document.getElementById("speechToText")
+    const speechBtnTxt = <HTMLButtonElement>(
+      document.getElementById("speechToText-Txt")
     );
-    speechBtn.textContent = "Stop Recording";
+    speechBtnTxt.style.display = "flex";
   } catch (e) {
     console.log("Error using mic");
   }
@@ -566,10 +567,10 @@ async function startRecording() {
 async function stopRecording() {
   if (mediaRecorder) {
     mediaRecorder.stop();
-    const speechBtn = <HTMLButtonElement>(
-      document.getElementById("speechToText")
+    const speechBtnTxt = <HTMLButtonElement>(
+      document.getElementById("speechToText-Txt")
     );
-    speechBtn.textContent = "Talk to our AI";
+    speechBtnTxt.style.display = "none";
   }
 }
 
@@ -652,7 +653,7 @@ async function loadTasks() {
         task.duedate = new Date(<string>task.duedate);
       }
       appendTask(task);
-      openDetails(task); // TO DELETE
+      // openDetails(task); // TO DELETE
     }
   } catch (error) {
     console.error("Error fetching tasks:", error);
@@ -834,7 +835,6 @@ async function appendTaskList(taskList: TaskList) {
   const newOption = <HTMLOptionElement>document.createElement("option");
   newOption.value = String(taskList.id);
   newOption.textContent = taskList.name;
-  console.log("name! ", taskList.name);
   addTaskListInput.appendChild(newOption);
 }
 
@@ -1174,7 +1174,6 @@ function openDetails(task: Task) {
 }
 
 function addDetailPanelLists(task: Task) {
-  console.log(task.name, task.tasklistnames);
   const detailLists = document.getElementById("detail-panel-lists");
   detailLists.innerHTML = "";
   detailLists.style.display = "none";

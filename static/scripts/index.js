@@ -236,6 +236,7 @@ async function reloadflashedmessages() {
     const fmcontainer = document.getElementById("error-messages");
     fmcontainer.replaceChildren();
     fmcontainer.style.alignContent = "center";
+    fmcontainer.classList.add("fmContainer");
     const response = await fetch("/api/v0/getflashedmessages/");
     const flashedmessages = await validatejson(response);
     for (const fm of flashedmessages) {
@@ -350,8 +351,8 @@ async function startRecording() {
             spinner.style.display = "none";
         };
         mediaRecorder.start();
-        const speechBtn = (document.getElementById("speechToText"));
-        speechBtn.textContent = "Stop Recording";
+        const speechBtnTxt = (document.getElementById("speechToText-Txt"));
+        speechBtnTxt.style.display = "flex";
     }
     catch (e) {
         console.log("Error using mic");
@@ -360,8 +361,8 @@ async function startRecording() {
 async function stopRecording() {
     if (mediaRecorder) {
         mediaRecorder.stop();
-        const speechBtn = (document.getElementById("speechToText"));
-        speechBtn.textContent = "Talk to our AI";
+        const speechBtnTxt = (document.getElementById("speechToText-Txt"));
+        speechBtnTxt.style.display = "none";
     }
 }
 async function sendAudioToFlask(audioBlob) {
@@ -436,7 +437,6 @@ async function loadTasks() {
                 task.duedate = new Date(task.duedate);
             }
             appendTask(task);
-            openDetails(task);
         }
     }
     catch (error) {
@@ -483,7 +483,6 @@ async function postTask() {
         const taskDuedateDateObj = new Date(parseInt(taskDuedateParts[0], 10), parseInt(taskDuedateParts[1], 10) - 1, parseInt(taskDuedateParts[2], 10));
         const taskDuedate = taskDuedateDateObj.getTime();
         const taskListInput = (document.getElementById("lists-dropdown"));
-        console.log("List Id for new task: ", taskListInput.value);
         const urlsps = new URLSearchParams();
         urlsps.append("name", taskTitle);
         urlsps.append("duedate", `${taskDuedate ? taskDuedate : new Date().getTime()}`);
@@ -493,6 +492,7 @@ async function postTask() {
         csrfinpele.innerHTML = await (await fetch("/api/v0/getcsrftok/create/task")).text();
         console.log(csrfinpele.innerHTML);
         urlsps.append("csrf_token", csrfinpele.firstElementChild.getAttribute("value"));
+        urlsps.append("tasklistids", taskListInput.value);
         taskTitleInput.value = "";
         taskDuedateInput.value = "";
         taskListInput.value = "";
@@ -553,7 +553,6 @@ async function appendTaskList(taskList) {
     const newOption = document.createElement("option");
     newOption.value = String(taskList.id);
     newOption.textContent = taskList.name;
-    console.log("name! ", taskList.name);
     addTaskListInput.appendChild(newOption);
 }
 async function loadTasksFromList(taskId, aElement) {
@@ -797,7 +796,6 @@ function openDetails(task) {
     }
 }
 function addDetailPanelLists(task) {
-    console.log(task.name, task.tasklistnames);
     const detailLists = document.getElementById("detail-panel-lists");
     detailLists.innerHTML = "";
     detailLists.style.display = "none";
