@@ -476,30 +476,23 @@
                 />
               </svg>
             </div>
+            <div id="detail-panel-lists" class="card lists-card">
+              <!-- dynamically added lists -->
+            </div>
             <div class="card detail-card">
-              <svg class="list-icon left-icon" viewBox="0 0 14 14" fill="none">
-                <g
-                  stroke="var(--primary-color)"
-                  stroke-width="1.4"
-                  stroke-linecap="round"
-                >
-                  <line x1="4.65" y1="11.35" x2="13.35" y2="11.35" />
-                  <line x1="4.65" y1="6.35" x2="13.35" y2="6.35" />
-                  <line x1="4.65" y1="1.35" x2="13.35" y2="1.35" />
-                  <line x1="1.65" y1="11.35" x2="1.35" y2="11.35" />
-                  <line x1="1.65" y1="6.35" x2="1.35" y2="6.35" />
-                  <line x1="1.65" y1="1.35" x2="1.35" y2="1.35" />
-                </g>
-              </svg>
-              <div class="details-task-content">
-                <p>List</p>
-              </div>
-              <svg class="right-icon" width="13px" viewBox="0 0 329.26933 329">
+              <svg class="left-icon" viewBox="0 0 512 512" width="18px">
                 <path
-                  d="m194.800781 164.769531 128.210938-128.214843c8.34375-8.339844 8.34375-21.824219 0-30.164063-8.339844-8.339844-21.824219-8.339844-30.164063 0l-128.214844 128.214844-128.210937-128.214844c-8.34375-8.339844-21.824219-8.339844-30.164063 0-8.34375 8.339844-8.34375 21.824219 0 30.164063l128.210938 128.214843-128.210938 128.214844c-8.34375 8.339844-8.34375 21.824219 0 30.164063 4.15625 4.160156 9.621094 6.25 15.082032 6.25 5.460937 0 10.921875-2.089844 15.082031-6.25l128.210937-128.214844 128.214844 128.214844c4.160156 4.160156 9.621094 6.25 15.082032 6.25 5.460937 0 10.921874-2.089844 15.082031-6.25 8.34375-8.339844 8.34375-21.824219 0-30.164063zm0 0"
-                  fill="var(--primary-color)"
+                  d="m256 439.98c-13.81 0-25-11.19-25-25v-317.96c0-13.81 11.19-25 25-25s25 11.19 25 25v317.96c0 13.81-11.19 25-25 25z"
+                  fill="var(--dark-grey)"
+                />
+                <path
+                  d="m414.98 281h-317.96c-13.81 0-25-11.19-25-25s11.19-25 25-25h317.96c13.81 0 25 11.19 25 25s-11.19 25-25 25z"
+                  fill="var(--dark-grey)"
                 />
               </svg>
+              <div class="details-task-content">
+                <p>Add List</p>
+              </div>
             </div>
             <div class="card detail-card">
               <svg class="left-icon" viewBox="0 0 512 512" width="18px">
@@ -565,6 +558,8 @@
       </div>
     </div>
 
+    <div class="background-shade" />
+
     <div id="addTaskModal" class="modal">
       <div class="modal-content">
         <div class="modal-header">
@@ -578,20 +573,13 @@
             <div>
               <label for="task-title-input">List</label>
               <select id="lists-dropdown" name="lists">
-                <!-- Lists will be dynamically generated here -->
                 <option disabled selected value>-- select a list --</option>
-                <option value="volvo">list1</option>
-                <option value="volvo">list2</option>
-                <option value="volvo">list3</option>
+                <!-- Lists will be dynamically generated here -->
               </select>
             </div>
             <div>
               <label for="task-duedate-input">Due Date</label>
               <input id="task-duedate-input" type="date" />
-            </div>
-            <div>
-              <label for="task-duetime-input">Reminder Time</label>
-              <input id="task-duetime-input" type="time" />
             </div>
           </div>
           <button id="sumbit-task-btn" class="sumbit-modal-btn">Add</button>

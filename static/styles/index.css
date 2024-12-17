@@ -72,7 +72,7 @@ button {
 /* Container styles */
 .container {
   display: flex;
-  grid-template-columns: 250px 1fr 300px;
+  /* grid-template-columns: 1fr 1fr 300px; */
   height: 100vh;
 }
 
@@ -81,9 +81,9 @@ button {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  width: 27vw;
+  min-width: 270px;
+  width: 40dvw;
   max-width: 350px;
-  min-width: 250px;
   background-color: #fff;
   padding: 40px 20px 20px 20px;
   box-shadow: 0 0 6px rgba(0, 0, 0, 0.08);
@@ -99,6 +99,18 @@ button {
 .sidebar.open {
   display: none;
 }
+
+/* .background-shade {
+  display: none;
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 1000;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(1px);
+} */
 
 .menu-toggle-btn-1 {
   cursor: pointer;
@@ -304,6 +316,13 @@ button {
   min-width: 350px;
   padding: 20px;
   padding-left: 0;
+  height: 100%;
+
+  @media (max-width: 850px) {
+    position: absolute;
+    right: 0;
+    max-width: 90vw;
+  }
 }
 
 .task-details-container.open {
@@ -386,6 +405,17 @@ button {
   &:hover {
     fill: var(--dark-primary-color);
   }
+}
+
+.lists-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.detail-lists {
+  width: 100%;
+  display: flex;
+  align-items: center;
 }
 
 .circle {
@@ -558,14 +588,13 @@ button {
   }
 }
 
-/* Responsive Design */
 @media (max-width: 600px) {
   .modal-content {
-    width: 95%; /* Use more screen width for smaller screens */
+    width: 95%;
   }
 
   .modal-inputs-row {
-    flex-direction: column; /* Stack inputs vertically */
+    flex-direction: column;
     gap: 10px;
   }
 }
@@ -796,11 +825,11 @@ button {
   cursor: pointer;
 }
 
-.allFlashedMessages{
+.allFlashedMessages {
   width: 100vw;
 }
 
-.flashMessage{
+.flashMessage {
   width: 100%;
   height: 16px;
   font-size: 16px;
@@ -809,11 +838,11 @@ button {
   justify-content: center;
 }
 
-.flashMessageSpace{
+.flashMessageSpace {
   width: 16px;
 }
 
-.flashMessageBtn{
+.flashMessageBtn {
   height: 18px;
   width: 16px;
   font-size: 16px;

@@ -482,6 +482,8 @@ async function postTask() {
         const taskDuedateParts = taskDuedateValue.split("-");
         const taskDuedateDateObj = new Date(parseInt(taskDuedateParts[0], 10), parseInt(taskDuedateParts[1], 10) - 1, parseInt(taskDuedateParts[2], 10));
         const taskDuedate = taskDuedateDateObj.getTime();
+        const taskListInput = (document.getElementById("lists-dropdown"));
+        console.log("List Id for new task: ", taskListInput.value);
         const urlsps = new URLSearchParams();
         urlsps.append("name", taskTitle);
         urlsps.append("duedate", `${taskDuedate ? taskDuedate : new Date().getTime()}`);
@@ -493,6 +495,7 @@ async function postTask() {
         urlsps.append("csrf_token", csrfinpele.firstElementChild.getAttribute("value"));
         taskTitleInput.value = "";
         taskDuedateInput.value = "";
+        taskListInput.value = "";
         const taskPostURL = "/postUserTask/";
         try {
             const response = await fetch(taskPostURL, {
@@ -546,6 +549,12 @@ async function appendTaskList(taskList) {
     listItem.appendChild(svgElement);
     listItem.appendChild(aElement);
     taskListElement.appendChild(listItem);
+    const addTaskListInput = document.getElementById("lists-dropdown");
+    const newOption = document.createElement("option");
+    newOption.value = String(taskList.id);
+    newOption.textContent = taskList.name;
+    console.log("name! ", taskList.name);
+    addTaskListInput.appendChild(newOption);
 }
 async function loadTasksFromList(taskId, aElement) {
     try {
@@ -754,8 +763,9 @@ function openDetails(task) {
     else {
         dateInput.value = "";
     }
-    const notesIput = (document.getElementById("details-task-notes-input"));
-    notesIput.value = task.notes;
+    addDetailPanelLists(task);
+    const notesInput = (document.getElementById("details-task-notes-input"));
+    notesInput.value = task.notes;
     const checkIcon = document.getElementById("details-checkIcon");
     const starIcon = document.getElementById("details-starIcon");
     const newCheckIcon = checkIcon.cloneNode(true);
@@ -784,6 +794,60 @@ function openDetails(task) {
     }
     else {
         newStarIcon.setAttribute("fill", "none");
+    }
+}
+function addDetailPanelLists(task) {
+    console.log(task.name, task.tasklistnames);
+    const detailLists = document.getElementById("detail-panel-lists");
+    detailLists.innerHTML = "";
+    detailLists.style.display = "none";
+    for (const tasklistname of task.tasklistnames) {
+        detailLists.style.display = "flex";
+        const listDiv = document.createElement("div");
+        listDiv.classList.add("detail-lists");
+        const leftIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        leftIcon.setAttribute("class", "list-icon left-icon");
+        leftIcon.setAttribute("viewBox", "0 0 14 14");
+        leftIcon.setAttribute("fill", "none");
+        const leftIconGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        leftIconGroup.setAttribute("stroke", "var(--primary-color)");
+        leftIconGroup.setAttribute("stroke-width", "1.4");
+        leftIconGroup.setAttribute("stroke-linecap", "round");
+        const leftIconLines = [
+            { x1: "4.65", y1: "11.35", x2: "13.35", y2: "11.35" },
+            { x1: "4.65", y1: "6.35", x2: "13.35", y2: "6.35" },
+            { x1: "4.65", y1: "1.35", x2: "13.35", y2: "1.35" },
+            { x1: "1.65", y1: "11.35", x2: "1.35", y2: "11.35" },
+            { x1: "1.65", y1: "6.35", x2: "1.35", y2: "6.35" },
+            { x1: "1.65", y1: "1.35", x2: "1.35", y2: "1.35" },
+        ];
+        leftIconLines.forEach((line) => {
+            const lineElement = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            lineElement.setAttribute("x1", line.x1);
+            lineElement.setAttribute("y1", line.y1);
+            lineElement.setAttribute("x2", line.x2);
+            lineElement.setAttribute("y2", line.y2);
+            leftIconGroup.appendChild(lineElement);
+        });
+        leftIcon.appendChild(leftIconGroup);
+        const detailsTaskContent = document.createElement("div");
+        detailsTaskContent.className = "details-task-content";
+        const detailsListText = document.createElement("p");
+        detailsListText.id = "details-list-text";
+        detailsListText.textContent = tasklistname;
+        detailsTaskContent.appendChild(detailsListText);
+        const rightIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        rightIcon.setAttribute("class", "right-icon");
+        rightIcon.setAttribute("width", "13px");
+        rightIcon.setAttribute("viewBox", "0 0 329.26933 329");
+        const rightIconPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        rightIconPath.setAttribute("d", "m194.800781 164.769531 128.210938-128.214843c8.34375-8.339844 8.34375-21.824219 0-30.164063-8.339844-8.339844-21.824219-8.339844-30.164063 0l-128.214844 128.214844-128.210937-128.214844c-8.34375-8.339844-21.824219-8.339844-30.164063 0-8.34375 8.339844-8.34375 21.824219 0 30.164063l128.210938 128.214843-128.210938 128.214844c-8.34375 8.339844-8.34375 21.824219 0 30.164063 4.15625 4.160156 9.621094 6.25 15.082032 6.25 5.460937 0 10.921875-2.089844 15.082031-6.25l128.210937-128.214844 128.214844 128.214844c4.160156 4.160156 9.621094 6.25 15.082032 6.25 5.460937 0 10.921874-2.089844 15.082031-6.25 8.34375-8.339844 8.34375-21.824219 0-30.164063zm0 0");
+        rightIconPath.setAttribute("fill", "var(--primary-color)");
+        rightIcon.appendChild(rightIconPath);
+        listDiv.appendChild(leftIcon);
+        listDiv.appendChild(detailsTaskContent);
+        listDiv.appendChild(rightIcon);
+        detailLists.appendChild(listDiv);
     }
 }
 async function toggleComplete(task) {
