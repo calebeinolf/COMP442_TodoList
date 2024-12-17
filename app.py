@@ -1241,7 +1241,7 @@ def postTask():
             duedate=form.duedate.data,
             duetime=form.duetime.data,
             priority=form.priority.data,
-            generalnotes=form.generalnotes.data,
+            notes=form.generalnotes.data,
             user=current_user,
         )
 
