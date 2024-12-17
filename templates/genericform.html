@@ -1,56 +1,79 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" 
-    rel="stylesheet" crossorigin="anonymous"
-    integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" 
-      integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" 
-      crossorigin="anonymous">
-    </script>
-    <title>{{form.title}}</title>
-</head>
-<body>
-
-    <h1>{{form.title}}</h1>
-
-    <div id="error-messages">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      crossorigin="anonymous"
+      integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9"
+    />
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm"
+      crossorigin="anonymous"
+    ></script>
+    <title>{{ form.title }}</title>
+  </head>
+  <body
+    class="bg-light d-flex align-items-center justify-content-center"
+    style="min-height: 100vh"
+  >
+    <!-- Header for Error Messages -->
+    <header>
+      <div id="error-messages">
         {% for errormessage in get_flashed_messages() %}
-        <div class="alert alert-warning alert-dismissible fade show" role="alert">
-            {{errormessage}}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <div
+          class="alert alert-warning alert-dismissible fade show flash-message d-flex align-items-center"
+          role="alert"
+        >
+          {{ errormessage }}
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="alert"
+            aria-label="Close"
+          ></button>
         </div>
         {% endfor %}
-    </div>
+      </div>
+    </header>
 
-    <form method="post">
-        {{ form.hidden_tag() }}
-        
-        {% for field in form %}
-            {% if field.type != "CSRFTokenField" and field.type != "SubmitField" %}
-                {{ field.label }}
-                {{ field() }}
+    <!-- Main Content -->
+    <main class="container">
+      <div class="card shadow-sm mx-auto" style="max-width: 400px">
+        <div class="card-body">
+          <h1 class="card-title text-center mb-4">{{ form.title }}</h1>
+          {% if form.title == "Delete Task List"%}
+          <p class="text-center">All tasks in the list will also be deleted</p>
+          {% endif %}
+
+          <form method="post">
+            {{ form.hidden_tag() }} {% for field in form %} {% if field.type !=
+            "CSRFTokenField" and field.type != "SubmitField" %}
+            <div class="mb-3">
+              {{ field.label(class_="form-label") }} {{
+              field(class_="form-control") }}
+            </div>
             {% elif field.type == "SubmitField" %}
-                {{ field() }}
-            {% endif %}
-            <br>
-        {% endfor %}
-    </form>
+            <div class="d-grid">{{ field(class_="btn btn-primary") }}</div>
+            {% endif %} {% endfor %}
+          </form>
 
-    {# if the user is done adding subtasks, they can be #}
-    {% if form.title == "Subtask Creation Form" %}
-        <form action="{{ url_for('index') }}" method="get">
-            <button class="go-to-home">Done</button>
-        </form>
-        {# old method -> <a href="{{ url_for('index') }}">Done</a> #}
-    {% endif %}
-
-    {% if "Deletion" in form.title or form.title == "Task Creation Form" or form.title == "Task List Creation Form" %}
-        <form action="{{ url_for('index') }}" method="get">
-            <button class="go-to-home">Home</button>
-        </form>
-    {% endif %}
-</body>
+          <!-- Additional Actions based on Form Title -->
+          {% if form.title == "Subtask Creation Form" %}
+          <form action="{{ url_for('index') }}" method="get">
+            <button class="btn btn-secondary w-100">Done</button>
+          </form>
+          {% endif %} {% if "Delete" in form.title or form.title == "Task
+          Creation Form" or form.title == "New Task List" %}
+          <form action="{{ url_for('index') }}" method="get">
+            <button class="btn btn-secondary w-100 mt-2">Home</button>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+    </main>
+  </body>
 </html>

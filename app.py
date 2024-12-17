@@ -352,7 +352,7 @@ from wtforms.validators import (
 # =================================================================================
 class TaskListCreationForm(FlaskForm):
     # add title for use in genericform.html -> may want to remove down the road
-    title = "Task List Creation Form"
+    title = "New Task List"
 
     # user will not be an option in forms (user will be current_user from flask_login)
     name = StringField(
@@ -441,22 +441,27 @@ class TaskCreationForm(FlaskForm):
 
 # =================================================================================
 
+
 class AnonymousTaskCreationForm(FlaskForm):
 
     title = "Task Creation Form"
 
-    name = StringField(label="Task Name", validators=[InputRequired(),Length(min=1,max=80)])
-    
-    duedate = DateField("Due Date",validators=[Optional()])
-    
+    name = StringField(
+        label="Task Name", validators=[InputRequired(), Length(min=1, max=80)]
+    )
+
+    duedate = DateField("Due Date", validators=[Optional()])
+
     # don't have to check complete or starred
-    #complete = BooleanField(label="Complete",validators=[Optional()])
+    # complete = BooleanField(label="Complete",validators=[Optional()])
 
     submit = SubmitField(label="Add Task")
 
     # session["anonymoustasks"] = {id:[name,duedate,complete]}
 
+
 # =================================================================================
+
 
 class SubtaskCreationForm(FlaskForm):
 
@@ -491,9 +496,10 @@ class SingleTaskDeletionForm(FlaskForm):
     taskid = IntegerField("Task ID", validators=[InputRequired()])
     submit = SubmitField("Delete Task")
 
+
 class TaskDeletionForm(FlaskForm):
 
-    title = "Task Deletion Form"
+    title = "Delete Task"
 
     taskids = SelectMultipleField(
         "Tasks", choices=[], validate_choice=False, validators=[InputRequired()]
@@ -507,7 +513,7 @@ class TaskDeletionForm(FlaskForm):
 
 class SubtaskDeletionForm(FlaskForm):
 
-    title = "Subtask Deletion Form"
+    title = "Delete Subtask"
 
     subtaskids = SelectMultipleField(
         "Subtasks", choices=[], validate_choice=False, validators=[InputRequired()]
@@ -521,7 +527,7 @@ class SubtaskDeletionForm(FlaskForm):
 
 class TaskListDeletionForm(FlaskForm):
 
-    title = "Task List Deletion Form"
+    title = "Delete Task List"
 
     tasklistids = SelectMultipleField(
         "Task Lists", choices=[], validate_choice=False, validators=[InputRequired()]
@@ -617,6 +623,7 @@ def get_logout():
     flash("You have been logged out")
     return redirect(url_for("getanonymoususerpage"))
 
+
 # =================================================================================
 # Home Page and View
 @app.get("/index/")
@@ -659,43 +666,57 @@ def viewalltasks():
         alltasks=Task.query.filter_by(userid=current_user.id).all(),
     )
 
+
 # =================================================================================
-#AnonymousUserTask = namedtuple("anonymoustask",["name","duedate","complete"])
+# AnonymousUserTask = namedtuple("anonymoustask",["name","duedate","complete"])
+
 
 @app.get("/")
 @app.get("/anonymoususer/")
 def getanonymoususerpage():
     # IF UNCOMMENTED THE FOLLOWING LINE WILL CLEAR THE SESSION UPON LOADING THE ANONYMOUS USER PAGE
-    #session.clear()
-    session["anonymoustasks"] = session.get("anonymoustasks",{})
-    session["nextanonymoustaskid"] = session.get("nextanonymoustaskid",0)
+    # session.clear()
+    session["anonymoustasks"] = session.get("anonymoustasks", {})
+    session["nextanonymoustaskid"] = session.get("nextanonymoustaskid", 0)
     print(session)
     # could do this conditionally only if session["anonymoustasks"] is empty
-    flash("Login to access additional features such as task lists, AI task creation, and more!")
-    return render_template("anonymoususer.html",tasks=session.get("anonymoustasks",{}))
+    flash(
+        "Login to access additional features such as task lists, AI task creation, and more!"
+    )
+    return render_template(
+        "anonymoususer.html", tasks=session.get("anonymoustasks", {})
+    )
+
 
 @app.get("/addtaskanonymous/")
 def getaddtaskanonymous():
-    return render_template("anonymoustaskform.html",form=AnonymousTaskCreationForm())
+    return render_template("anonymoustaskform.html", form=AnonymousTaskCreationForm())
+
 
 @app.post("/addtaskanonymous/")
 def postaddtaskanonymous():
     print("in postaddtaskanonymous")
-    if (form:=AnonymousTaskCreationForm()).validate():
-        session["anonymoustasks"] = session.get("anonymoustasks",{})
+    if (form := AnonymousTaskCreationForm()).validate():
+        session["anonymoustasks"] = session.get("anonymoustasks", {})
         # complete is False
-        addtaskforanonymoususer(form.name.data,form.duedate.data,False)
+        addtaskforanonymoususer(form.name.data, form.duedate.data, False)
         print("returned from addtaskforanonymoususer to postaddtaskanonymous fine")
         return redirect(url_for("getanonymoususerpage"))
-    for field,em in form.errors.items():
+    for field, em in form.errors.items():
         flash(f"Error in {field}: {em}")
     return redirect(url_for("getaddtaskanonymous"))
 
-def addtaskforanonymoususer(name:str,duedate:date,complete:bool):
+
+def addtaskforanonymoususer(name: str, duedate: date, complete: bool):
     # session keys MUST be strings
-    session["anonymoustasks"][str(session["nextanonymoustaskid"])] = [name,duedate.strftime("%m/%d/%Y") if duedate else "",complete]
+    session["anonymoustasks"][str(session["nextanonymoustaskid"])] = [
+        name,
+        duedate.strftime("%m/%d/%Y") if duedate else "",
+        complete,
+    ]
     # making sure it (session["nextanonymoustaskid"]) has a value to be safe, but it definitely always should have a value
-    session["nextanonymoustaskid"] = session.get("nextanonymoustaskid",0) + 1
+    session["nextanonymoustaskid"] = session.get("nextanonymoustaskid", 0) + 1
+
 
 # =================================================================================
 # Create Task Via Form
@@ -738,21 +759,24 @@ def getcsrftok(mode: str, formtype: str):
 def getflashedmessages():
     return jsonify(get_flashed_messages()), 200
 
+
 @app.get("/api/v0/getauts/")
 def getanonusertasks():
-    return jsonify(session.get("anonymoustasks",{})), 200
+    return jsonify(session.get("anonymoustasks", {})), 200
+
 
 # for anonymous user tasks
 @app.get("/togglecomplete/<int:id>/")
-def togglecomplete(id:int):
-    #print(f"session['anonymoustasks'][str(id)][2] which is {session["anonymoustasks"][str(id)][2]} set to {not session["anonymoustasks"][str(id)][2]}")
+def togglecomplete(id: int):
+    # print(f"session['anonymoustasks'][str(id)][2] which is {session["anonymoustasks"][str(id)][2]} set to {not session["anonymoustasks"][str(id)][2]}")
     session["anonymoustasks"][str(id)][2] = not session["anonymoustasks"][str(id)][2]
     session.modified = True
     print(session)
     return jsonify(f"toggled to {session["anonymoustasks"][str(id)][2]}"), 200
 
+
 @app.get("/deleteaut/<int:id>/")
-def deleteaut(id:int):
+def deleteaut(id: int):
     del session["anonymoustasks"][str(id)]
     session.modified = True
     print(session)
@@ -1056,11 +1080,10 @@ def deleteSingleTask():
     try:
         taskid = request.args.get("taskid")
         deletetask(taskid)
-        return {
-            "taskid": taskid
-        }
+        return {"taskid": taskid}
     except:
         return 400
+
 
 @app.post("/taskdeleteform/")
 @login_required

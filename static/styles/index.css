@@ -14,7 +14,7 @@ body {
     var(--primary-color) 20%,
     white 80%
   );
-  --dark-primary-color: color-mix(in srgb, var(--primary-color) 80%, black 20%);
+  --dark-primary-color: color-mix(in srgb, var(--primary-color) 72%, black 28%);
   --primary-text-color: "white"; /* For text on top of the primary color*/
   --dark-grey: #757575;
   /* --ai-gradient: linear-gradient(#e66465, #9198e5); */
@@ -146,13 +146,13 @@ button {
 }
 
 .lists-title {
+  font-weight: 600;
+  color: var(--dark-grey);
   padding-left: 10px;
 }
 
 .lists {
-  margin-top: -10px;
   list-style-type: none;
-  flex: 1;
   overflow-y: scroll;
   border-top: 1px solid #dddddd;
 }
@@ -168,6 +168,10 @@ button {
 .lists li a {
   text-decoration: none;
   color: var(--primary-color);
+  &:hover {
+    font-weight: 500;
+    color: var(--dark-primary-color);
+  }
 }
 
 .list-icon {
@@ -182,6 +186,34 @@ button {
   box-shadow: inset 0 0 10px 10px rgb(210, 210, 210);
   border: solid 8px transparent;
   border-radius: 100px;
+}
+
+.forms-btns {
+  padding-left: 10px;
+  display: flex;
+  gap: 12px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.sidebar-lists-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.add-task-list {
+  color: var(--primary-color);
+  cursor: pointer;
+  padding: 10px 0 2px 0;
+  font-size: 14px;
+  border-bottom: 1px solid var(--primary-color);
+  &:hover {
+    font-weight: 500;
+    color: var(--dark-primary-color);
+    border-bottom: 1px solid var(--dark-primary-color);
+  }
 }
 
 .profile-container {
@@ -629,13 +661,6 @@ button {
   outline: none;
 }
 
-/* TO DELETE */
-.forms-btns {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
 .speechToTextBtn {
   padding: 0 8px 0 8px;
   cursor: pointer;
@@ -815,24 +840,6 @@ button {
   transition: background-color 0.3s ease;
 }
 
-.spinner {
-  border: 4px solid #f3f3f3;
-  border-radius: 50%;
-  border-top: 4px solid #3498db;
-  width: 30px;
-  height: 30px;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
 .date-input {
   appearance: none; /* Hide native styles (varies by browser) */
   -webkit-appearance: none; /* Safari support */
@@ -888,4 +895,29 @@ button {
   color: red;
   border-radius: 100px;
   background-color: #ff464630;
+}
+
+.loading-spinner {
+  display: none;
+  margin-top: 8px;
+  align-items: center;
+  gap: 8px;
+}
+
+.spinner {
+  /* border: 2px solid #dfdfdf;
+  border-radius: 50%;
+  border-top: 2px solid var(--primary-color);
+  width: 22px;
+  height: 22px; */
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }

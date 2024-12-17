@@ -546,7 +546,7 @@ async function startRecording() {
     mediaRecorder.onstop = async () => {
       const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
       const spinner = document.getElementById("loading-spinner");
-      spinner.style.display = "block";
+      spinner.style.display = "flex";
       console.log("HELLLOOOO");
 
       await sendAudioToFlask(audioBlob);
@@ -754,7 +754,7 @@ async function postTask() {
       "csrf_token",
       csrfinpele.firstElementChild.getAttribute("value")
     );
-    urlsps.append("tasklistids",taskListInput.value);
+    urlsps.append("tasklistids", taskListInput.value);
 
     taskTitleInput.value = "";
     taskDuedateInput.value = "";
@@ -1396,7 +1396,7 @@ async function askChatGPT() {
     console.log(`input before chatGPT: ${input}`);
 
     const spinner = document.getElementById("loading-spinner");
-    spinner.style.display = "block";
+    spinner.style.display = "flex";
     console.log("HELLLOOOO");
 
     const response = <gpt.ServerResponse>await getChatGPTResponse(input);
