@@ -7,7 +7,6 @@ from flask import request, session, flash, jsonify, get_flashed_messages
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin, LoginManager, login_required
 from flask_login import login_user, logout_user, current_user
-from flask_cors import CORS, cross_origin
 
 from datetime import date, time
 from datetime import datetime
@@ -442,6 +441,22 @@ class TaskCreationForm(FlaskForm):
 
 # =================================================================================
 
+class AnonymousTaskCreationForm(FlaskForm):
+
+    title = "Task Creation Form"
+
+    name = StringField(label="Task Name", validators=[InputRequired(),Length(min=1,max=80)])
+    
+    duedate = DateField("Due Date",validators=[Optional()])
+    
+    # don't have to check complete or starred
+    #complete = BooleanField(label="Complete",validators=[Optional()])
+
+    submit = SubmitField(label="Add Task")
+
+    # session["anonymoustasks"] = {id:[name,duedate,complete]}
+
+# =================================================================================
 
 class SubtaskCreationForm(FlaskForm):
 
@@ -600,12 +615,11 @@ def post_login():
 def get_logout():
     logout_user()
     flash("You have been logged out")
-    return redirect(url_for("index"))
-
+    return redirect(url_for("getanonymoususerpage"))
 
 # =================================================================================
 # Home Page and View
-@app.get("/")
+@login_required
 @app.get("/index/")
 def index():
     # reset current task id and tasks for which subtask deletions are happening
@@ -645,6 +659,43 @@ def viewalltasks():
         alltasks=Task.query.filter_by(userid=current_user.id).all(),
     )
 
+# =================================================================================
+#AnonymousUserTask = namedtuple("anonymoustask",["name","duedate","complete"])
+
+@app.get("/")
+@app.get("/anonymoususer/")
+def getanonymoususerpage():
+    # IF UNCOMMENTED THE FOLLOWING LINE WILL CLEAR THE SESSION UPON LOADING THE ANONYMOUS USER PAGE
+    #session.clear()
+    session["anonymoustasks"] = session.get("anonymoustasks",{})
+    session["nextanonymoustaskid"] = session.get("nextanonymoustaskid",0)
+    print(session)
+    # could do this conditionally only if session["anonymoustasks"] is empty
+    flash("Login to access additional features such as task lists, AI task creation, and more!")
+    return render_template("anonymoususer.html",tasks=session.get("anonymoustasks",{}))
+
+@app.get("/addtaskanonymous/")
+def getaddtaskanonymous():
+    return render_template("anonymoustaskform.html",form=AnonymousTaskCreationForm())
+
+@app.post("/addtaskanonymous/")
+def postaddtaskanonymous():
+    print("in postaddtaskanonymous")
+    if (form:=AnonymousTaskCreationForm()).validate():
+        session["anonymoustasks"] = session.get("anonymoustasks",{})
+        # complete is False
+        addtaskforanonymoususer(form.name.data,form.duedate.data,False)
+        print("returned from addtaskforanonymoususer to postaddtaskanonymous fine")
+        return redirect(url_for("getanonymoususerpage"))
+    for field,em in form.errors.items():
+        flash(f"Error in {field}: {em}")
+    return redirect(url_for("getaddtaskanonymous"))
+
+def addtaskforanonymoususer(name:str,duedate:date,complete:bool):
+    # session keys MUST be strings
+    session["anonymoustasks"][str(session["nextanonymoustaskid"])] = [name,duedate.strftime("%m/%d/%Y") if duedate else "",complete]
+    # making sure it (session["nextanonymoustaskid"]) has a value to be safe, but it definitely always should have a value
+    session["nextanonymoustaskid"] = session.get("nextanonymoustaskid",0) + 1
 
 # =================================================================================
 # Create Task Via Form
@@ -683,7 +734,26 @@ def getcsrftok(mode: str, formtype: str):
 
 @app.get("/api/v0/getflashedmessages/")
 def getflashedmessages():
-    return jsonify(get_flashed_messages())
+    return jsonify(get_flashed_messages()), 200
+
+@app.get("/api/v0/getauts/")
+def getanonusertasks():
+    return jsonify(session.get("anonymoustasks",{})), 200
+
+@app.get("/togglecomplete/<int:id>/")
+def togglecomplete(id:int):
+    #print(f"session['anonymoustasks'][str(id)][2] which is {session["anonymoustasks"][str(id)][2]} set to {not session["anonymoustasks"][str(id)][2]}")
+    session["anonymoustasks"][str(id)][2] = not session["anonymoustasks"][str(id)][2]
+    session.modified = True
+    print(session)
+    return jsonify(f"toggled to {session["anonymoustasks"][str(id)][2]}"), 200
+
+@app.get("/deleteaut/<int:id>/")
+def deleteaut(id:int):
+    del session["anonymoustasks"][str(id)]
+    session.modified = True
+    print(session)
+    return jsonify("anonymous user task deleted"), 200
 
 
 @app.get("/taskform/")
@@ -706,7 +776,7 @@ def posttaskform():
             duedate=form.duedate.data,
             duetime=form.duetime.data,
             priority=form.priority.data,
-            notes=form.notes.data,
+            notes=form.generalnotes.data,
             user=current_user,
         )
 

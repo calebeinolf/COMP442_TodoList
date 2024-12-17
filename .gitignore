@@ -5,3 +5,4 @@ __pycache__/*
 .vscode/*
 client_side_audio.webm
 static/scripts/index.js
+static/scripts/anonymoususer.js
