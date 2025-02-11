@@ -1,4 +1,4 @@
-![image](https://github.com/user-attachments/assets/018e1141-6c3b-464f-9ec3-271d8cd4672a)
+![image](https://github.com/user-attachments/assets/e802640f-ca59-43dc-82f1-9821f692c811)
 
 ## Featuring:
 - Tasks with due date, list, and notes
