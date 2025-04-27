@@ -7,3 +7,5 @@
 - Logged in vs. logged out users (logged out users have less features)
 - Customizable color theme
 - Responsive, clean UI
+
+[![video](https://img.youtube.com/vi/v=AxvXOmTy-iQ/0.jpg)](https://www.youtube.com/watch?v=AxvXOmTy-iQ)
