@@ -8,4 +8,4 @@
 - Customizable color theme
 - Responsive, clean UI
 
-[![video](https://img.youtube.com/vi/v=AxvXOmTy-iQ/0.jpg)](https://www.youtube.com/watch?v=AxvXOmTy-iQ)
+[![video](https://img.youtube.com/vi/AxvXOmTy-iQ/0.jpg)](https://www.youtube.com/watch?v=AxvXOmTy-iQ)
